@@ -42,21 +42,30 @@ public class CustomizableMain {
     }
 
     public static Model createCustomStartModel() {
+        /*
         int[][] initialBoard = new int[][]{
                 {2, 0, 2, 128},
                 {0, 0, 8, 0},
                 {8, 64, 0, 128},
                 {4, 64, 8, 256},
         };
-        /* Example game over board:
-        int[][] initialBoard = new int[][]{
-                {2, 4, 2, 4},
-                {4, 2, 4, 2},
-                {2, 4, 2, 4},
-                {4, 2, 4, 2},
-        };
         */
 
+        // Example game over board:
+        /*
+        int[][] initialBoard = new int[][]{
+                {0, 8, 4, 8},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+        };
+         */
+        int[][] initialBoard = new int[][]{
+                {0, 0, 0, 0},
+                {8, 0, 0, 0},
+                {4, 0, 0, 0},
+                {8, 0, 0, 0},
+        };
         int initialScore = 0;
         int initialMaxScore = 0;
 

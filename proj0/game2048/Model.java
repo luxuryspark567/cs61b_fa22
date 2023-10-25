@@ -116,7 +116,47 @@ public class Model extends Observable {
      *    and the trailing tile does not.
      */
     public void tilt(Side side) {
-        // TODO: Fill in this function.
+        _board.setViewingPerspective(side);
+        // loop over each col
+        for (int col = 0; col < _board.size(); col += 1) {
+            int startLimit = _board.size();
+            for (int row = _board.size() - 1; row >= 0; row -= 1) {
+                Tile t = _board.tile(col, row);
+                if (t == null) {
+                    continue;
+                }
+                int trow;
+                int lastNull = -1;
+                for (trow = row + 1; trow < startLimit; trow += 1) {
+                    if (_board.tile(col, trow) == null) {
+                        lastNull = trow; // record last null place, if no match found, move tile t here;
+                        // last row already, just move the tile t
+                        if (trow == startLimit - 1) {
+                            _board.move(col, trow, t);
+                            break;
+                        }
+                    } else if (_board.tile(col, trow).value() == t.value()) {
+                        // found a matched tile
+                        if (_board.move(col, trow, t)) {
+                            _score += _board.tile(col, trow).value();
+                            startLimit = trow;
+                            break;
+                        }
+                    } else {
+                        // found a not-matched tile
+                        if (lastNull >= 0) {
+                            _board.move(col, lastNull, t);
+                            startLimit = lastNull + 1;
+                            break;
+                        } else {
+                            startLimit = trow + 1;
+                        }
+
+                    }
+                }
+            }
+        }
+        _board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
     }
@@ -138,6 +178,13 @@ public class Model extends Observable {
      */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        for (int row = 0; row < b.size(); row += 1) {
+            for (int col = 0; col < b.size(); col += 1) {
+                if (b.tile(col, row) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,9 +195,62 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        for (int col = 0; col < b.size(); col += 1) {
+            for (int row = 0; row < b.size(); row += 1) {
+                if ((b.tile(col, row) != null) && (b.tile(col, row).value() == MAX_PIECE)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
+    /**
+     * Check if adjacent tiles exists around a specific location
+     */
+    public static boolean adjacentTilesExist(int col, int row, Board b) {
+        // TODO
+        int tcol, trow;
+        //col-1, col-2...
+        for (tcol = col - 1; tcol >= 0; tcol = tcol - 1) {
+            if (b.tile(col, row).value() == b.tile(tcol, row).value()) {
+                return true;
+            }
+            else if ((b.tile(tcol, row) != null) && (b.tile(tcol, row).value() != b.tile(col, row).value())) {
+                break;
+            }
+        }
+        // col+1, col+2...
+        for (tcol = col + 1; tcol < b.size(); tcol = tcol + 1) {
+            if (b.tile(col, row).value() == b.tile(tcol, row).value()) {
+                return true;
+            }
+            else if ((b.tile(tcol, row) != null) && (b.tile(tcol, row).value() != b.tile(col, row).value())) {
+                break;
+            }
+        }
+        // row-1, row-1...
+        for (trow = row - 1; trow >= 0; trow = trow - 1) {
+            if (b.tile(col, row).value() == b.tile(col, trow).value()) {
+                return true;
+            }
+            else if ((b.tile(col, trow) != null) && (b.tile(col, trow).value() != b.tile(col, row).value())) {
+                break;
+            }
+        }
+        // row+1, row+2...
+        for (trow = row + 1; trow < b.size(); trow = trow + 1) {
+            if (b.tile(col, row).value() == b.tile(col, trow).value()) {
+                return true;
+            }
+            else if ((b.tile(col, trow) != null) && (b.tile(col, trow).value() != b.tile(col, row).value())) {
+                break;
+            }
+        }
+
+        return false;
+    }
+    
     /**
      * Returns true if there are any valid moves on the board.
      * There are two ways that there can be valid moves:
@@ -159,6 +259,19 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        if (emptySpaceExists(b)) {
+            return true;
+        } else {
+            //Loop over each tile to check if same adjacent fie exists
+            for (int row = 0; row < b.size(); row += 1) {
+                for (int col = 0; col < b.size(); col += 1) {
+                    if (adjacentTilesExist(col , row, b)) {
+                        return true;
+                    }
+                }
+
+            }
+        }
         return false;
     }
 
