@@ -1,11 +1,14 @@
 package deque;
 
 import org.junit.Test;
+
+import java.util.Iterator;
+
 import static org.junit.Assert.*;
 
 
 /** Performs some basic linked list tests. */
-public class LinkedListDequeTest {
+public class TestLinkedListDeque {
 
     @Test
     public void addFirstTest() {
@@ -174,5 +177,28 @@ public class LinkedListDequeTest {
         }
 
 
+    }
+    @Test
+    public void toStringTest() {
+        LinkedListDeque<Integer> testQue = new LinkedListDeque<>();
+        testQue.addLast(100);
+        testQue.addLast(200);
+        testQue.addLast(300);
+        testQue.addLast(400);
+        assertEquals("{100, 200, 300, 400}", testQue.toString());
+    }
+    @Test
+    /* Test Iterator. */
+    public void IteratorTest() {
+        LinkedListDeque<Integer> testQue1 = new LinkedListDeque<>();
+        testQue1.addLast(100);
+        testQue1.addLast(200);
+        testQue1.addLast(300);
+        testQue1.addLast(400);
+        int testRs = 100;
+        for (int i:testQue1) {
+            assertEquals(testRs, i);
+            testRs += 100;
+        }
     }
 }

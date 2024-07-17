@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque <T>{
+import java.util.Iterator;
+
+public class ArrayDeque<T> implements Iterable<T>, Deque<T>{
     private T[] arr;
     private int size;
     private int nextFirst;
@@ -31,7 +33,7 @@ public class ArrayDeque <T>{
         nextFirst = capacity - 1;
         nextLast = size;
     }
-
+    @Override
     public void addFirst(T item) {
         // add item to array;
         if (size == arr.length) {
@@ -42,14 +44,13 @@ public class ArrayDeque <T>{
         arr[nextFirst] = item;
         if (nextFirst == 0) {
             nextFirst = arr.length - 1;
-        }
-        else {
+        } else {
             nextFirst -= 1;
         }
 
         size += 1;
     }
-
+    @Override
     public void addLast(T item) {
         // resize if buffer is full;
         if (size == arr.length) {
@@ -60,22 +61,23 @@ public class ArrayDeque <T>{
         arr[nextLast] = item;
         if (nextLast == arr.length - 1) {
             nextLast = 0;
-        }
-        else {
+        } else {
             nextLast += 1;
         }
         size += 1;
     }
+    /**
+    @Override
 
-    public boolean isEmpty () {
+    public boolean isEmpty() {
         return size == 0;
     }
-
-
+    */
+    @Override
     public int size() {
         return size;
     }
-
+    @Override
     public void printDeque() {
         int looper = 0;
         while (looper < size) {
@@ -84,7 +86,7 @@ public class ArrayDeque <T>{
         }
         System.out.println();
     }
-
+    @Override
     public T removeFirst() {
         //check if space is empty
         if (0 == size) {
@@ -97,12 +99,12 @@ public class ArrayDeque <T>{
         arr[nextFirst] = null;
         size -= 1;
 
-        if ((float)size / arr.length < 0.25 && arr.length > 8) {
+        if ((float) size / arr.length < 0.25 && arr.length > 8) {
             resize(arr.length / 2);
         }
         return result;
     }
-
+    @Override
     public T removeLast() {
         //check if space is empty
         if (0 == size) {
@@ -120,34 +122,62 @@ public class ArrayDeque <T>{
         arr[nextLast] = null;
         size -= 1;
 
-        if ((float)size / arr.length < 0.25 && arr.length > 8) {
+        if ((float) size / arr.length < 0.25 && arr.length > 8) {
             resize(arr.length / 2);
         }
         return result;
     }
-
+    @Override
     public T get(int index) {
         if (index >= size || index < 0) {
             return null;
         }
         return arr[(nextFirst + index + 1) % arr.length];
     }
-
+    @Override
     public boolean equals(Object o) {
-        ArrayDeque<T> Target = (ArrayDeque<T>) o;
-        if (size != Target.size) {
+        ArrayDeque<T> target = (ArrayDeque<T>) o;
+        if (size != target.size) {
             return false;
         }
 
         // The stop condition is i == nextLast;
         int i = 0;
         while (i < size) {
-            if (!Target.get(i).equals(this.get(i))) {
+            if (!target.get(i).equals(this.get(i))) {
                 return false;
             }
             i += 1;
         }
-
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return toStringDeque();
+    }
+
+
+    @Override
+    public Iterator<T> iterator() {
+        return new ArrayDequeIterator<>();
+    }
+
+    public class ArrayDequeIterator<Glory> implements Iterator<Glory> {
+
+        private int index;
+
+        public ArrayDequeIterator() {
+            index = 0;
+        }
+        public boolean hasNext() {
+            return index < size;
+        }
+
+        public Glory next() {
+            Glory result = (Glory)get(index);
+            index += 1;
+            return result;
+        }
     }
 }

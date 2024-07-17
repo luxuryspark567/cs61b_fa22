@@ -3,7 +3,7 @@ package deque;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class ArrayDequeTest {
+public class TestArrayDeque {
 
     @Test
     public void testEmptySize() {
@@ -97,18 +97,18 @@ public class ArrayDequeTest {
         testQue1.addFirst(200);
         testQue2.addFirst(100);
         testQue2.addFirst(200);
-        assertEquals(true, testQue1.equals(testQue2));
+        assertTrue(testQue1.equals(testQue2));
 
         testQue1.addFirst(300);
-        assertEquals(false, testQue1.equals(testQue2));
+        assertFalse(testQue1.equals(testQue2));
 
         testQue2.addFirst(400);
-        assertEquals(false, testQue1.equals(testQue2));
+        assertFalse(testQue1.equals(testQue2));
 
         assertEquals(400, (int)testQue2.removeFirst());
 
         testQue2.addFirst(300);
-        assertEquals(true, testQue1.equals(testQue2));
+        assertTrue(testQue1.equals(testQue2));
     }
 
     @Test
@@ -197,6 +197,30 @@ public class ArrayDequeTest {
 
         for (double i = 999999; i > 500000; i--) {
             assertEquals("Should have the same value", i, (double) ad1.removeLast(), 0.0);
+        }
+    }
+
+    @Test
+    public void toStringTest() {
+        ArrayDeque<Integer> testQue = new ArrayDeque<>();
+        testQue.addLast(100);
+        testQue.addLast(200);
+        testQue.addLast(300);
+        testQue.addLast(400);
+        assertEquals("{100, 200, 300, 400}", testQue.toString());
+    }
+    @Test
+    /* Test Iterator. */
+    public void IteratorTest() {
+        ArrayDeque<Integer> testQue1 = new ArrayDeque<>();
+        testQue1.addLast(100);
+        testQue1.addLast(200);
+        testQue1.addLast(300);
+        testQue1.addLast(400);
+        int testRs = 100;
+        for (int i:testQue1) {
+            assertEquals(testRs, i);
+            testRs += 100;
         }
     }
 }

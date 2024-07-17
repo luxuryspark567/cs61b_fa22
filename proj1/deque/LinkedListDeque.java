@@ -1,11 +1,13 @@
 package deque;
 
-public class LinkedListDeque<T> {
+import java.util.Iterator;
 
-    private static class IntNode<T>{
-        public T item;
-        public IntNode prev;
-        public IntNode next;
+public class LinkedListDeque<T> implements Iterable<T>, Deque<T>{
+
+    private static class IntNode<T> {
+        private T item;
+        private IntNode prev;
+        private IntNode next;
 
         public IntNode(T x) {
             item = x;
@@ -27,7 +29,7 @@ public class LinkedListDeque<T> {
         sentinel.next = sentinel;
         sentinel.prev = sentinel;
     }
-
+    @Override
     public void addFirst(T item) {
         IntNode<T> newNode = new IntNode<>(item);
         IntNode pNext = sentinel.next;
@@ -38,7 +40,7 @@ public class LinkedListDeque<T> {
 
         size += 1;
     }
-
+    @Override
     public void addLast(T item) {
         IntNode<T> newNode = new IntNode<>(item);
         IntNode pPrev = sentinel.prev;
@@ -49,15 +51,18 @@ public class LinkedListDeque<T> {
 
         size += 1;
     }
-
+    /**
+    @Override
     public boolean isEmpty() {
         return size == 0;
     }
+    */
 
+    @Override
     public int size() {
         return size;
     }
-
+    @Override
     public void printDeque() {
         IntNode<T> pNode = sentinel.next;
         while (pNode != sentinel) {
@@ -66,7 +71,7 @@ public class LinkedListDeque<T> {
         }
         System.out.println();
     }
-
+    @Override
     public T removeFirst() {
         if (size == 0) {
             return null;
@@ -79,7 +84,7 @@ public class LinkedListDeque<T> {
 
         return result;
     }
-
+    @Override
     public T removeLast() {
         if (size == 0) {
             return null;
@@ -91,7 +96,7 @@ public class LinkedListDeque<T> {
         size -= 1;
         return result;
     }
-
+    @Override
     public T get(int index) {
         /** for circular queue, it should be ok to have these weired indexes*/
         if (index >= size || index < 0) {
@@ -100,7 +105,7 @@ public class LinkedListDeque<T> {
 
         IntNode<T> pNode = sentinel.next;
 
-        while(index > 0) {
+        while (index > 0) {
             pNode = pNode.next;
             index -= 1;
         }
@@ -109,9 +114,9 @@ public class LinkedListDeque<T> {
 
     @Override
     public boolean equals(Object o) {
-        LinkedListDeque<T> targetList = (LinkedListDeque)o;
+        LinkedListDeque<T> targetList = (LinkedListDeque) o;
         //length should meet
-        if (size != targetList.size()){
+        if (size != targetList.size()) {
             return false;
         }
         //each elements should meet
@@ -130,7 +135,37 @@ public class LinkedListDeque<T> {
         }
         return true;
     }
- /**
+
+    /**
     public T getRecursive(int index) {}
- */
+    */
+
+    @Override
+    public String toString() {
+        return toStringDeque();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new LinkedListDequeIterator<>();
+    }
+
+    private class LinkedListDequeIterator<Glorp> implements Iterator<Glorp> {
+
+        private int index;
+        public LinkedListDequeIterator() {
+            index = 0;
+        }
+        @Override
+        public boolean hasNext() {
+            return index < size;
+        }
+
+        @Override
+        public Glorp next() {
+            Glorp result = (Glorp)get(index);
+            index += 1;
+            return result;
+        }
+    }
 }
