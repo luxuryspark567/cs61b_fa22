@@ -39,7 +39,38 @@ public class TestNGramMap {
             assertEquals(expectedCounts.get(i), request2006to2007.data().get(i), 1E-10);
         }
     }
+    /*
+    @Test
+    public void testOnStartWithQFile() {
+        // creates an NGramMap from a large dataset
+        NGramMap ngm = new NGramMap("./data/ngrams/words_that_start_with_q.csv",
+                "./data/ngrams/total_counts.csv");
 
+        // returns the count of the number of occurrences of fish per year between 1850 and 1933.
+        TimeSeries fishCount = ngm.countHistory("fish", 1850, 1933);
+        assertEquals(136497.0, fishCount.get(1865), 1E-10);
+        assertEquals(444924.0, fishCount.get(1922), 1E-10);
+
+        TimeSeries totalCounts = ngm.totalCountHistory();
+        assertEquals(2563919231.0, totalCounts.get(1865), 1E-10);
+
+        // returns the relative weight of the word fish in each year between 1850 and 1933.
+        TimeSeries fishWeight = ngm.weightHistory("fish", 1850, 1933);
+        assertEquals(136497.0/2563919231.0, fishWeight.get(1865), 1E-7);
+
+        TimeSeries dogCount = ngm.countHistory("dog", 1850, 1876);
+        assertEquals(75819.0, dogCount.get(1865), 1E-10);
+
+        List<String> fishAndDog = new ArrayList<>();
+        fishAndDog.add("fish");
+        fishAndDog.add("dog");
+        TimeSeries fishPlusDogWeight = ngm.summedWeightHistory(fishAndDog, 1865, 1866);
+
+        double expectedFishPlusDogWeight1865 = (136497.0 + 75819.0) / 2563919231.0;
+        assertEquals(expectedFishPlusDogWeight1865, fishPlusDogWeight.get(1865), 1E-10);
+    }
+
+     */
     @Test
     public void testOnLargeFile() {
         // creates an NGramMap from a large dataset
@@ -69,5 +100,4 @@ public class TestNGramMap {
         double expectedFishPlusDogWeight1865 = (136497.0 + 75819.0) / 2563919231.0;
         assertEquals(expectedFishPlusDogWeight1865, fishPlusDogWeight.get(1865), 1E-10);
     }
-
-}  
+}

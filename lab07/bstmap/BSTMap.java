@@ -1,5 +1,7 @@
 package bstmap;
 
+import edu.princeton.cs.algs4.Stopwatch;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -284,6 +286,9 @@ public class BSTMap<K extends Comparable, V extends Comparable> implements Itera
     }
  */
     public static void main(String[] args) {
+        long start = System.currentTimeMillis();
+        long start_ns = System.nanoTime();
+        Stopwatch sw = new Stopwatch();
         BSTMap m = new BSTMap();
 
         m.put(500, "a");
@@ -312,5 +317,10 @@ public class BSTMap<K extends Comparable, V extends Comparable> implements Itera
         for (Object travel: m) {
             System.out.println(travel);
         }
+        return sw.elapsedTime();
+        long end = System.currentTimeMillis();
+        long end_ns = System.nanoTime();
+        System.out.println("runtime is: " + (end - start) + "ms");
+        System.out.println("runtime is: " + (end_ns - start_ns) + "ns");
     }
 }
