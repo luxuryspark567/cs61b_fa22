@@ -1,6 +1,10 @@
 package ngordnet.main;
 
-import java.util.LinkedList;
+import edu.princeton.cs.algs4.MaxPQ;
+import edu.princeton.cs.algs4.MinPQ;
+import spark.utils.CollectionUtils;
+
+import java.util.*;
 
 public class myTrie {
     private static final int R = 128; // ASCII
@@ -106,4 +110,61 @@ public class myTrie {
     // delete a given key
     public boolean delete(String key) {return false;}
 
+    private static void insertKey(MaxPQ<Integer> maxpq, MinPQ<Integer> minpq, PriorityQueue<Integer> pq, int key) {
+        int limit = 5;
+        //get limit minimum digits
+        if (maxpq.size() >= limit) {
+            if (key < maxpq.max()) {
+                maxpq.delMax();
+                maxpq.insert(key);
+            }
+        }
+        else {
+            maxpq.insert(key);
+        }
+
+        //get limit maximum digits
+        if (minpq.size() >= limit) {
+            if (key > minpq.min()) {
+                minpq.delMin();
+                minpq.insert(key);
+            }
+        }
+        else {
+            minpq.insert(key);
+        }
+
+        // to get the max limit digits
+        if (pq.size() >= limit) {
+            // PriorityQueue is default a minPQ
+            // if a key is larger than minimum value in this PQ, then it is destined to be a candidate
+            if (key > pq.peek()) {
+                pq.poll();
+                pq.add(key);
+            }
+        }
+        else {
+            pq.add(key);
+        }
+        //maxpq.insert(key);
+        //minpq.insert(key);
+        //pq.add(key);
+    }
+    public static void main(String[] s) {
+        MaxPQ<Integer> maxpq = new MaxPQ<>();
+        MinPQ<Integer> minpq = new MinPQ<>();
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+
+        List<Integer> tl = new ArrayList<>();
+        for (int i = 20; i > 5; i--) {
+            int tmpKey = (int)(Math.random() * 100);
+            tl.add(tmpKey);
+            insertKey(maxpq, minpq, pq, tmpKey);
+        }
+
+        System.out.println(tl.toString());
+        System.out.println(maxpq.toString());
+        System.out.println(minpq.toString());
+        System.out.println(pq.toString());
+    }
 }

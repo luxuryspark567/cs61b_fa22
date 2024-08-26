@@ -35,6 +35,7 @@ public class HyponymsHandler extends NgordnetQueryHandler{
             return o1.sum - o2.sum;
         }
     }
+
     private ArrayList<String> myIntersection(ArrayList<String> al1, ArrayList<String> al2) {
         ArrayList<String> al = new ArrayList<>();
         for (String s: al1) {
@@ -91,45 +92,39 @@ public class HyponymsHandler extends NgordnetQueryHandler{
 
     // get the most popular k words
     ArrayList<String> getMostPopularKWords(NgordnetQuery q, ArrayList<String> al) {
-        // get the most popular k word;
-        MaxPQ<mNode> mpq = new MaxPQ<>(q.k(), new mCompal());
-        //PriorityQueue<mNode> pq = new PriorityQueue<>(q.k(), new mCompal());
 
-        StringBuilder response = new StringBuilder();
-        for (String word: al) {
-            TimeSeries tm = ngm.countHistory(word, q.startYear(), q.endYear());
-            int total_num = 0;
-            for (double d: tm.data()) {
-                total_num += (int)d;
-            }
-            mNode m = new mNode(total_num, word);
-            mpq.insert(m);
-        }
+        PriorityQueue<mNode> pq = new PriorityQueue<>(q.k(), new mCompal());
 
-        ArrayList<String> r = new ArrayList<>();
-        mNode tn;
+        // if k is 0, no need to check
         if (q.k() == 0) {
-            // If k = 0, or the user does not enter k (which results in a default value of zero),
-            // then the startYear and endYear should be totally ignored.
-            while(!mpq.isEmpty()) {
-                r.add(mpq.delMax().word);
-            }
+            return al;
         }
         else {
-            // If a word never occurs in the time frame specified, i.e. the count is zero,
-            // it should not be returned. In other words, if k > 0, we should not show any
-            // words that do not appear in the ngrams dataset.
-            for (int i = 0; i < q.k(); i++) {
-                if (mpq.isEmpty()) {
-                    break;
+            // get k most popular words in a pq
+            for (String word: al) {
+                TimeSeries tm = ngm.countHistory(word, q.startYear(), q.endYear());
+                int total_num = 0;
+                for (double d: tm.data()) {
+                    total_num += (int)d;
                 }
-                tn = mpq.delMax();
-                if (tn.sum > 0) {
-                    r.add(mpq.delMax().word);
+                // add to k priority queue
+                mNode m = new mNode(total_num, word);
+                if (pq.size() >= q.k()) {
+                    if (m.sum > pq.peek().sum){
+                        pq.poll(); // Delete minimum
+                        pq.add(m); // Add to PQ
+                    }
+                }
+                else {
+                    pq.add(m);
                 }
             }
+            ArrayList<String> r = new ArrayList<>();
+            while (!pq.isEmpty()) {
+                r.add(pq.poll().word);
+            }
+            return r;
         }
-        return r;
     }
 
     @Override
@@ -137,8 +132,10 @@ public class HyponymsHandler extends NgordnetQueryHandler{
         //return "Hello!";
         ArrayList<String> rhp = getRawHyponymForMultipleWords(q); // get raw hyponyms
         ArrayList<String> rhpK = getMostPopularKWords(q, rhp);// get the most popular k words
-        PriorityQueue<String> pq = myPqSort(rhpK);//Sort alpha-beta
-        return myToString(pq); // to String and return
+        //System.out.println("before sort: " + rhpK.toString());
+        rhpK.sort(null);
+        //System.out.println("after sort: " + rhpK.toString());
+        return rhpK.toString(); // to String and return
     }
 
     public static void main(String[] s) {
@@ -163,5 +160,6 @@ public class HyponymsHandler extends NgordnetQueryHandler{
 
         NgordnetQuery q = new NgordnetQuery(al, startYear, endYear, k);
         System.out.println(mhh.handle(q));
+
     }
 }

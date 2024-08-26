@@ -35,16 +35,19 @@ public class HypohistHandler extends HyponymsHandler {
 
         ArrayList<String> rhp = getRawHyponymForMultipleWords(q); // get raw hyponyms
         ArrayList<String> rhpK = getMostPopularKWords(q, rhp);// get the most popular k words
-        PriorityQueue<String> pq = myPqSort(rhpK);//Sort alpha-beta
-
+        //System.out.println("before sort: " + rhpK.toString());
+        rhpK.sort(null);
+        //System.out.println("after sort: " + rhpK.toString());
+        //return rhpK.toString(); // to String and return
         // move filtered result to words array.
         List<String> words = new ArrayList<>();
-        while(!pq.isEmpty()) {
-            words.add(pq.poll());
+        while(!rhpK.isEmpty()) {
+            words.add(rhpK.getFirst());
+            rhpK.removeFirst();
         }
 
         // Debug code
-        System.out.println(words.toString());
+        //System.out.println(words.toString());
 
         int startYear = q.startYear();
         int endYear = q.endYear();
