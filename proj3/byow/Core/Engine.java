@@ -17,10 +17,13 @@ public class Engine {
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-    public static final int ROOM_NUM = 20;
+    public static final int ROOM_NUM = 15;
     public static final int ROOM_WIDTH_LIMIT = 20;
-    public static final int ROOM_HEIGHT_LIMIT = 15;
-    private static final long SEED = 9873;
+    public static final int ROOM_HEIGHT_LIMIT = 10;
+    private static final long SEED = 19873;
+
+    private static final int LOOP_LIMIT = 1000;
+    //private static final long SEED = 98733;
     private static final Random RANDOM = new Random(SEED);
 
     //public void engine() {
@@ -63,7 +66,7 @@ public class Engine {
             return false;
         }
     }
-
+/*
     private static class DoorDirection {
         private final String type;
         private final int value;
@@ -79,7 +82,7 @@ public class Engine {
         public static final DoorDirection SOUTH = new DoorDirection("south", 2);
         public static final DoorDirection EAST = new DoorDirection("east", 3);
     }
-
+*/
     private static class DoorType {
         private final String type;
 
@@ -91,6 +94,7 @@ public class Engine {
         public static final DoorType INVISIBLE = new DoorType("invisible");
         public static final DoorType CLOSE = new DoorType("close");
         public static final DoorType OPEN = new DoorType("open");
+        public static final DoorType INVALID = new DoorType("invalid");
     }
 
     private static class DoorPairType {
@@ -111,19 +115,24 @@ public class Engine {
         position pos; // position of a door
         DoorType type; // is it a closed door or open door, or door to a hallway;
 
-        DoorDirection direct;
+        boolean[] expandable;
+        //DoorDirection direct;
 
         public door() {
             this.pr = null;
             this.pos = null;
             this.type = null;
-            this.direct = null;
+            this.expandable = null;
         }
-        public door(room r, position pos, DoorType type, DoorDirection direct) {
+        public door(room r, position pos, DoorType type, boolean north, boolean west, boolean south, boolean east) {
             this.pr = r;
             this.pos = pos;
             this.type = type;
-            this.direct = direct;
+            this.expandable = new boolean[4];
+            this.expandable[0] = north;
+            this.expandable[1] = west;
+            this.expandable[2] = south;
+            this.expandable[3] = east;
         }
     }
 
@@ -149,16 +158,16 @@ public class Engine {
         position pos; // position
         size si; //size
 
-        door[] doors; // north door, south door, west door and east door
+        door[] doors; // north door, west door, south door and east door
 
         public room(position pos, size si) {
             this.pos = pos;
             this.si = si;
             this.doors = new door[4];
-            this.doors[0] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y + si.height), Doorset.INVISIBLE, DoorDirectionSet.NORTH);
-            this.doors[1] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y), Doorset.INVISIBLE, DoorDirectionSet.SOUTH);
-            this.doors[2] = new door(this, new position(pos.x, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, DoorDirectionSet.WEST);
-            this.doors[3] = new door(this, new position(pos.x + si.width, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, DoorDirectionSet.EAST);
+            this.doors[0] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y + si.height), Doorset.INVISIBLE, true, false, false, false);
+            this.doors[1] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y), Doorset.INVISIBLE, false, true, false, false);
+            this.doors[2] = new door(this, new position(pos.x, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, false, false, true, false);
+            this.doors[3] = new door(this, new position(pos.x + si.width, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, false, false, false, true);
         }
     }
 
@@ -306,53 +315,59 @@ public class Engine {
     // check t1 and t2 if they could be connected
     // and return the turn point if they could be connected by just one turn point.
     private turn checkIntersectable(turn t1, turn t2) {
-
-        int rotateNum = 0;
+        turn trans = null;
         // 1, calc how much to rotate north
         // rotate t1 direction to north; and rotate t2 accordingly
         for (int i = 0; i < 4; i++) {
+            // find an expand direction of t1 which is not false
             if (t1.expandable[i]) {
-                rotateNum = i;
-                break;
-            }
-        }
+                // 2, rotate north
+                turn t1New = rotateTurn(t1, i);
+                turn t2New = rotateTurn(t2, i);
 
-        // 2, rotate north
-        turn t1New = rotateTurn(t1, rotateNum);
-        turn t2New = rotateTurn(t2, rotateNum);
+                // 3, check if two turns could intersect after expand in expandable direction.
+                // after rotation, t1 is always pointing to the NORTH!!!!!!!!
+                for (int j = 0; j < 4; j++) {
+                    if (t2New.expandable[j]) {
+                        // find an expand direction of t2 which is not false
+                        // check if there could be valid turn-point
 
-        // 3, check if two turns could intersect after expand in expandable direction.
-        turn trans = null;
-        // only need to process one condition: t1New expands in north direction
-        if (t1New.expandable[0]) { //after rotation, index 0 is definitely true
-            if (t1New.pos.y < t2New.pos.y) { // possible to be intersected
-                if (t2New.expandable[1]) {
-                    trans = new turn(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, t2New.pos.y), false, false, true, true);
+                        // in the picture below, x is the turn-point
+                        /*
+                        * <case1>
+                        *   t2-->   x
+                        *
+                        *           ^
+                        *           |
+                        *           t1
+                        *
+                        * <case2>
+                        *           x     <--t2
+                        *
+                        *           ^
+                        *           |
+                        *           t1
+                        * */
+                        if ((t2New.expandable[3] && t1New.pos.x > t2New.pos.x && t1New.pos.y < t2New.pos.y) // case 1
+                            || (t2New.expandable[1] && t1New.pos.x < t2New.pos.x && t1New.pos.y < t2New.pos.y)) { // case 2
+                            trans = new turn(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, t2New.pos.y), false, true, true, true);
+                        }
+                    }
                 }
-                else if (t2New.expandable[3]) {
-                    trans = new turn(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, t2New.pos.y), false, true, true, false);
+                // 4, rotate the coordinate back to normal
+                if (trans != null) {
+                    return rotateTurn(trans,Math.floorMod(4 - i, 4));
+                }
+                else {
+                    return null;
                 }
             }
-
-            if (t1New.pos.x == t2New.pos.x) {
-                if (t2New.expandable[2]) {
-                    trans = new turn(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, (int)((t1New.pos.y + t2New.pos.y) / 2)), true, false, true, false);
-                }
-            }
-        }
-        else {
-            //throw new NonExtendedHashException();
-        }
-
-        // 4, rotate the coordinate back to normal
-        if (trans != null) {
-            return rotateTurn(trans,Math.floorMod(4-rotateNum, 4));
         }
         return null;
     }
 
     private turn transDoorToTurn(door d, int width, int height) {
-        return new turn(width, height, d.pos, 0 == d.direct.value, 1 == d.direct.value, 2 == d.direct.value, 3 == d.direct.value);
+        return new turn(width, height, d.pos, d.expandable[0], d.expandable[1], d.expandable[2], d.expandable[3]);
     }
     private turn getTurnPoint(door d1, door d2) {
         turn t1 = transDoorToTurn(d1, WIDTH, HEIGHT);
@@ -361,9 +376,15 @@ public class Engine {
     }
 
     private void setPixelAfterCheckIfTile(int x, int y, TETile style, TETile[][] world) {
-        if (world[x][y] != Tileset.FLOOR) {
-            world[x][y] = style;
+        if (x < WIDTH && y < HEIGHT) {
+            if (world[x][y] != Tileset.FLOOR) {
+                world[x][y] = style;
+            }
         }
+        else {
+            System.out.println("out of canvas!!!!!");
+        }
+
     }
     private void connectTurnPoints(turn t1, turn t2, TETile[][] world) {
         int dir;
@@ -376,7 +397,7 @@ public class Engine {
         position posSrc = new position(t1.pos.x, t1.pos.y);
         position posDst = new position(t2.pos.x, t2.pos.y);
 
-        int safeProofLooper = 300;
+        int safeProofLooper = LOOP_LIMIT;
 
         while (safeProofLooper > 0 && !posSrc.equals(posDst)) {
             if (t1.expandable[0]) {
@@ -462,6 +483,38 @@ public class Engine {
     }
     // connect two doors and update the word
     private boolean connectDoors(door d1, door d2, TETile[][] world) {
+
+        // 1, if d1 and d2 is directly connected
+        if (d1.pos.x == d2.pos.x) {
+            if (d1.expandable[0] && d2.expandable[2]) {
+                // d1 is right down and d2 is right up
+                // connect d1 and d2 directly
+                connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
+                return true;
+            }
+            else if (d1.expandable[2] && d2.expandable[0]) {
+                // d1 is right up and d2 is right down
+                // connect d1 and d2 directly
+                connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
+                return true;
+            }
+        }
+        else if (d1.pos.y == d2.pos.y) {
+            if (d1.expandable[1] && d2.expandable[3]) {
+                // d1 is right right and d2 is right left
+                // connect d1 and d2 directly
+                connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
+                return true;
+            }
+            else if (d1.expandable[3] && d2.expandable[1]) {
+                // d1 is right left and d2 is right right
+                // connect d1 and d2 directly
+                connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
+                return true;
+            }
+        }
+
+        // 2, if d1 and d2 is not directly connected, check every direction, to search for a turn point
         // get turn point
         turn t = getTurnPoint(d1, d2);
         if (t != null) {
@@ -471,6 +524,13 @@ public class Engine {
             connectTurnPoints(transDoorToTurn(d2, WIDTH, HEIGHT), t, world);
             return true;
         }
+        /*
+        else {
+            // if one turn is not enough, should try another strategy in document
+            // it seems enough to connect all rooms after first two connect strategy, so I don't implement this strategy.
+
+        }
+        */
 
         return false;
     }
@@ -506,10 +566,91 @@ public class Engine {
          */
 
         // create a hallway which is only 1 brick wide
-        if (d_src != null && connectDoors(d_src, d_dst, world)) {
-            return new hallway(d_src,d_dst);
+        if (d_src != null) {
+            if (connectDoors(d_src, d_dst, world)) {
+                d_src.type = Doorset.INVALID;
+                d_dst.type = Doorset.INVALID;
+                return new hallway(d_src, d_dst);
+            }
+            else {
+                // could not connect straight, then reach out one pixel, and check if it is possible to set up a tunnel
+                // 1, reach out d_src
+                position pos = new position();
+
+                // the original door, only one direction is true;
+                boolean[] tmpExpandable1 = new boolean[4];
+                boolean[] tmpExpandable2 = new boolean[4];
+                if (d_src.expandable[0]) {//NORTH
+                    pos.x = d_src.pos.x;
+                    pos.y = d_src.pos.y + 1;
+                    tmpExpandable1[0] = false;
+                    tmpExpandable1[1] = false;
+                    tmpExpandable1[2] = true;
+                    tmpExpandable1[3] = false;
+
+                    tmpExpandable2[0] = true;
+                    tmpExpandable2[1] = true;
+                    tmpExpandable2[2] = false;
+                    tmpExpandable2[3] = true;
+                }
+                else if (d_src.expandable[1]) {//WEST
+                    pos.x = d_src.pos.x - 1;
+                    pos.y = d_src.pos.y;
+                    tmpExpandable1[0] = false;
+                    tmpExpandable1[1] = false;
+                    tmpExpandable1[2] = false;
+                    tmpExpandable1[3] = true;
+
+                    tmpExpandable2[0] = true;
+                    tmpExpandable2[1] = true;
+                    tmpExpandable2[2] = true;
+                    tmpExpandable2[3] = false;
+                }
+                else if (d_src.expandable[2]) {//SOUTH
+                    pos.x = d_src.pos.x;
+                    pos.y = d_src.pos.y - 1;
+                    tmpExpandable1[0] = true;
+                    tmpExpandable1[1] = false;
+                    tmpExpandable1[2] = false;
+                    tmpExpandable1[3] = false;
+
+                    tmpExpandable2[0] = false;
+                    tmpExpandable2[1] = true;
+                    tmpExpandable2[2] = true;
+                    tmpExpandable2[3] = true;
+                }
+                else if (d_src.expandable[3]) {//EAST
+                    pos.x = d_src.pos.x + 1;
+                    pos.y = d_src.pos.y;
+                    tmpExpandable1[0] = false;
+                    tmpExpandable1[1] = true;
+                    tmpExpandable1[2] = false;
+                    tmpExpandable1[3] = false;
+
+                    tmpExpandable2[0] = true;
+                    tmpExpandable2[1] = false;
+                    tmpExpandable2[2] = true;
+                    tmpExpandable2[3] = true;
+                }
+
+                // connect the original src door and the expanded door 1
+                door d_src_expand1 = new door(d_src.pr, pos, Doorset.INVISIBLE, tmpExpandable1[0], tmpExpandable1[1], tmpExpandable1[2], tmpExpandable1[3]);
+                boolean result1 = connectDoors(d_src, d_src_expand1, world);
+
+                // connect the expanded door 2 and the dst
+                door d_src_expand2 = new door(d_src.pr, pos, Doorset.INVISIBLE, tmpExpandable2[0], tmpExpandable2[1], tmpExpandable2[2], tmpExpandable2[3]);
+                boolean result2 = connectDoors(d_src_expand2, d_dst, world);
+                if (result1 && result2) {
+                    d_src.type = Doorset.INVALID;
+                    d_dst.type = Doorset.INVALID;
+                    return new hallway(d_src_expand2, d_dst);
+                }
+                else {
+                    return null;
+                }
+            }
         }
-        else{
+        else {
             return null;
         }
     }
@@ -590,7 +731,7 @@ public class Engine {
 
         // 1, generate rooms
         int looper = 0;
-        int looperLimit = 300;
+        int looperLimit = LOOP_LIMIT;
         // roomArray is a lookup table;
         List<room> roomArray = new ArrayList<>();
         while (looper < ROOM_NUM && looperLimit > 0) {
@@ -627,11 +768,12 @@ public class Engine {
             }
         }
         //Debug
-        System.out.println(mpq.toString());
+        //System.out.println(mpq.toString());
         WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(roomArray.size());
 
-        int safeProofLooper = 300;
-        // generate hallways
+        int safeProofLooper = LOOP_LIMIT;
+
+        // 2, generate hallways
         while (wqu.count() > 1 && safeProofLooper > 0 && (!mpq.isEmpty())) {//not all rooms are connected
 
             // 1, pick the closest two rooms to make a hallway
@@ -649,9 +791,30 @@ public class Engine {
                 }
             }
 
-
             safeProofLooper--;
         }
+
+        // 3, generate a door
+        safeProofLooper = LOOP_LIMIT;
+        while(safeProofLooper > 0) {
+
+            // get a random door of a random room
+            int roomNum = RandomUtils.uniform(RANDOM, roomArray.size());
+            int doorNum = RandomUtils.uniform(RANDOM, 4);
+
+            // check if this invisible door could be open, break out if opened
+            // get door
+            door d = roomArray.get(roomNum).doors[doorNum];
+
+            // TODO: this not totally right, because a door might be in a place not reachable!!
+            if (d.type == Doorset.INVISIBLE && finalWorldFrame[d.pos.x][d.pos.y] == Tileset.WALL) {
+                d.type = Doorset.CLOSE;
+                finalWorldFrame[d.pos.x][d.pos.y] = Tileset.LOCKED_DOOR;
+                break;
+            }
+            safeProofLooper--;
+        }
+
 
         //debug, fill empty
         for (int i = 0; i < WIDTH; i++) {
