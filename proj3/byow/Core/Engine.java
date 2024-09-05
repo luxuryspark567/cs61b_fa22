@@ -17,10 +17,10 @@ public class Engine {
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-    public static final int ROOM_NUM = 15;
+    public static final int ROOM_NUM = 8;
     public static final int ROOM_WIDTH_LIMIT = 20;
     public static final int ROOM_HEIGHT_LIMIT = 10;
-    private static final long SEED = 19873;
+    private static final long SEED = 19900219;
 
     private static final int LOOP_LIMIT = 1000;
     //private static final long SEED = 98733;
@@ -66,23 +66,7 @@ public class Engine {
             return false;
         }
     }
-/*
-    private static class DoorDirection {
-        private final String type;
-        private final int value;
 
-        public DoorDirection(String c, int v) {
-            this.type = c;
-            this.value = v;
-        }
-    }
-    private static class DoorDirectionSet {
-        public static final DoorDirection NORTH = new DoorDirection("north", 0);
-        public static final DoorDirection WEST = new DoorDirection("west", 1);
-        public static final DoorDirection SOUTH = new DoorDirection("south", 2);
-        public static final DoorDirection EAST = new DoorDirection("east", 3);
-    }
-*/
     private static class DoorType {
         private final String type;
 
@@ -136,13 +120,13 @@ public class Engine {
         }
     }
 
-    private class turn {
+    private class turnPoint {
         position pos;
         int totalWidth;
         int totalHeight;
         boolean[] expandable;
 
-        public turn(int w, int h, position pos, boolean north, boolean west, boolean south, boolean east) {
+        public turnPoint(int w, int h, position pos, boolean north, boolean west, boolean south, boolean east) {
             this.totalWidth = w;
             this.totalHeight = h;
             this.pos = pos;
@@ -165,8 +149,8 @@ public class Engine {
             this.si = si;
             this.doors = new door[4];
             this.doors[0] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y + si.height), Doorset.INVISIBLE, true, false, false, false);
-            this.doors[1] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y), Doorset.INVISIBLE, false, true, false, false);
-            this.doors[2] = new door(this, new position(pos.x, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, false, false, true, false);
+            this.doors[1] = new door(this, new position(pos.x, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, false, true, false, false);
+            this.doors[2] = new door(this, new position(pos.x + (int)(si.width / 2), pos.y), Doorset.INVISIBLE, false, false, true, false);
             this.doors[3] = new door(this, new position(pos.x + si.width, pos.y + (int)(si.height / 2)), Doorset.INVISIBLE, false, false, false, true);
         }
     }
@@ -255,26 +239,7 @@ public class Engine {
         return Math.sqrt(Math.pow(d1.pos.x - d2.pos.x, 2) + Math.pow(d1.pos.y - d2.pos.y, 2));
     }
 
-    private position checkIntersectableInOneDirection(turn t1, turn t2) {
-        return null;
-    }
-    /*
-    private class turn {
-        position pos;
-
-        boolean[] expandable;
-
-        public turn(position pos, boolean north, boolean west, boolean south, boolean east) {
-            this.pos = pos;
-            this.expandable = new boolean[4];
-            this.expandable[0] = north;
-            this.expandable[1] = west;
-            this.expandable[2] = south;
-            this.expandable[3] = east;
-        }
-    }
-    */
-    private turn rotateTurn(turn t, int num) {
+    private turnPoint rotateTurn(turnPoint t, int num) {
         // rotate coordinate
         int width;
         int height;
@@ -308,75 +273,74 @@ public class Engine {
         boolean newSouth = t.expandable[Math.floorMod(2 + num, 4)];
         boolean newEast  = t.expandable[Math.floorMod(3 + num, 4)];
 
-        return new turn(width, height, pos, newNorth, newWest, newSouth, newEast);
+        return new turnPoint(width, height, pos, newNorth, newWest, newSouth, newEast);
 
     }
 
     // check t1 and t2 if they could be connected
     // and return the turn point if they could be connected by just one turn point.
-    private turn checkIntersectable(turn t1, turn t2) {
-        turn trans = null;
+    private turnPoint checkIntersectable(turnPoint t1, turnPoint t2) {
+        turnPoint trans = null;
         // 1, calc how much to rotate north
         // rotate t1 direction to north; and rotate t2 accordingly
         for (int i = 0; i < 4; i++) {
             // find an expand direction of t1 which is not false
             if (t1.expandable[i]) {
                 // 2, rotate north
-                turn t1New = rotateTurn(t1, i);
-                turn t2New = rotateTurn(t2, i);
+                turnPoint t1New = rotateTurn(t1, i);
+                turnPoint t2New = rotateTurn(t2, i);
 
                 // 3, check if two turns could intersect after expand in expandable direction.
                 // after rotation, t1 is always pointing to the NORTH!!!!!!!!
-                for (int j = 0; j < 4; j++) {
-                    if (t2New.expandable[j]) {
-                        // find an expand direction of t2 which is not false
-                        // check if there could be valid turn-point
-
-                        // in the picture below, x is the turn-point
-                        /*
-                        * <case1>
-                        *   t2-->   x
-                        *
-                        *           ^
-                        *           |
-                        *           t1
-                        *
-                        * <case2>
-                        *           x     <--t2
-                        *
-                        *           ^
-                        *           |
-                        *           t1
-                        * */
-                        if ((t2New.expandable[3] && t1New.pos.x > t2New.pos.x && t1New.pos.y < t2New.pos.y) // case 1
-                            || (t2New.expandable[1] && t1New.pos.x < t2New.pos.x && t1New.pos.y < t2New.pos.y)) { // case 2
-                            trans = new turn(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, t2New.pos.y), false, true, true, true);
-                        }
-                    }
+                // find an expand direction of t2 which is not false
+                // check if there could be valid turn-point
+                // in the picture below, x is the turn-point
+                /*
+                 * <case1>
+                 *   t2New-->   x
+                 *
+                 *              ^
+                 *              |
+                 *             t1New
+                 * <case2>
+                 *           x     <--t2New
+                 *
+                 *           ^
+                 *           |
+                 *           t1New
+                 * */
+                if (t2New.expandable[3] && t1New.pos.x > t2New.pos.x && t1New.pos.y < t2New.pos.y){ // case 1
+                    trans = new turnPoint(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, t2New.pos.y), false, true, true, false);
+                }
+                else if(t2New.expandable[1] && t1New.pos.x < t2New.pos.x && t1New.pos.y < t2New.pos.y) {// case 2
+                    trans = new turnPoint(t1New.totalWidth, t1New.totalHeight, new position(t1New.pos.x, t2New.pos.y), false, false, true, true);
                 }
                 // 4, rotate the coordinate back to normal
                 if (trans != null) {
-                    return rotateTurn(trans,Math.floorMod(4 - i, 4));
-                }
-                else {
-                    return null;
+                    turnPoint trans_reversed = rotateTurn(trans,Math.floorMod(4 - i, 4));
+                    // the turn-point should never be out of canvas
+                    // Remember: tunnel is at least 3 pixel width
+                    if (trans_reversed.pos.x < (WIDTH - 1) && trans_reversed.pos.y < (HEIGHT - 1)
+                        && trans_reversed.pos.x >= 1 && trans_reversed.pos.y >= 1) {
+                        return trans_reversed;
+                    }
                 }
             }
         }
         return null;
     }
 
-    private turn transDoorToTurn(door d, int width, int height) {
-        return new turn(width, height, d.pos, d.expandable[0], d.expandable[1], d.expandable[2], d.expandable[3]);
+    private turnPoint transDoorToTurn(door d, int width, int height) {
+        return new turnPoint(width, height, d.pos, d.expandable[0], d.expandable[1], d.expandable[2], d.expandable[3]);
     }
-    private turn getTurnPoint(door d1, door d2) {
-        turn t1 = transDoorToTurn(d1, WIDTH, HEIGHT);
-        turn t2 = transDoorToTurn(d2, WIDTH, HEIGHT);
+    private turnPoint getTurnPoint(door d1, door d2) {
+        turnPoint t1 = transDoorToTurn(d1, WIDTH, HEIGHT);
+        turnPoint t2 = transDoorToTurn(d2, WIDTH, HEIGHT);
         return checkIntersectable(t1, t2);
     }
 
     private void setPixelAfterCheckIfTile(int x, int y, TETile style, TETile[][] world) {
-        if (x < WIDTH && y < HEIGHT) {
+        if (x < WIDTH && y < HEIGHT && x >= 0 && y >= 0) {
             if (world[x][y] != Tileset.FLOOR) {
                 world[x][y] = style;
             }
@@ -386,113 +350,107 @@ public class Engine {
         }
 
     }
-    private void connectTurnPoints(turn t1, turn t2, TETile[][] world) {
-        int dir;
-        for (int i = 0; i < 4; i ++) {
-            if (t1.expandable[i]) {
-                dir = i;
-                break;
-            }
-        }
-        position posSrc = new position(t1.pos.x, t1.pos.y);
-        position posDst = new position(t2.pos.x, t2.pos.y);
+
+    private void drawSouthToNorth(position src, position dst, TETile[][] world) {
 
         int safeProofLooper = LOOP_LIMIT;
-
-        while (safeProofLooper > 0 && !posSrc.equals(posDst)) {
-            if (t1.expandable[0]) {
-                setPixelAfterCheckIfTile(posSrc.x - 1, posSrc.y, Tileset.WALL, world);
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-                setPixelAfterCheckIfTile(posSrc.x + 1, posSrc.y, Tileset.WALL, world);
-                posSrc.y++;
-            }
-            else if (t1.expandable[1]) {
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y + 1, Tileset.WALL, world);
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y - 1, Tileset.WALL, world);
-                posSrc.x--;
-            }
-            else if (t1.expandable[2]) {
-                setPixelAfterCheckIfTile(posSrc.x - 1, posSrc.y, Tileset.WALL, world);
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-                setPixelAfterCheckIfTile(posSrc.x + 1, posSrc.y, Tileset.WALL, world);
-                posSrc.y--;
-            }
-            else if (t1.expandable[3]) {
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y + 1, Tileset.WALL, world);
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-                setPixelAfterCheckIfTile(posSrc.x, posSrc.y - 1, Tileset.WALL, world);
-                posSrc.x++;
-            }
-
+        src.y--;
+        setPixelAfterCheckIfTile(src.x - 1, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x + 1, src.y, Tileset.WALL, world);
+        src.y++;
+        while (safeProofLooper > 0 && !src.equals(dst)) {
+            setPixelAfterCheckIfTile(src.x - 1, src.y, Tileset.WALL, world);
+            setPixelAfterCheckIfTile(src.x, src.y, Tileset.FLOOR, world);
+            setPixelAfterCheckIfTile(src.x + 1, src.y, Tileset.WALL, world);
+            src.y++;
             safeProofLooper--;
         }
 
         // act if posSrc.equals(posDst)
-        if (t1.expandable[0]) {
-            setPixelAfterCheckIfTile(posSrc.x - 1, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-            setPixelAfterCheckIfTile(posSrc.x + 1, posSrc.y, Tileset.WALL, world);
-            posSrc.y++;
-        }
-        else if (t1.expandable[1]) {
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y + 1, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y - 1, Tileset.WALL, world);
-            posSrc.x--;
-        }
-        else if (t1.expandable[2]) {
-            setPixelAfterCheckIfTile(posSrc.x - 1, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-            setPixelAfterCheckIfTile(posSrc.x + 1, posSrc.y, Tileset.WALL, world);
-            posSrc.y--;
-        }
-        else if (t1.expandable[3]) {
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y + 1, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.FLOOR, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y - 1, Tileset.WALL, world);
-            posSrc.x++;
-        }
+        setPixelAfterCheckIfTile(src.x - 1, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y, Tileset.FLOOR, world);
+        setPixelAfterCheckIfTile(src.x + 1, src.y, Tileset.WALL, world);
+        src.y++;
 
         // to close a tunnel
-        if (t1.expandable[0]) {
-            setPixelAfterCheckIfTile(posSrc.x - 1, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x + 1, posSrc.y, Tileset.WALL, world);
-            //posSrc.y++;
+        setPixelAfterCheckIfTile(src.x - 1, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x + 1, src.y, Tileset.WALL, world);
+        //posSrc.y++;
+    }
+    private void drawWestToEast(position src, position dst, TETile[][] world) {
+
+        src.x--;
+        setPixelAfterCheckIfTile(src.x, src.y + 1, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y - 1, Tileset.WALL, world);
+        src.x++;
+
+        int safeProofLooper = LOOP_LIMIT;
+        while (safeProofLooper > 0 && !src.equals(dst)) {
+            setPixelAfterCheckIfTile(src.x, src.y + 1, Tileset.WALL, world);
+            setPixelAfterCheckIfTile(src.x, src.y, Tileset.FLOOR, world);
+            setPixelAfterCheckIfTile(src.x, src.y - 1, Tileset.WALL, world);
+            src.x++;
+            safeProofLooper--;
         }
-        else if (t1.expandable[1]) {
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y + 1, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y - 1, Tileset.WALL, world);
-            //posSrc.x--;
+
+        // act if posSrc.equals(posDst)
+        setPixelAfterCheckIfTile(src.x, src.y + 1, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y, Tileset.FLOOR, world);
+        setPixelAfterCheckIfTile(src.x, src.y - 1, Tileset.WALL, world);
+        src.x++;
+
+        // to close a tunnel
+        setPixelAfterCheckIfTile(src.x, src.y + 1, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y, Tileset.WALL, world);
+        setPixelAfterCheckIfTile(src.x, src.y - 1, Tileset.WALL, world);
+        //posSrc.x++;
+    }
+
+    private void connectTurnPoints(turnPoint t1, turnPoint t2, TETile[][] world) {
+
+        position posSrc;
+        position posDst;
+        if (t1.pos.x == t2.pos.x && t1.pos.y < t2.pos.y) {
+            posSrc = new position(t1.pos.x, t1.pos.y);
+            posDst = new position(t2.pos.x, t2.pos.y);
+            drawSouthToNorth(posSrc, posDst, world);
         }
-        else if (t1.expandable[2]) {
-            setPixelAfterCheckIfTile(posSrc.x - 1, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x + 1, posSrc.y, Tileset.WALL, world);
-            //posSrc.y--;
+        else if (t1.pos.x == t2.pos.x && t1.pos.y > t2.pos.y) {
+            posSrc = new position(t2.pos.x, t2.pos.y);
+            posDst = new position(t1.pos.x, t1.pos.y);
+            drawSouthToNorth(posSrc, posDst, world);
         }
-        else if (t1.expandable[3]) {
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y + 1, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y, Tileset.WALL, world);
-            setPixelAfterCheckIfTile(posSrc.x, posSrc.y - 1, Tileset.WALL, world);
-            //posSrc.x++;
+        else if (t1.pos.x < t2.pos.x && t1.pos.y == t2.pos.y) {
+            posSrc = new position(t1.pos.x, t1.pos.y);
+            posDst = new position(t2.pos.x, t2.pos.y);
+            drawWestToEast(posSrc, posDst, world);
+        }
+        else if (t1.pos.x > t2.pos.x && t1.pos.y == t2.pos.y) {
+            posSrc = new position(t2.pos.x, t2.pos.y);
+            posDst = new position(t1.pos.x, t1.pos.y);
+            drawWestToEast(posSrc, posDst, world);
+        }
+        else {
+            System.out.println("direction is not right, cannot draw on canvas!!!!!");
+            return;
         }
 
     }
-    // connect two doors and update the word
-    private boolean connectDoors(door d1, door d2, TETile[][] world) {
+    // connect two doors directly and update the word
+    private boolean connectDoorsDirectly(door d1, door d2, TETile[][] world) {
 
         // 1, if d1 and d2 is directly connected
         if (d1.pos.x == d2.pos.x) {
-            if (d1.expandable[0] && d2.expandable[2]) {
-                // d1 is right down and d2 is right up
+            if (d1.pos.y < d2.pos.y && d1.expandable[0] && d2.expandable[2]) {
+                // d1 is down and d2 is up
                 // connect d1 and d2 directly
                 connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
                 return true;
             }
-            else if (d1.expandable[2] && d2.expandable[0]) {
+            else if (d1.pos.y > d2.pos.y && d1.expandable[2] && d2.expandable[0]) {
                 // d1 is right up and d2 is right down
                 // connect d1 and d2 directly
                 connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
@@ -500,23 +458,25 @@ public class Engine {
             }
         }
         else if (d1.pos.y == d2.pos.y) {
-            if (d1.expandable[1] && d2.expandable[3]) {
+            if (d1.pos.x > d2.pos.x && d1.expandable[1] && d2.expandable[3]) {
                 // d1 is right right and d2 is right left
                 // connect d1 and d2 directly
                 connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
                 return true;
             }
-            else if (d1.expandable[3] && d2.expandable[1]) {
+            else if (d1.pos.x < d2.pos.x && d1.expandable[3] && d2.expandable[1]) {
                 // d1 is right left and d2 is right right
                 // connect d1 and d2 directly
                 connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), transDoorToTurn(d2, WIDTH, HEIGHT), world);
                 return true;
             }
         }
-
+        return false;
+    }
+    private boolean connectDoorsWithTurnPoint(door d1, door d2, TETile[][] world) {
         // 2, if d1 and d2 is not directly connected, check every direction, to search for a turn point
         // get turn point
-        turn t = getTurnPoint(d1, d2);
+        turnPoint t = getTurnPoint(d1, d2);
         if (t != null) {
             // connect door1 to turn point
             connectTurnPoints(transDoorToTurn(d1, WIDTH, HEIGHT), t, world);
@@ -535,6 +495,9 @@ public class Engine {
         return false;
     }
 
+    boolean isDoorAtEdge (door d) {
+        return (d.pos.x == 0 || d.pos.x == WIDTH || d.pos.y == 0 || d.pos.y == HEIGHT);
+    }
     // generate a hallway between two doors
     private hallway generateHallway(room r1, room r2, TETile[][] world) {
         double dis = 65536.0;
@@ -547,7 +510,15 @@ public class Engine {
                 // only invisible doors could make hallways
                 if (d1.type == Doorset.INVISIBLE && d2.type == Doorset.INVISIBLE) {
                     double tmpDis = distanceOfDoors(d1, d2);
+                    /*
                     if (tmpDis < dis) {
+                        dis = tmpDis;
+                        d_src = d1;
+                        d_dst = d2;
+                    }
+                    */
+                    // if the door is right at the edge of the canvas, should not consider it a candidate
+                    if (tmpDis < dis && !isDoorAtEdge(d1) && !isDoorAtEdge(d2)) {
                         dis = tmpDis;
                         d_src = d1;
                         d_dst = d2;
@@ -556,30 +527,25 @@ public class Engine {
             }
         }
 
-        // debug
-        /*
-        if (d_src != null) {
-            world[d_src.pos.x][d_src.pos.y] = Tileset.AVATAR;
-            world[d_dst.pos.x][d_dst.pos.y] = Tileset.FLOWER;
-        }
-        return null;
-         */
-
         // create a hallway which is only 1 brick wide
         if (d_src != null) {
-            if (connectDoors(d_src, d_dst, world)) {
+            //world[d_src.pos.x][d_src.pos.y] = Tileset.AVATAR;
+            //world[d_dst.pos.x][d_dst.pos.y] = Tileset.FLOWER;
+            // check if two doors could be connected directly
+            if (connectDoorsDirectly(d_src, d_dst, world)) {
                 d_src.type = Doorset.INVALID;
                 d_dst.type = Doorset.INVALID;
                 return new hallway(d_src, d_dst);
             }
             else {
-                // could not connect straight, then reach out one pixel, and check if it is possible to set up a tunnel
+                // could not connect directly, then reach out one pixel, and check if it is possible to set up a tunnel
                 // 1, reach out d_src
                 position pos = new position();
 
                 // the original door, only one direction is true;
                 boolean[] tmpExpandable1 = new boolean[4];
                 boolean[] tmpExpandable2 = new boolean[4];
+
                 if (d_src.expandable[0]) {//NORTH
                     pos.x = d_src.pos.x;
                     pos.y = d_src.pos.y + 1;
@@ -633,13 +599,14 @@ public class Engine {
                     tmpExpandable2[3] = true;
                 }
 
-                // connect the original src door and the expanded door 1
+                // connect the original src-door and the expanded door 1 directly
                 door d_src_expand1 = new door(d_src.pr, pos, Doorset.INVISIBLE, tmpExpandable1[0], tmpExpandable1[1], tmpExpandable1[2], tmpExpandable1[3]);
-                boolean result1 = connectDoors(d_src, d_src_expand1, world);
+                boolean result1 = connectDoorsDirectly(d_src, d_src_expand1, world);
 
-                // connect the expanded door 2 and the dst
+                // connect the expanded-door2 and the dst
                 door d_src_expand2 = new door(d_src.pr, pos, Doorset.INVISIBLE, tmpExpandable2[0], tmpExpandable2[1], tmpExpandable2[2], tmpExpandable2[3]);
-                boolean result2 = connectDoors(d_src_expand2, d_dst, world);
+                boolean result2 = connectDoorsWithTurnPoint(d_src_expand2, d_dst, world);
+
                 if (result1 && result2) {
                     d_src.type = Doorset.INVALID;
                     d_dst.type = Doorset.INVALID;
@@ -815,7 +782,6 @@ public class Engine {
             safeProofLooper--;
         }
 
-
         //debug, fill empty
         for (int i = 0; i < WIDTH; i++) {
             for (int j = 0; j < HEIGHT; j++) {
@@ -833,7 +799,7 @@ public class Engine {
         TETile[][] tr = eng.interactWithInputString("n1234s");
 
         // initial default size render and print the world on that canvas (renderer)
-        eng.ter.initialize(WIDTH,HEIGHT);
+        eng.ter.initialize(WIDTH, HEIGHT);
         eng.ter.renderFrame(tr);
     }
 }
