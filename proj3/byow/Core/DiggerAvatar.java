@@ -3,8 +3,9 @@ package byow.Core;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
+import static byow.Core.Direction.*;
 import static byow.Core.Engine.*;
-import static byow.Core.Engine.DIRECTION_NUM;
+import static byow.Core.TileUtils.*;
 
 public class DiggerAvatar {
     TETile[][] world;
@@ -17,11 +18,14 @@ public class DiggerAvatar {
     Direction lastMoveDir; // last move direction, 0-north, 1-west, 2-south, 3-east
     Direction curMoveDir;
 
-    public DiggerAvatar(Door srcDoor, Door dstDoor, TETile[][]world) {
+    public DiggerAvatar(TETile[][]world) {
 
         this.world = world;
 
         this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+    }
+
+    public void arrangeDiggingJog(Door srcDoor, Door dstDoor) {
 
         this.srcDoor = srcDoor;
         this.dstDoor = dstDoor;
@@ -40,7 +44,6 @@ public class DiggerAvatar {
 
         walkOneTile(this.curMoveDir);
     }
-
     public Hallway digATunnel() {
 
         // digger got a campus, he walks towards the dst door, until reaching it.
@@ -153,105 +156,11 @@ public class DiggerAvatar {
         return new boolean[]{false, false, false, false};
     }
 
-    private void paintTile(Position pos, TETile type, TETile[][] world) {
-        if (isInCanvas(pos)) {
-            world[pos.x][pos.y] = type;
-        }
-        else {
-            System.out.println("out of canvas!!!");
-        }
-    }
-
-    private boolean isInCanvas(Position pos) {
-        return pos.x >= 0 && pos.y >= 0 && pos.x < WIDTH && pos.y < HEIGHT;
-    }
-
-    private boolean checkTile(Position pos, TETile type, TETile[][] world) {
-        if (isInCanvas(pos)) {
-            return world[pos.x][pos.y] == type;
-        }
-        else {
-            return false; // out of canvas, then it is surely not a "type"
-        }
-    }
-    private boolean isUnlockedDoorTile(int x, int y, TETile[][] world) {
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
-            return world[x][y] == Tileset.UNLOCKED_DOOR;
-        }
-        else {
-            return true; // if out of bound, should return true, because it means this direction is not doable
-        }
-    }
-
-    private boolean isNullTile(Position pos, TETile[][] world) {
-        if (isInCanvas(pos)) {
-            return world[pos.x][pos.y] == null;
-        }
-        else {
-            // already reach the end, and there is no Tile there, then this it definitely not a wanted Tile
-            return false;
-        }
-    }
-    private Direction revertDir(Direction dir) {
-        if (dir == null) {
-            return null;
-        }
-        if (dir == Directionset.NORTH) {
-            return Directionset.SOUTH;
-        }
-        else if (dir == Directionset.WEST) {
-            return Directionset.EAST;
-        }
-        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
-            return Directionset.NORTH;
-        }
-        else { //(lastMoveDir == Directionset.EAST
-            return Directionset.WEST;
-        }
-    }
-
-    private boolean[] getBooleanArrayFromDir(Direction dir) {
-        if (dir == null) {
-            return null;
-        }
-        if (dir == Directionset.NORTH) {
-            return new boolean[]{true, false, false, false};
-        }
-        else if (dir == Directionset.WEST) {
-            return new boolean[]{false, true, false, false};
-        }
-        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
-            return new boolean[]{false, false, true, false};
-        }
-        else { //(lastMoveDir == Directionset.EAST
-            return new boolean[]{false, false, false, true};
-        }
-    }
-
-    private Position getShiftPosition(Position pos, Direction dir) {
-
-        if (pos == null) {
-            return null;
-        }
-
-        if (Directionset.NORTH == dir) {
-            return new Position(pos.x, pos.y + 1);
-        }
-        else if (Directionset.WEST == dir) {
-            return new Position(pos.x - 1, pos.y);
-        }
-        else if (Directionset.SOUTH == dir) {
-            return new Position(pos.x, pos.y - 1);
-        }
-        else {//if (Directionset.EAST == dir) {
-            return new Position(pos.x + 1, pos.y);
-        }
-    }
     private boolean[] checkSurroundings() {
 
         boolean[] dirBool = new boolean[] {true, true, true, true};
 
-        Direction MoveBackDir = revertDir(lastMoveDir);
+        Direction MoveBackDir = getRevertDir(lastMoveDir);
         // 1, check every direction except the one you come from
         // to start with, you should not take the back direction where you just come from;
         Direction.setFalseBoolArrayByDirection(dirBool, MoveBackDir);
@@ -263,23 +172,23 @@ public class DiggerAvatar {
 
         // 3.1 you should not run into a wall;
         // check Wall
-        if (checkTile(posCurNorth, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurNorth, Tileset.WALL, this.refWorld)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        if (checkTile(posCurWest, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurWest, Tileset.WALL, this.refWorld)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        if (checkTile(posCurSouth, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurSouth, Tileset.WALL, this.refWorld)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        if (checkTile(posCurEast, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurEast, Tileset.WALL, this.refWorld)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
 
         // 3.1 you should not run into a door if the door is not the destination;
         // check Door
 
-        if (checkTile(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+        if (isTileType(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
             if (dstDoor.getPosition().x == posCurNorth.x
                     && dstDoor.getPosition().y == posCurNorth.y) {
@@ -290,7 +199,7 @@ public class DiggerAvatar {
             }
         }
 
-        if (checkTile(posCurWest, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+        if (isTileType(posCurWest, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
             if (dstDoor.getPosition().x == posCurWest.x
                     && dstDoor.getPosition().y == posCurWest.y) {
@@ -300,7 +209,7 @@ public class DiggerAvatar {
                 Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
             }
         }
-        if (checkTile(posCurSouth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+        if (isTileType(posCurSouth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // door is unlocked door
 
             // if a unlocked door is the destination door, is OK to enter
@@ -312,7 +221,7 @@ public class DiggerAvatar {
                 Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
             }
         }
-        if (checkTile(posCurEast, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+        if (isTileType(posCurEast, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
             if (dstDoor.getPosition().x == posCurEast.x
                     && dstDoor.getPosition().y == posCurEast.y) {
@@ -425,27 +334,25 @@ public class DiggerAvatar {
         }
     }
 
-    private void paintWallTile(Position pos) {
-
-        if (checkTile(pos, null, this.refWorld))
-            paintTile(pos, Tileset.WALL, this.world);
-    }
-
     private void walkOneTile(Direction dir) {
 
-        posCur = getShiftPosition(posCur, dir);// Get the next position
+        Direction.shiftPosition(posCur, dir); // shift the next position
 
-        if (!checkTile(posCur, Tileset.UNLOCKED_DOOR, this.refWorld)) {
-            paintTile(posCur,Tileset.AVATAR, this.world);// Update canvas
+        if (!isTileType(posCur, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            paintTile(posCur,Tileset.FLOOR, this.world);// Update canvas
         }
 
-        if (dir == Directionset.SOUTH || dir == Directionset.NORTH) {
-            paintWallTile(getShiftPosition(posCur, Directionset.WEST));
-            paintWallTile(getShiftPosition(posCur, Directionset.EAST));
+        // paint wall along the way
+        // 1, paint the side
+        paintSideWall(posCur, dir, this.world);
+
+        // 2, if turned 90 degree
+        if (isTurned90Degree(lastMoveDir, curMoveDir)) {
+            // get position if moved in the lastMoveDir direction
+            Position posFake = getShiftPosition(posPre, lastMoveDir);
+            paintWallTile(posFake, this.world);
+            paintSideWall(posFake, lastMoveDir, this.world);
         }
-        else { //(dir == Directionset.WEST || dir == Directionset.EAST)
-            paintWallTile(getShiftPosition(posCur, Directionset.SOUTH));
-            paintWallTile(getShiftPosition(posCur, Directionset.NORTH));
-        }
+        // 3, if turned 180 degree (must have run into a wall or out of canvas, should be OK not to process)
     }
 }

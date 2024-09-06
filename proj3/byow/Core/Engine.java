@@ -13,10 +13,10 @@ public class Engine {
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-    public static final int ROOM_NUM = 4;
+    public static final int ROOM_NUM = 15;
     public static final int ROOM_WIDTH_LIMIT = 20;
     public static final int ROOM_HEIGHT_LIMIT = 10;
-    private static final long SEED = 2;
+    private static final long SEED = 9873;
     public static final int LOOP_LIMIT = 1000;
 
     public static final int DIRECTION_NUM = 4; // north, west, south and east

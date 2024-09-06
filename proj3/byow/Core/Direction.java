@@ -54,4 +54,109 @@ public class Direction {
             default -> null;
         };
     }
+
+    public static void shiftPosition(Position pos, Direction dir) {
+        if (pos == null) {
+            return;
+        }
+
+        if (Directionset.NORTH == dir) {
+            pos.y = pos.y + 1;
+        }
+        else if (Directionset.WEST == dir) {
+            pos.x = pos.x - 1;
+        }
+        else if (Directionset.SOUTH == dir) {
+            pos.y = pos.y - 1;
+        }
+        else {//if (Directionset.EAST == dir) {
+            pos.x = pos.x + 1;
+        }
+    }
+
+    public static boolean[] getBooleanArrayFromDir(Direction dir) {
+        if (dir == null) {
+            return null;
+        }
+        if (dir == Directionset.NORTH) {
+            return new boolean[]{true, false, false, false};
+        }
+        else if (dir == Directionset.WEST) {
+            return new boolean[]{false, true, false, false};
+        }
+        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
+            return new boolean[]{false, false, true, false};
+        }
+        else { //(lastMoveDir == Directionset.EAST
+            return new boolean[]{false, false, false, true};
+        }
+    }
+
+    public static boolean isTurned90Degree(Direction lastDir, Direction curDir) {
+        int lastIndexDir = getIndexFromDir(lastDir);
+        int curIndexDir = getIndexFromDir(curDir);
+        int absDiff = Math.abs(curIndexDir - lastIndexDir);
+
+        if (absDiff == 1 || absDiff == 3) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    public static int getIndexFromDir(Direction dir) {
+        if (dir == null) {
+            return -1;
+        }
+        if (dir == Directionset.NORTH) {
+            return 0;
+        }
+        else if (dir == Directionset.WEST) {
+            return 1;
+        }
+        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
+            return 2;
+        }
+        else { //(lastMoveDir == Directionset.EAST
+            return 3;
+        }
+    }
+
+    public static Direction getRevertDir(Direction dir) {
+        if (dir == null) {
+            return null;
+        }
+        if (dir == Directionset.NORTH) {
+            return Directionset.SOUTH;
+        }
+        else if (dir == Directionset.WEST) {
+            return Directionset.EAST;
+        }
+        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
+            return Directionset.NORTH;
+        }
+        else { //(lastMoveDir == Directionset.EAST
+            return Directionset.WEST;
+        }
+    }
+
+    public static Position getShiftPosition(Position pos, Direction dir) {
+
+        if (pos == null) {
+            return null;
+        }
+
+        if (Directionset.NORTH == dir) {
+            return new Position(pos.x, pos.y + 1);
+        }
+        else if (Directionset.WEST == dir) {
+            return new Position(pos.x - 1, pos.y);
+        }
+        else if (Directionset.SOUTH == dir) {
+            return new Position(pos.x, pos.y - 1);
+        }
+        else {//if (Directionset.EAST == dir) {
+            return new Position(pos.x + 1, pos.y);
+        }
+    }
 }

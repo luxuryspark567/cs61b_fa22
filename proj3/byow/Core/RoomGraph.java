@@ -15,7 +15,8 @@ import static byow.Core.Engine.*;
 public class RoomGraph extends EdgeWeightedGraph {
 
     private List<Room> roomLut;
-
+    // 0, creat an avatar
+    DiggerAvatar digger;
     public RoomGraph() {
         super(ROOM_NUM);
     }
@@ -173,12 +174,13 @@ public class RoomGraph extends EdgeWeightedGraph {
     public void generateHallways(TETile[][] world) {
 
         MinPQ<distanceNode> mpq = getRoomDistanceMPQ();
+
+        this.digger = new DiggerAvatar(world);
         //Debug
         //System.out.println(mpq.toString());
         WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(roomLut.size());
 
         int safeProofLooper = LOOP_LIMIT;
-
         // 2, generate hallways
         while (wqu.count() > 1 && safeProofLooper > 0 && (!mpq.isEmpty())) {//not all rooms are connected
 
@@ -225,10 +227,6 @@ public class RoomGraph extends EdgeWeightedGraph {
         //src to dst
         // get source coordinate and destination coordinate
         // an avatar walks from src to dst, with each step, avatar should be closer to dst;
-
-        // 0, creat an avatar
-        DiggerAvatar digger = new DiggerAvatar(srcDoor, dstDoor, world);
-
         // 1, Do the work bitch!!! digger a tunnel from srcDoor to dstDoor
         return digger.digATunnel();
 
@@ -239,6 +237,8 @@ public class RoomGraph extends EdgeWeightedGraph {
         Door srcDoor = srcRoom.getDoor();
         Door dstDoor = dstRoom.getDoor();
 
+        // arrange a digging job to the digger
+        this.digger.arrangeDiggingJog(srcDoor, dstDoor);
         return connectDoors(srcDoor, dstDoor, world);
     }
 
