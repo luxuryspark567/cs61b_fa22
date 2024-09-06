@@ -7,44 +7,38 @@ import static byow.Core.Engine.*;
 import static byow.Core.Engine.DIRECTION_NUM;
 
 public class DiggerAvatar {
-
     TETile[][] world;
+    TETile[][] refWorld;
     Door srcDoor;
     Door dstDoor;
-
     Position posCur; // the current position of our digger;
     Position posPre; // previous position;
-
     Position posDst; // dst position;
-
-    int lastMoveDir; // last move direction, 0-north, 1-west, 2-south, 3-east
-    int curMoveDir;
+    Direction lastMoveDir; // last move direction, 0-north, 1-west, 2-south, 3-east
+    Direction curMoveDir;
 
     public DiggerAvatar(Door srcDoor, Door dstDoor, TETile[][]world) {
 
         this.world = world;
+
+        this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
 
         this.srcDoor = srcDoor;
         this.dstDoor = dstDoor;
 
         // must create new object,
         // because position will be modified, thus the original data will be modified, which is not right.
-        this.posCur = new Position(srcDoor.getPosition().x, srcDoor.getPosition().y);
-        this.curMoveDir = -1;
+        this.posCur = Position.copyOf(srcDoor.getPosition());
+        this.curMoveDir = null;
 
         this.posPre = new Position(-1, -1);
         this.posDst = dstDoor.getPosition();
-        // take a first step, out of the door first
 
-        // back up current status
-        backUpCurrentStatus();
-        //this.posPre.x = this.posCur.x;
-        //this.posPre.y = this.posCur.y;
-        //this.lastMoveDir = this.curMoveDir;
+        backUpCurrentStatus();// back up current status
 
-        // move
-        this.curMoveDir = srcDoor.getDir();
-        moveOneStep();
+        this.curMoveDir = srcDoor.getDir();// take a first step, out of the door first
+
+        walkOneTile(this.curMoveDir);
     }
 
     public Hallway digATunnel() {
@@ -52,21 +46,15 @@ public class DiggerAvatar {
         // digger got a campus, he walks towards the dst door, until reaching it.
         int looperLimit = LOOP_LIMIT;
         while (!posCur.equals(posDst) && looperLimit > 0) {
-
-            // back status before update everything
-            backUpCurrentStatus();
-
-            // decide should move to which direction;
-            curMoveDir = decideTheNextMove();
-            if (curMoveDir < 0) {
+            backUpCurrentStatus();// back status before update everything
+            curMoveDir = decideTheNextMove();// decide should move to which direction;
+            if (curMoveDir == null) {
                 return null;
             }
-            moveOneStep();
-
+            walkOneTile(this.curMoveDir);
             looperLimit--;
         }
-
-        return new Hallway(srcDoor, dstDoor, null);
+        return new Hallway(srcDoor, dstDoor);
     }
 
     private void backUpCurrentStatus() {
@@ -74,22 +62,6 @@ public class DiggerAvatar {
         this.posPre.y = this.posCur.y;
         this.lastMoveDir = this.curMoveDir;
     }
-
-    private void moveOneStep() {
-        if (this.curMoveDir == 0) {
-            walkNorth();
-        }
-        else if (this.curMoveDir == 1) {
-            walkWest();
-        }
-        else if (this.curMoveDir == 2) {
-            walkSouth();
-        }
-        else { //(this.curMoveDir == 3) {
-            walkEast();
-        }
-    }
-
     // Manhattan Distance compass
     private boolean[] checkTheCompass() {
 
@@ -181,52 +153,28 @@ public class DiggerAvatar {
         return new boolean[]{false, false, false, false};
     }
 
-    private boolean[] checkLastMove() {
-        return getBooleanArrayFromDir(lastMoveDir);
-            /*
-            if (lastMoveDir == 0) {
-                return new boolean[]{true, false, false, false};
-            }
-            else if (lastMoveDir == 1) {
-                return new boolean[]{false, true, false, false};
-            }
-            else if (lastMoveDir == 2) { //(diffX < 0 && diffY >= 0)
-                return new boolean[]{false, false, true, false};
-            }
-            else { //(lastMoveDir == 3)
-                return new boolean[]{false, false, false, true};
-            }
-
-             */
-    }
-
-    private void paintTile(int x, int y, TETile type) {
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
-            world[x][y] = type;
+    private void paintTile(Position pos, TETile type, TETile[][] world) {
+        if (isInCanvas(pos)) {
+            world[pos.x][pos.y] = type;
         }
         else {
             System.out.println("out of canvas!!!");
         }
     }
-    private boolean checkTile(int x, int y, TETile type) {
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
-            return world[x][y] == type;
-        }
-        else {
-            return true;
-        }
+
+    private boolean isInCanvas(Position pos) {
+        return pos.x >= 0 && pos.y >= 0 && pos.x < WIDTH && pos.y < HEIGHT;
     }
 
-    private boolean isWallTile(int x, int y) {
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
-            return world[x][y] == Tileset.WALL;
+    private boolean checkTile(Position pos, TETile type, TETile[][] world) {
+        if (isInCanvas(pos)) {
+            return world[pos.x][pos.y] == type;
         }
         else {
-            return true; // if out of bound, should return true, because it means this direction is not doable
+            return false; // out of canvas, then it is surely not a "type"
         }
     }
-
-    private boolean isUnlockedDoorTile(int x, int y) {
+    private boolean isUnlockedDoorTile(int x, int y, TETile[][] world) {
         if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
             return world[x][y] == Tileset.UNLOCKED_DOOR;
         }
@@ -235,102 +183,171 @@ public class DiggerAvatar {
         }
     }
 
-    private boolean isFloorTile(int x, int y) {
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
-            return world[x][y] == Tileset.FLOOR;
+    private boolean isNullTile(Position pos, TETile[][] world) {
+        if (isInCanvas(pos)) {
+            return world[pos.x][pos.y] == null;
         }
         else {
-            return true; // if out of bound, should return true, because it means this direction is not doable
+            // already reach the end, and there is no Tile there, then this it definitely not a wanted Tile
+            return false;
         }
     }
-    private int revertDir(int dir) {
-        return Math.floorMod(lastMoveDir + 2, DIRECTION_NUM);
+    private Direction revertDir(Direction dir) {
+        if (dir == null) {
+            return null;
+        }
+        if (dir == Directionset.NORTH) {
+            return Directionset.SOUTH;
+        }
+        else if (dir == Directionset.WEST) {
+            return Directionset.EAST;
+        }
+        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
+            return Directionset.NORTH;
+        }
+        else { //(lastMoveDir == Directionset.EAST
+            return Directionset.WEST;
+        }
     }
 
-    private boolean[] getBooleanArrayFromDir(int dir) {
-        if (dir == 0) {
+    private boolean[] getBooleanArrayFromDir(Direction dir) {
+        if (dir == null) {
+            return null;
+        }
+        if (dir == Directionset.NORTH) {
             return new boolean[]{true, false, false, false};
         }
-        else if (dir == 1) {
+        else if (dir == Directionset.WEST) {
             return new boolean[]{false, true, false, false};
         }
-        else if (dir == 2) { //(diffX < 0 && diffY >= 0)
+        else if (dir == Directionset.SOUTH) { //(diffX < 0 && diffY >= 0)
             return new boolean[]{false, false, true, false};
         }
-        else { //(lastMoveDir == 3)
+        else { //(lastMoveDir == Directionset.EAST
             return new boolean[]{false, false, false, true};
         }
     }
-    /*
-            private int getDirFromBooleanArray(boolean[] dirA) {
-                for (int looper = 0; looper < DIRECTION_NUM; looper++) {
-                    if ()
-                }
-                if (dir == 0) {
-                    return new boolean[]{true, false, false, false};
-                }
-                else if (dir == 1) {
-                    return new boolean[]{false, true, false, false};
-                }
-                else if (dir == 2) { //(diffX < 0 && diffY >= 0)
-                    return new boolean[]{false, false, true, false};
-                }
-                else { //(lastMoveDir == 3)
-                    return new boolean[]{false, false, false, true};
-                }
-            }
 
-     */
+    private Position getShiftPosition(Position pos, Direction dir) {
+
+        if (pos == null) {
+            return null;
+        }
+
+        if (Directionset.NORTH == dir) {
+            return new Position(pos.x, pos.y + 1);
+        }
+        else if (Directionset.WEST == dir) {
+            return new Position(pos.x - 1, pos.y);
+        }
+        else if (Directionset.SOUTH == dir) {
+            return new Position(pos.x, pos.y - 1);
+        }
+        else {//if (Directionset.EAST == dir) {
+            return new Position(pos.x + 1, pos.y);
+        }
+    }
     private boolean[] checkSurroundings() {
 
-        boolean[] dir = new boolean[] {true, true, true, true};
+        boolean[] dirBool = new boolean[] {true, true, true, true};
 
-        int MoveBackDir = revertDir(lastMoveDir);
+        Direction MoveBackDir = revertDir(lastMoveDir);
         // 1, check every direction except the one you come from
         // to start with, you should not take the back direction where you just come from;
-        dir[MoveBackDir] = false;
+        Direction.setFalseBoolArrayByDirection(dirBool, MoveBackDir);
+
+        Position posCurNorth = getShiftPosition(posCur, Directionset.NORTH);
+        Position posCurWest = getShiftPosition(posCur, Directionset.WEST);
+        Position posCurSouth = getShiftPosition(posCur, Directionset.SOUTH);
+        Position posCurEast = getShiftPosition(posCur, Directionset.EAST);
 
         // 3.1 you should not run into a wall;
         // check Wall
-        if (isWallTile(posCur.x, posCur.y + 1)) {
-            dir[0] = false;
+        if (checkTile(posCurNorth, Tileset.WALL, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        else if (isWallTile(posCur.x - 1, posCur.y)) {
-            dir[1] = false;
+        if (checkTile(posCurWest, Tileset.WALL, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        else if (isWallTile(posCur.x, posCur.y - 1)) {
-            dir[2] = false;
+        if (checkTile(posCurSouth, Tileset.WALL, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        else if (isWallTile(posCur.x + 1, posCur.y)) {
-            dir[3] = false;
+        if (checkTile(posCurEast, Tileset.WALL, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        }
+
+        // 3.1 you should not run into a door if the door is not the destination;
+        // check Door
+
+        if (checkTile(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            // if a unlocked door is the destination door, is OK to enter
+            if (dstDoor.getPosition().x == posCurNorth.x
+                    && dstDoor.getPosition().y == posCurNorth.y) {
+
+            }
+            else {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
+            }
+        }
+
+        if (checkTile(posCurWest, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            // if a unlocked door is the destination door, is OK to enter
+            if (dstDoor.getPosition().x == posCurWest.x
+                    && dstDoor.getPosition().y == posCurWest.y) {
+
+            }
+            else {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
+            }
+        }
+        if (checkTile(posCurSouth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            // door is unlocked door
+
+            // if a unlocked door is the destination door, is OK to enter
+            if (dstDoor.getPosition().x == posCurSouth.x
+                    && dstDoor.getPosition().y == posCurSouth.y) {
+
+            }
+            else {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+            }
+        }
+        if (checkTile(posCurEast, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            // if a unlocked door is the destination door, is OK to enter
+            if (dstDoor.getPosition().x == posCurEast.x
+                    && dstDoor.getPosition().y == posCurEast.y) {
+
+            }
+            else {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+            }
         }
 
         // 3.1 you should not run out of the canvas;
         // check Wall
-        if (posCur.y + 1 >= HEIGHT) {
-            dir[0] = false;
+        if (posCurNorth.y >= HEIGHT) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        else if (posCur.x - 1 < 0) {
-            dir[1] = false;
+        if (posCurWest.x < 0) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        else if (posCur.y - 1 < 0) {
-            dir[2] = false;
+        if (posCurSouth.y < 0) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        else if (posCur.x + 1 >= WIDTH) {
-            dir[3] = false;
+        if (posCurEast.x >= WIDTH) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
-
         // last step, if there is no place to go, move back
-        if (!(dir[0] || dir[1] || dir [2] || dir[3])) {
-            dir[MoveBackDir] = true;
+        if (!(dirBool[0] || dirBool[1] || dirBool [2] || dirBool[3])) {
+            Direction.setTrueBoolArrayByDirection(dirBool,MoveBackDir);
         }
-        return dir;
+        return dirBool;
 
     }
 
     private boolean[] mergeDirection(boolean[] dir1, boolean[] dir2) {
-        boolean[] dirRet = new boolean[4];
-        for (int i = 0; i < 4; i++) {
+        boolean[] dirRet = new boolean[DIRECTION_NUM];
+        for (int i = 0; i < DIRECTION_NUM; i++) {
             dirRet[i] = dir1[i] && dir2[i];
         }
         return dirRet;
@@ -338,7 +355,7 @@ public class DiggerAvatar {
 
     private int getDirNum(boolean[] dir) {
         int counter = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < DIRECTION_NUM; i++) {
             if (dir[i]) {
                 counter++;
             }
@@ -346,7 +363,7 @@ public class DiggerAvatar {
         return counter;
     }
 
-    private int decideTheNextMove() {
+    private Direction decideTheNextMove() {
 
         // 3, check your surroundings, which direction is the right direction?
         // 3.1 you should not take the back direction where you just come from, UNLESS YOU HAVE NOWHERE ELSE TO GO;
@@ -358,7 +375,7 @@ public class DiggerAvatar {
 
         // 2, check the last moving direction, and move action should better be consistent
         // or other might think you are not an experienced digger
-        boolean[] dirLast = checkLastMove();
+        boolean[] dirLast = getBooleanArrayFromDir(lastMoveDir);
 
         // 4, finally:
         // 4.1 if there are more than one direction to take, use a fucking dice, may the god guide you.
@@ -390,7 +407,7 @@ public class DiggerAvatar {
         int dirNum = getDirNum(dirMerge3);
         if (dirNum == 0) {
             System.out.println("No step to take, and this should never occur");
-            return -1;
+            return null;
         }
         else {
             // toll the dice.
@@ -404,55 +421,31 @@ public class DiggerAvatar {
                     }
                 }
             }
-            return looper;
+            return Direction.getDirectionByIndex(looper);
         }
     }
 
-    private void walkNorth() {
-        // Get the next position
-        posCur.y = posCur.y + 1;
+    private void paintWallTile(Position pos) {
 
-        // Update canvas
-        if (!isUnlockedDoorTile(posCur.x,posCur.y)) {
-            paintTile(posCur.x,posCur.y,Tileset.AVATAR);
-        }
-        //world[posNew.x + 1][posNew.y] = Tileset.WALL;
-        //world[posNew.x - 1][posNew.y] = Tileset.WALL;
+        if (checkTile(pos, null, this.refWorld))
+            paintTile(pos, Tileset.WALL, this.world);
     }
 
-    private void walkWest() {
-        // Get the next position
-        posCur.x = posCur.x - 1;
+    private void walkOneTile(Direction dir) {
 
-        // Update canvas
-        //world[posNew.x][posNew.y + 1] = Tileset.WALL;
-        if (!isUnlockedDoorTile(posCur.x,posCur.y)) {
-            paintTile(posCur.x,posCur.y,Tileset.AVATAR);
+        posCur = getShiftPosition(posCur, dir);// Get the next position
+
+        if (!checkTile(posCur, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            paintTile(posCur,Tileset.AVATAR, this.world);// Update canvas
         }
-        //world[posNew.x][posNew.y - 1] = Tileset.WALL;
-    }
 
-    private void walkSouth() {
-        // Get the next position
-        posCur.y = posCur.y - 1;
-
-        // Update canvas
-        //world[posNew.x + 1][posNew.y] = Tileset.WALL;
-        if (!isUnlockedDoorTile(posCur.x,posCur.y)) {
-            paintTile(posCur.x,posCur.y,Tileset.AVATAR);
+        if (dir == Directionset.SOUTH || dir == Directionset.NORTH) {
+            paintWallTile(getShiftPosition(posCur, Directionset.WEST));
+            paintWallTile(getShiftPosition(posCur, Directionset.EAST));
         }
-        //world[posNew.x - 1][posNew.y] = Tileset.WALL;
-    }
-
-    private void walkEast() {
-        // Get the next position
-        posCur.x = posCur.x + 1;
-
-        // Update canvas
-        //world[posNew.x][posNew.y + 1] = Tileset.WALL;
-        if (!isUnlockedDoorTile(posCur.x,posCur.y)) {
-            paintTile(posCur.x,posCur.y,Tileset.AVATAR);
+        else { //(dir == Directionset.WEST || dir == Directionset.EAST)
+            paintWallTile(getShiftPosition(posCur, Directionset.SOUTH));
+            paintWallTile(getShiftPosition(posCur, Directionset.NORTH));
         }
-        //world[posNew.x][posNew.y - 1] = Tileset.WALL;
     }
 }

@@ -15,7 +15,6 @@ public class Hallway {
 
     private int w;
 
-    private TurnPoint[] tps;
 /*
     public Hallway(Door d1, Door d2, TETile[][] world) {
         // get most adjacent doors for two rooms, suppose the answer is r1.sd and r2.ed
@@ -24,7 +23,7 @@ public class Hallway {
         // generate a hallway between d1 and d2
     }
 */
-    public Hallway(Door d1, Door d2, TurnPoint[] tps) {
+    public Hallway(Door d1, Door d2) {
         // get most adjacent doors for two rooms, suppose the answer is r1.sd and r2.ed
         this.src = d1;
         this.dst = d2;
@@ -44,10 +43,6 @@ public class Hallway {
         return this.w;
     }
 
-    public TurnPoint[] getTurnPoints() {
-        return this.tps;
-    }
-
     public void setSrc(Door d) {
         this.src = d;
     }
@@ -59,9 +54,4 @@ public class Hallway {
     public void setWeight(int w) {
         this.w = w;
     }
-
-    public void getTurnPoints(TurnPoint[] tps) {
-        System.arraycopy(tps, 0, this.tps, 0, tps.length);
-    }
-
 }

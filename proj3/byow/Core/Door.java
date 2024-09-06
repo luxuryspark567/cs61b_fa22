@@ -11,7 +11,7 @@ public class Door{
 
     private Hallway hw;
 
-    private int dir;
+    private Direction dir;
     private boolean[] expandable;
 
     //DoorDirection direct;
@@ -35,7 +35,7 @@ public class Door{
         this.edge = null;
         this.expandable = null;
     }
-    public Door(Position pos, DoorType type, Edge e, Hallway hw, int dir) {
+    public Door(Position pos, DoorType type, Edge e, Hallway hw, Direction dir) {
         //this.pr = r;
         this.pos = pos;
         this.type = type;
@@ -65,7 +65,7 @@ public class Door{
         return this.hw;
     }
 
-    public int getDir() {
+    public Direction getDir() {
         return this.dir;
     }
 
@@ -87,7 +87,7 @@ public class Door{
     public void setHallway(Hallway hw){
         this.hw = hw;
     }
-    public void setDir(int dir) {
+    public void setDir(Direction dir) {
         this.dir = dir;
     }
 

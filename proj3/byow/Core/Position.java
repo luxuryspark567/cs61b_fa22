@@ -1,5 +1,9 @@
 package byow.Core;
 
+import byow.TileEngine.TETile;
+
+import java.util.Arrays;
+
 // position of an object on canvas
 public class Position {
     int x;
@@ -20,5 +24,13 @@ public class Position {
             return this.x == pos.x && this.y == pos.y;
         }
         return false;
+    }
+
+    public static Position copyOf(Position pos) {
+        if (pos == null) {
+            return null;
+        }
+
+        return new Position(pos.x, pos.y);
     }
 }

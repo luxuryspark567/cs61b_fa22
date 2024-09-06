@@ -30,8 +30,6 @@ public class RoomGraph extends EdgeWeightedGraph {
 
         generateHallways(world);
 
-        //generateMainDoor(world);
-
         System.out.println(this.toString());
 
     }
@@ -77,77 +75,85 @@ public class RoomGraph extends EdgeWeightedGraph {
 
     private Door generateRandomDoor(Position posRoom,  Size sizeRoom, TETile[][] world) {
 
+        //System.out.println("----------Start----------------");
         int looperLimit = LOOP_LIMIT;
         while (looperLimit > 0) {
             // get door side
-            int side = RandomUtils.uniform(RANDOM, 4);
-
-            if ((posRoom.y + sizeRoom.height == HEIGHT - 1 && side == 0) //room besides north margin
-                    || (posRoom.x == 0 && side == 1) //room besides west margin
-                    || (posRoom.y == 0 && side == 2) //room besides south margin
-                    || (posRoom.x + sizeRoom.width == WIDTH - 1 && side == 3)) { //room besides east margin
+            Direction side = Direction.getDirectionByIndex(RandomUtils.uniform(RANDOM, 4));
+            System.out.println(side);
+            if ((posRoom.y + sizeRoom.height == HEIGHT - 1 && side == Directionset.NORTH) //room besides north margin
+                    || (posRoom.x == 0 && side == Directionset.WEST) //room besides west margin
+                    || (posRoom.y == 0 && side == Directionset.SOUTH) //room besides south margin
+                    || (posRoom.x + sizeRoom.width == WIDTH - 1 && side == Directionset.EAST)) { //room besides east margin
                 //a room without a valid door is also a failed room
                 looperLimit--;
-                System.out.println("Create a door fail!");
+                //System.out.println("Create a door fail!");
             }
             else{
-                if (side == 0) {
+                if (side == Directionset.NORTH) {
                     // pick a random position on the north side
                     int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.width);
-
+                    //System.out.println(index);
                     Position doorPos = new Position(posRoom.x + index, posRoom.y + sizeRoom.height);
                     // if the door is besides a NOTHING, means a valid wall
                     if (doorPos.y + 1 < HEIGHT && world[doorPos.x][doorPos.y + 1] != Tileset.WALL){
                         //boolean[] dir = {true, false, false, false};
-                        return new Door(doorPos, null, null, null, 0);
+                        return new Door(doorPos, null, null, null, Directionset.NORTH);
                     }
                     else {
                         System.out.println("Create a door facing a wall or something!");
                     }
                 }
-                else if (side == 1) {
+                else if (side == Directionset.WEST) {
                     // pick a random position on the west side
                     int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.height);
+                    //System.out.println(index);
                     Position doorPos = new Position(posRoom.x, posRoom.y +  + index);
                     // if the door is besides a NOTHING, means a valid wall
                     if ((doorPos.x - 1 >= 0) && world[doorPos.x - 1][doorPos.y] != Tileset.WALL){
                         //boolean[] dir = {false, true, false, false};
-                        return new Door(doorPos, null, null, null, 1);
+                        return new Door(doorPos, null, null, null, Directionset.WEST);
                     }
                     else {
                         System.out.println("Create a door facing a wall or something!");
                     }
                 }
-                else if (side == 2) {
+                else if (side == Directionset.SOUTH) {
                     // pick a random position on the south side
                     int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.width);
+                    //System.out.println(index);
                     Position doorPos = new Position(posRoom.x + index, posRoom.y);
                     // if the door is besides a NOTHING, means a valid wall
                     if ((doorPos.y - 1 >= 0) && world[doorPos.x][doorPos.y - 1] != Tileset.WALL){
                         //boolean[] dir = {false, false, true, false};
-                        return new Door(doorPos, null, null, null, 2);
+                        return new Door(doorPos, null, null, null, Directionset.SOUTH);
                     }
                     else {
                         System.out.println("Create a door facing a wall or something!");
                     }
                 }
-                else if (side == 3) {
+                else if (side == Directionset.EAST) {
                     // pick a random position on the east side
                     int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.height);
+                    //System.out.println(index);
                     Position doorPos = new Position(posRoom.x + sizeRoom.width, posRoom.y + index);
                     // if the door is besides a NOTHING, means a valid wall
                     if ((doorPos.x + 1 < WIDTH) && world[doorPos.x + 1][doorPos.y] != Tileset.WALL){
                         //boolean[] dir = {false, false, false, true};
-                        return new Door(doorPos, null, null, null, 3);
+                        return new Door(doorPos, null, null, null, Directionset.EAST);
                     }
                     else {
                         System.out.println("Create a door facing a wall or something!");
                     }
                 }
                 // this will never happen
-                return null;
+                looperLimit--;;
             }
         }
+
+        //if (looperLimit == 0) {
+        //    System.out.println("----------end----------------");
+        //}
         return null;
     }
     private void generateDoors(TETile[][] world) {
@@ -163,13 +169,7 @@ public class RoomGraph extends EdgeWeightedGraph {
         }
 
     }
-    boolean isDoorAtEdge (Door d) {
-        return (d.getPosition().x != 0 && d.getPosition().x != WIDTH && d.getPosition().y != 0 && d.getPosition().y != HEIGHT);
-    }
 
-    double distanceOfDoors(Door d1, Door d2) {
-        return Math.sqrt(Math.pow(d1.getPosition().x - d2.getPosition().x, 2) + Math.pow(d1.getPosition().y - d2.getPosition().y, 2));
-    }
     public void generateHallways(TETile[][] world) {
 
         MinPQ<distanceNode> mpq = getRoomDistanceMPQ();
@@ -185,30 +185,38 @@ public class RoomGraph extends EdgeWeightedGraph {
             // 1, pick the closest two rooms to make a hallway
             distanceNode dsNode = mpq.delMin();
 
-            // 2, are they already connected?
-            if (!wqu.connected(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2))) {
+            // 2. do them all have door?
+            if (dsNode.value.r1.getDoor() != null && dsNode.value.r2.getDoor() != null )
+            {
+                // 2, are they already connected?
+                if (!wqu.connected(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2))) {
 
-                // 3, connect them
-                Hallway hw = connectRoomsWithHallway(dsNode.value.r1, dsNode.value.r2, world);
+                    if (dsNode.value.r1.getDoor().getPosition().x == 16
+                        && dsNode.value.r1.getDoor().getPosition().y == 1)
+                    {
+                        System.out.println("Gotthach!!!");
+                    }
+                    // 3, connect them
+                    Hallway hw = connectRoomsWithHallway(dsNode.value.r1, dsNode.value.r2, world);
 
-                if (hw != null) {
-                    //union them
-                    wqu.union(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2));
-                    Edge e = new Edge(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2), hw.getWeight());
+                    if (hw != null) {
+                        //union them
+                        wqu.union(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2));
+                        Edge e = new Edge(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2), hw.getWeight());
 
-                    // update edge to door.
-                    hw.getSrc().setEdge(e);
-                    hw.getDst().setEdge(e);
-                    hw.getSrc().setHallway(hw);
-                    hw.getDst().setHallway(hw);
+                        // update edge to door.
+                        hw.getSrc().setEdge(e);
+                        hw.getDst().setEdge(e);
+                        hw.getSrc().setHallway(hw);
+                        hw.getDst().setHallway(hw);
 
-                    //setPixelAfterCheckIfTile(hw.getSrc().getPosition().x, hw.getSrc().getPosition().y, Tileset.UNLOCKED_DOOR, world);
-                    //setPixelAfterCheckIfTile(hw.getDst().getPosition().x, hw.getDst().getPosition().y, Tileset.UNLOCKED_DOOR, world);
+                        //setPixelAfterCheckIfTile(hw.getSrc().getPosition().x, hw.getSrc().getPosition().y, Tileset.UNLOCKED_DOOR, world);
+                        //setPixelAfterCheckIfTile(hw.getDst().getPosition().x, hw.getDst().getPosition().y, Tileset.UNLOCKED_DOOR, world);
 
-                    this.addEdge(e);
+                        this.addEdge(e);
+                    }
                 }
             }
-
             safeProofLooper--;
         }
     }
