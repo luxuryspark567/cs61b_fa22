@@ -33,4 +33,14 @@ public class Position {
 
         return new Position(pos.x, pos.y);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder("Position(");
+        s.append(this.x);
+        s.append(", ");
+        s.append(this.y);
+        s.append(")");
+        return s.toString();
+    }
 }

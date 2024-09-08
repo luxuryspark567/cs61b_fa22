@@ -31,6 +31,17 @@ public class Hallway {
         //System.arraycopy(tps, 0, this.tps, 0, tps.length);
         // generate a hallway between d1 and d2
     }
+
+    public Hallway(Door d1, Door d2, int w) {
+        // get most adjacent doors for two rooms, suppose the answer is r1.sd and r2.ed
+        this.src = d1;
+        this.dst = d2;
+        this.w = w;
+        //this.tps = new TurnPoint[tps.length];
+        //System.arraycopy(tps, 0, this.tps, 0, tps.length);
+        // generate a hallway between d1 and d2
+    }
+
     public Door getSrc() {
         return this.src;
     }

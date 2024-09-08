@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.Edge;
 public class Door{
     //room pr;
     private Position pos; // position of a door
-    private DoorType type; // is it a closed door or open door, or door to a hallway;
+    //private DoorType type; // is it a closed door or open door, or door to a hallway;
 
     private Edge edge;// if a door is chosen, hero could take an edge (route) to another room
 
@@ -31,14 +31,14 @@ public class Door{
     public Door() {
         //this.pr = null;
         this.pos = null;
-        this.type = null;
+        //this.type = null;
         this.edge = null;
         this.expandable = null;
     }
     public Door(Position pos, DoorType type, Edge e, Hallway hw, Direction dir) {
         //this.pr = r;
         this.pos = pos;
-        this.type = type;
+        //this.type = type;
         this.edge = e;
         this.hw = hw;
         this.dir = dir;
@@ -53,9 +53,9 @@ public class Door{
         return this.pos;
     }
 
-    public DoorType getDoorType(){
-        return type;
-    }
+    //public DoorType getDoorType(){
+    //    return type;
+    //}
 
     public Edge getEdge(){
         return edge;
@@ -77,9 +77,9 @@ public class Door{
         this.pos = pos;
     }
 
-    public void setDoorType(DoorType dt){
-        this.type = dt;
-    }
+    //public void setDoorType(DoorType dt){
+    //    this.type = dt;
+    //}
     public void setEdge(Edge edge){
         this.edge = edge;
     }
@@ -96,5 +96,13 @@ public class Door{
         this.expandable[1] = dir[1];
         this.expandable[2] = dir[2];
         this.expandable[3] = dir[3];
+    }
+
+    public String toString() {
+        StringBuilder s = new StringBuilder("Door: ");
+        s.append(this.pos);
+        s.append(", ");
+        s.append(this.dir);
+        return s.toString();
     }
 }

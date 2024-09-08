@@ -4,6 +4,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import static byow.Core.Direction.*;
+import static byow.Core.Directionset.*;
 import static byow.Core.Engine.*;
 import static byow.Core.TileUtils.*;
 
@@ -12,6 +13,14 @@ public class DiggerAvatar {
     TETile[][] refWorld;
     Door srcDoor;
     Door dstDoor;
+
+    int len;// how many tiles are dug for this tunnel
+    //int walkStraightCounts; // steps of walking in straight in x or y
+
+    //boolean[] dirOrg; // digging direction reference based on the door position
+
+    //Size orgDistance;
+
     Position posCur; // the current position of our digger;
     Position posPre; // previous position;
     Position posDst; // dst position;
@@ -25,10 +34,17 @@ public class DiggerAvatar {
         this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
     }
 
+
     public void arrangeDiggingJog(Door srcDoor, Door dstDoor) {
 
         this.srcDoor = srcDoor;
         this.dstDoor = dstDoor;
+        //this.dirOrg = getDirectionFromCoordinatesDifference(srcDoor.getPosition(), dstDoor.getPosition());
+        //this.orgDistance = new Size(Math.abs(srcDoor.getPosition().x - dstDoor.getPosition().x) / 2,
+        //        Math.abs(srcDoor.getPosition().y - dstDoor.getPosition().y) / 2);
+        this.len = 0;
+
+        //this.walkStraightCounts = 0;
 
         // must create new object,
         // because position will be modified, thus the original data will be modified, which is not right.
@@ -42,7 +58,7 @@ public class DiggerAvatar {
 
         this.curMoveDir = srcDoor.getDir();// take a first step, out of the door first
 
-        walkOneTile(this.curMoveDir);
+        digOneTile(this.curMoveDir);
     }
     public Hallway digATunnel() {
 
@@ -54,10 +70,15 @@ public class DiggerAvatar {
             if (curMoveDir == null) {
                 return null;
             }
-            walkOneTile(this.curMoveDir);
+            digOneTile(this.curMoveDir);
             looperLimit--;
         }
-        return new Hallway(srcDoor, dstDoor);
+        if (looperLimit == 0) {
+            return null;
+        }
+        else {
+            return new Hallway(srcDoor, dstDoor, len);
+        }
     }
 
     private void backUpCurrentStatus() {
@@ -65,11 +86,10 @@ public class DiggerAvatar {
         this.posPre.y = this.posCur.y;
         this.lastMoveDir = this.curMoveDir;
     }
-    // Manhattan Distance compass
-    private boolean[] checkTheCompass() {
 
-        int diffX = posDst.x - posCur.x;
-        int diffY = posDst.y - posCur.y;
+    private boolean[] getDirectionFromCoordinatesDifference(Position posSrc, Position posDst) {
+        int diffX = posDst.x - posSrc.x;
+        int diffY = posDst.y - posSrc.y;
         /*
          *         |    x
          *         |
@@ -152,8 +172,12 @@ public class DiggerAvatar {
         else if (diffX > 0 && diffY == 0){ //
             return new boolean[]{false, false, false, true};
         }
-
         return new boolean[]{false, false, false, false};
+    }
+
+    // Manhattan Distance compass
+    private boolean[] checkTheCompass() {
+        return getDirectionFromCoordinatesDifference(posCur, posDst);
     }
 
     private boolean[] checkSurroundings() {
@@ -167,7 +191,7 @@ public class DiggerAvatar {
 
         Position posCurNorth = getShiftPosition(posCur, Directionset.NORTH);
         Position posCurWest = getShiftPosition(posCur, Directionset.WEST);
-        Position posCurSouth = getShiftPosition(posCur, Directionset.SOUTH);
+        Position posCurSouth = getShiftPosition(posCur, SOUTH);
         Position posCurEast = getShiftPosition(posCur, Directionset.EAST);
 
         // 3.1 you should not run into a wall;
@@ -179,7 +203,7 @@ public class DiggerAvatar {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
         if (isTileType(posCurSouth, Tileset.WALL, this.refWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
         }
         if (isTileType(posCurEast, Tileset.WALL, this.refWorld)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
@@ -218,7 +242,7 @@ public class DiggerAvatar {
 
             }
             else {
-                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+                Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
             }
         }
         if (isTileType(posCurEast, Tileset.UNLOCKED_DOOR, this.refWorld)) {
@@ -232,18 +256,19 @@ public class DiggerAvatar {
             }
         }
 
-        // 3.1 you should not run out of the canvas;
+        // 3.1 you should not run out of the canvas ;
+        // 3.2 you should not run to the frame the canvas, because there is no space to build walls;
         // check Wall
-        if (posCurNorth.y >= HEIGHT) {
+        if (posCurNorth.y >= HEIGHT - 1) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        if (posCurWest.x < 0) {
+        if (posCurWest.x < 1) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        if (posCurSouth.y < 0) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+        if (posCurSouth.y < 1) {
+            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
         }
-        if (posCurEast.x >= WIDTH) {
+        if (posCurEast.x >= WIDTH - 1) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
         // last step, if there is no place to go, move back
@@ -271,7 +296,89 @@ public class DiggerAvatar {
         }
         return counter;
     }
+/*
+    private int getStraightWalkingLimit() {
+        if (lastMoveDir == NORTH || lastMoveDir == SOUTH) {
+            return this.orgDistance.height;
+        }
+        else {
+            return this.orgDistance.width;
+        }
+    }
 
+    private Direction shiftDirectionRightAngle(Direction dir) {
+        int dirIndex = getIndexFromDir(dir);
+        int dirIndexTurn90 = Math.floorMod(dirIndex + 1, DIRECTION_NUM);
+        int dirIndexTurn270 = Math.floorMod(dirIndex + 3, DIRECTION_NUM);
+        if (this.dirOrg[dirIndexTurn90]) {
+            return getDirectionByIndex(dirIndexTurn90);
+        }
+        else if (this.dirOrg[dirIndexTurn270]) {
+            return getDirectionByIndex(dirIndexTurn270);
+        }
+        else {
+            return dir;
+        }
+    }
+*/
+
+    private int getLastWallCounts(Position posFake, Direction dir) {
+        int counter = 0;
+        Position pos = Position.copyOf(posFake);
+        // 1, check 90
+        while(isInCanvas(pos) && isTileType(pos, Tileset.WALL, this.refWorld)) {
+            counter++;
+            shiftPosition(pos, dir);
+        }
+        return counter;
+    }
+
+    private boolean[] checkExperienceOrientation() {
+
+        boolean[] dirExp;
+        // experience 1: check the last moving direction,
+        // and move action should better be consistent
+        dirExp = getBooleanArrayFromDir(lastMoveDir);
+
+        // experience 2: if move toward one direction more than
+        // half the original distance in x or y, best to turn 90 toward the dst.
+/*
+        if (this.walkStraightCounts > getStraightWalkingLimit()) {
+            dirExp = shiftDirectionRightAngle(lastMoveDir);
+
+            // should clear distance counting
+            // if it failed once, means it is not a right trying;
+            // if not clear it, this check will keep trying to turn a right angle
+            this.walkStraightCounts = 0;
+        }
+*/
+
+        // experience 3: when walk into a wall, check the wall distance of each side,
+        // and add the shorter side direction to the result.
+        Position posFake = getShiftPosition(posCur, lastMoveDir);
+        if (isTileType(posFake, Tileset.WALL, this.refWorld)) {
+            // check the position on ether side of the fake position,
+            // and make the shorter one's direction as a candidate.
+            int dirIndex = getIndexFromDir(lastMoveDir);
+            int dirIndexTurn90 = Math.floorMod(dirIndex + 1, DIRECTION_NUM);
+            Direction dirTurn90 = getDirectionByIndex(dirIndexTurn90);
+            int wallCount90 = getLastWallCounts(posFake, dirTurn90);
+
+            int dirIndexTurn270 = Math.floorMod(dirIndex + 3, DIRECTION_NUM);
+            Direction dirTurn270 = getDirectionByIndex(dirIndexTurn270);
+            int wallCount270 = getLastWallCounts(posFake, dirTurn270);
+
+            // choose the shorter side
+            if (wallCount90 < wallCount270) {
+                setTrueBoolArrayByDirection(dirExp, dirTurn90);
+            }
+            else {
+                setTrueBoolArrayByDirection(dirExp, dirTurn270);
+            }
+        }
+
+        return dirExp;
+    }
     private Direction decideTheNextMove() {
 
         // 3, check your surroundings, which direction is the right direction?
@@ -282,9 +389,8 @@ public class DiggerAvatar {
         // 1, check the compass, get a direction guide
         boolean[] dirCom = checkTheCompass();
 
-        // 2, check the last moving direction, and move action should better be consistent
-        // or other might think you are not an experienced digger
-        boolean[] dirLast = getBooleanArrayFromDir(lastMoveDir);
+        // Use your experience to dig, or other might think you are not an experienced digger
+        boolean[] dirExp = checkExperienceOrientation();
 
         // 4, finally:
         // 4.1 if there are more than one direction to take, use a fucking dice, may the god guide you.
@@ -292,7 +398,7 @@ public class DiggerAvatar {
 
         // move in to a new Tile, trying to move forward, walk left or walk right, but need to check surroundings,
         // because digger might run into a wall or something
-        boolean[] dirMerge1 = mergeDirection(dirSur, dirLast);
+        boolean[] dirMerge1 = mergeDirection(dirSur, dirExp);
         if (getDirNum(dirMerge1) == 0) {
             // if last move is impossible while you check your surroundings, should stick to the current
             // environment, because you can't break in to a wall, at least you can't right now;
@@ -333,13 +439,28 @@ public class DiggerAvatar {
             return Direction.getDirectionByIndex(looper);
         }
     }
+/*
+    private void updateWalkStraightCounts() {
 
-    private void walkOneTile(Direction dir) {
+        // clear counts if direction changed
+        if (lastMoveDir != curMoveDir) {
+            this.walkStraightCounts = 0;
+        }
+        else {
+            this.walkStraightCounts++;
+        }
+
+    }
+ */
+    private void digOneTile(Direction dir) {
 
         Direction.shiftPosition(posCur, dir); // shift the next position
 
+        //updateWalkStraightCounts();
+
         if (!isTileType(posCur, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             paintTile(posCur,Tileset.FLOOR, this.world);// Update canvas
+            this.len++;
         }
 
         // paint wall along the way
@@ -353,6 +474,13 @@ public class DiggerAvatar {
             paintWallTile(posFake, this.world);
             paintSideWall(posFake, lastMoveDir, this.world);
         }
-        // 3, if turned 180 degree (must have run into a wall or out of canvas, should be OK not to process)
+
+        // 3, if turned 180 degree
+        if (isTurned180Degree(lastMoveDir, curMoveDir)) {
+            // get position if moved in the lastMoveDir direction
+            Position posFake = getShiftPosition(posPre, lastMoveDir);
+            paintWallTile(posFake, this.world);
+            paintSideWall(posFake, lastMoveDir, this.world);
+        }
     }
 }

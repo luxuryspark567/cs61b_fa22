@@ -14,18 +14,22 @@ public class Engine {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
     public static final int ROOM_NUM = 15;
-    public static final int ROOM_WIDTH_LIMIT = 20;
-    public static final int ROOM_HEIGHT_LIMIT = 10;
-    private static final long SEED = 9873;
-    public static final int LOOP_LIMIT = 1000;
+    public static final int ROOM_WIDTH_MAX = 30;
+    public static final int ROOM_HEIGHT_MAX = 10;
+    public static final int ROOM_WIDTH_MIN = 5;
+    public static final int ROOM_HEIGHT_MIN = 5;
+    private static final long SEED = 21;
+
+    // limit the length of the tunnel, this is very important to find the best route,
+    // because if the current road is too much, should try another way.
+    // and because a MPQ is used to find the closest pair of nodes, there is a high chance that
+    // try another route would be better.
+    // but there surely is a chance that no route could be found to meet the limit, but I accept that
+    // if a route is too long, I would rather not to go there.
+    public static final int LOOP_LIMIT = WIDTH * HEIGHT * 3 / 10;
 
     public static final int DIRECTION_NUM = 4; // north, west, south and east
     public static final Random RANDOM = new Random(SEED);
-
-    //get the distance of two doors
-    private double distanceOfDoors(Door d1, Door d2) {
-        return Math.sqrt(Math.pow(d1.getPosition().x - d2.getPosition().x, 2) + Math.pow(d1.getPosition().y - d2.getPosition().y, 2));
-    }
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,

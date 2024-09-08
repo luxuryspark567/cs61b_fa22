@@ -8,7 +8,10 @@ public class Direction {
     public Direction(String description) {
         this.description = description;
     }
-
+    @Override
+    public String toString() {
+        return this.description;
+    }
     public static void setFalseBoolArrayByDirection(boolean[] dirBool, Direction dir) {
         if (dir == null) {
             return;
@@ -97,13 +100,17 @@ public class Direction {
         int curIndexDir = getIndexFromDir(curDir);
         int absDiff = Math.abs(curIndexDir - lastIndexDir);
 
-        if (absDiff == 1 || absDiff == 3) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return absDiff == 1 || absDiff == 3;
     }
+
+    public static boolean isTurned180Degree(Direction lastDir, Direction curDir) {
+        int lastIndexDir = getIndexFromDir(lastDir);
+        int curIndexDir = getIndexFromDir(curDir);
+        int absDiff = Math.abs(curIndexDir - lastIndexDir);
+
+        return absDiff == 2;
+    }
+
     public static int getIndexFromDir(Direction dir) {
         if (dir == null) {
             return -1;
