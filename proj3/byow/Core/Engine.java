@@ -3,6 +3,7 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import edu.princeton.cs.algs4.StdDraw;
 //import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
@@ -152,13 +153,86 @@ public class Engine {
         Avatar hero = null;
 
         // generate world
-        TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
-        ter.initialize(WIDTH, HEIGHT, 0, 0);
-        // show a menu, for user to select what to do.
-        //ter.displayStarterMenu();
+        TETile[][] world = new TETile[WIDTH][HEIGHT];
+        this.ter.initialize(40, 40, 0, 0);
+        this.ter.renderText("CS61B: THE GAME");
 
-        // listen for user input
-        //listenForUserInput(finalWorldFrame, hero);
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                System.out.println(c);
+
+                this.rg.initiate(world);
+
+                //debug, fill empty
+                for (int i = 0; i < WIDTH; i++) {
+                    for (int j = 0; j < HEIGHT; j++) {
+                        if (world[i][j] == null) {
+                            world[i][j] = Tileset.NOTHING;
+                        }
+                    }
+                }
+
+                this.ter.initialize(40, 40, 0, 0);
+
+                this.ter.renderFrame(world);
+            }
+        }
+
+            //engine.ter.renderText("CS61B: THE GAME");
+            /*
+            if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD) {
+                // create the world
+                SEED = cn.rNum;
+                RANDOM = new Random(SEED);
+                rg.initiate(finalWorldFrame);
+
+                // should add avatars after the world is generated
+                hero = new Avatar(finalWorldFrame, Position.getRandomPositionInRandomRoom(rg));
+            }
+            else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
+
+            }
+            else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
+                if (hero != null) {
+                    hero.MoveOneStep(Directionset.NORTH);
+                }
+            }
+            else if (cn.bc == ByowCommandSet.MOVE_WEST) {
+                if (hero != null) {
+                    hero.MoveOneStep(Directionset.WEST);
+                }
+            }
+            else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
+                if (hero != null) {
+                    hero.MoveOneStep(Directionset.SOUTH);
+                }
+            }
+            else if (cn.bc == ByowCommandSet.MOVE_EAST) {
+                if (hero != null) {
+                    hero.MoveOneStep(Directionset.EAST);
+                }
+            }
+            else if (cn.bc == ByowCommandSet.LOAD) {
+
+            }
+        } // end of while
+
+        // print avatar
+        if (hero != null) {
+            hero.paintAvatar();
+        }
+
+        //debug, fill empty
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
+                if (finalWorldFrame[i][j] == null) {
+                    finalWorldFrame[i][j] = Tileset.NOTHING;
+                }
+            }
+        }
+
+             */
 
     }
 

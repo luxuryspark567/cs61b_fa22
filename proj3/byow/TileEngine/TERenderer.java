@@ -98,4 +98,14 @@ public class TERenderer {
         }
         StdDraw.show();
     }
+
+    public void renderText(String str) {
+        StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(this.width / 2, this.height / 2, str);
+        StdDraw.show();
+    }
+
 }
