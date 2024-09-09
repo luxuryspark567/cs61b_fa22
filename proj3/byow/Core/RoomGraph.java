@@ -16,7 +16,7 @@ import static byow.Core.TileUtils.*;
 
 public class RoomGraph extends EdgeWeightedGraph {
 
-    private List<Room> roomLut;
+    public List<Room> roomLut;
     // 0, creat an avatar
     DiggerAvatar digger;
     public RoomGraph() {

@@ -22,4 +22,12 @@ public class Size {
         s.append(")");
         return s.toString();
     }
+
+    public static Size copyOf(Size size) {
+        if (size == null) {
+            return null;
+        }
+
+        return new Size(size.w, size.h);
+    }
 }
