@@ -57,8 +57,17 @@ public class MemoryGame {
     }
 
     public String generateRandomString(int n) {
-        //TODO: Generate random string of letters of length n
-        return null;
+        //Generate random string of letters of length n
+        StringBuilder retStr = new StringBuilder();
+
+        // Generate one char at a time
+        for (int i = 0; i < n; i++) {
+            int indexForChar = RandomUtils.uniform(rand, 0, CHARACTERS.length); //26 chars?
+            char c = CHARACTERS[indexForChar];
+            retStr.append(c);
+        }
+
+        return retStr.toString();
     }
 
     public void drawFrame(String s) {
@@ -69,30 +78,134 @@ public class MemoryGame {
         Font fontBig = new Font("Monaco", Font.BOLD, 30);
         StdDraw.setFont(fontBig);
         StdDraw.text(this.width / 2, this.height / 2, s);
+        StdDraw.show();
+    }
 
-        //TODO: If the game is not over, display encouragement, and let the user know if they
-        // should be typing their answer or watching for the next round.
-        
+    public void drawFrame(String s, String roundStatus) {
+        /* Take the input string S and display it at the center of the screen,
+         * with the pen settings given below. */
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.WHITE);
+        Font fontBig;
+        // 1, Draw Header
+        // 1.1 draw line
+        StdDraw.line(0, this.height - 2, this.width, this.height - 2);
+
+        // 1.2 draw header_round
+        String headerRound = "Round: " + round;
+        fontBig = new Font("Monaco", Font.BOLD, 16);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(0, this.height - 1, headerRound + headerRound);
+        // 1.3 draw roundStatus
+        fontBig = new Font("Monaco", Font.BOLD, 16);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(this.width / 2, this.height - 1, roundStatus);
+
+        // 1.4 draw encourage
+        int encourageIndex = RandomUtils.uniform(rand, 0, ENCOURAGEMENT.length);;
+        fontBig = new Font("Monaco", Font.BOLD, 16);
+        StdDraw.setFont(fontBig);
+        // each character is x16 in height, but not sure the width pixel
+        // then used a trick to repeat the string to make it edge aligned.
+        StdDraw.text(this.width, this.height - 1, ENCOURAGEMENT[encourageIndex] + ENCOURAGEMENT[encourageIndex]);
+
+        // 2 show main MSG in the center
+        fontBig = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(this.width / 2, this.height / 2, s);
 
         StdDraw.show();
     }
 
+    public void drawBlankFrame() {
+        /* Take the input string S and display it at the center of the screen,
+         * with the pen settings given below. */
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.WHITE);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
+        //StdDraw.text(this.width / 2, this.height / 2, s);
+
+        //TODO: If the game is not over, display encouragement, and let the user know if they
+        // should be typing their answer or watching for the next round.
+
+
+        StdDraw.show();
+    }
     public void flashSequence(String letters) {
-        //TODO: Display each character in letters, making sure to blank the screen between letters
+        // Display each character in letters, making sure to blank the screen between letters
+        // Each character should be visible on the screen for 1 second and there should be a
+        // brief 0.5 second break between characters where the screen is blank.
+        char[] cArray = letters.toCharArray();
+        for (char c:cArray) {
+            drawFrame(Character.toString(c), "Watch!");
+            StdDraw.pause(1000); // 1000 ms
+
+            // blank the screen
+            drawFrame("", "Watch!");
+            StdDraw.pause(500); // 500 ms
+        }
     }
 
     public String solicitNCharsInput(int n) {
-        //TODO: Read n letters of player input
-        return null;
+        // Read n letters of player input
+        StringBuilder retStr = new StringBuilder();
+        int counter = n;
+        while (counter > 0) {
+            if (StdDraw.hasNextKeyTyped()) {
+                // get the char
+                char c = StdDraw.nextKeyTyped();
+                // add the char to result
+                retStr.append(c);
+                drawFrame(retStr.toString(), "Type!");
+                counter--;
+            }
+        }
+        return retStr.toString();
+    }
+
+    boolean judgeResult(String testStr, String userStr) {
+        return !testStr.equals(userStr);
+    }
+
+    void displayMsgRoundWelcome() {
+        String welcomeMsg = "Round: " + round;
+
+        drawFrame(welcomeMsg, "Watch!");
+        StdDraw.pause(1000); // 1000 ms
+    }
+
+    void displayMsgForUserAnswer() {
+        drawFrame("", "Type!");
     }
 
     public void startGame() {
-        //TODO: Set any relevant variables before the game starts
+        // Set any relevant variables before the game starts
         this.gameOver = false;
+        this.round = 0;
 
-        //TODO: Establish Engine loop
+        // Establish Engine loop
         while (!gameOver) {
-            drawFrame("You should implement this game!");
+
+            round = round + 1;
+
+            displayMsgRoundWelcome();
+
+            // generate random string for current round
+            String testStr = generateRandomString(round);
+
+            // display test
+            flashSequence(testStr);
+
+            // show welcome
+            displayMsgForUserAnswer();
+
+            // get result
+            String userStr = solicitNCharsInput(round);
+
+            // judge result
+            gameOver = judgeResult(testStr, userStr);
+
             StdDraw.pause(1000);
         }
 
