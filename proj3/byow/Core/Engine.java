@@ -18,8 +18,8 @@ public class Engine {
 
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-    public static final int WIDTH_CANVAS = 80;
-    public static final int HEIGHT_CANVAS = 40;
+    //public static final int WIDTH_CANVAS = 80;
+    //public static final int HEIGHT_CANVAS = 40;
     public static final int ROOM_NUM = 15;
     public static final int ROOM_WIDTH_MAX = 30;
     public static final int ROOM_HEIGHT_MAX = 10;

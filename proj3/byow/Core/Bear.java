@@ -18,4 +18,9 @@ public class Bear extends Creature{
         super(damage, health, age, weight, size, affection, pos, rg, world);
         this.inventory.add(new ChestPlate());
     }
+
+    //
+    public void huntHero(Position posAvtar) {
+
+    }
 }

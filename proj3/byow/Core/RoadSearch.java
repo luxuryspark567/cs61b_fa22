@@ -15,6 +15,7 @@ public class RoadSearch {
 
     private Position posSrc;
     private Position posDst; // dst position;
+    //private boolean srcDirBool;
     private Position posCur; // the current position of our digger;
     private Position posPre; // previous position;
     private Direction lastMoveDir; // last move direction, 0-north, 1-west, 2-south, 3-east
@@ -23,13 +24,40 @@ public class RoadSearch {
     public TETile[][] world;
     public TETile[][] refWorld;
 
-    public RoadSearch(Position posSrc, Position posDst, TETile[][] world) {
-        this.posSrc = posSrc;
-        this.posDst = posDst;
-        this.world = world;
-        this.refWorld = TETile.copyOf(world);
+    public RoadSearch() {
+        this.posSrc = null;
+        this.posDst = null;
+        this.world = null;
+        this.refWorld = null;
     }
 
+    // lastMoveDir is very important, because it will define the very first move direction in checkSurroundings()
+    // 1, if lastMoveDir is specified, then the initial moveDir in checkSurroundings() could not be inverse(lastMoveDir)
+    //    because we may not want to go backwards;
+    // 2, if lastMoveDir is null, it means that all direction is OK to run.
+    public RoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world, Direction lastMoveDir) {
+        this.posSrc = Position.copyOf(posSrc);
+        this.posCur = Position.copyOf(posSrc);
+        this.posPre = Position.copyOf(posSrc);
+        this.posDst = Position.copyOf(posDst);
+        this.curMoveDir = dirCur;
+        this.world = world;
+        this.refWorld = TETile.copyOf(world);
+        this.lastMoveDir = lastMoveDir;
+    }
+
+    public void initRoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world, Direction lastMoveDir) {
+        this.posSrc = Position.copyOf(posSrc);
+        this.posCur = Position.copyOf(posSrc);
+        this.posPre = Position.copyOf(posSrc);
+        this.posDst = Position.copyOf(posDst);
+        this.curMoveDir = dirCur;
+
+        //do not init the refWorld multiple times, refWorld should be fixed when Digger is made.
+        //this.world = world;
+        //this.refWorld = TETile.copyOf(world);
+        this.lastMoveDir = lastMoveDir;
+    }
     public void setPosCur(Position pos) {
         this.posCur = Position.copyOf(pos);
     }
@@ -61,10 +89,74 @@ public class RoadSearch {
     public Direction getCurMoveDir() {
         return this.curMoveDir;
     }
+
+
     public void backUpCurrentStatus() {
-        this.posPre.setX(this.posCur.getX());
-        this.posPre.setY(this.posCur.getY());
+        //this.posPre.setX(this.posCur.getX());
+        //this.posPre.setY(this.posCur.getY());
+        this.posPre = Position.copyOf(this.posCur);
         this.lastMoveDir = this.curMoveDir;
+    }
+
+    // get next direction based on the src, dst and world
+    public Direction getNextMoveDirection() {
+        // 3, check your surroundings, which direction is the right direction?
+        // 3.1 you should not take the back direction where you just come from, UNLESS YOU HAVE NOWHERE ELSE TO GO;
+        // 3.2 you must not run into a wall;
+        boolean[] dirSur = checkSurroundings();
+
+        // 1, check the compass, get a direction guide
+        boolean[] dirCom = checkTheCompass();
+
+        // Use your experience to dig, or other might think you are not an experienced digger
+        boolean[] dirExp = checkExperienceOrientation();
+
+        // 4, finally:
+        // 4.1 if there are more than one direction to take, use a fucking dice, may the god guide you.
+        // merge d1 and d2
+
+        // move in to a new Tile, trying to move forward, walk left or walk right, but need to check surroundings,
+        // because digger might run into a wall or something
+        boolean[] dirMerge1 = mergeDirection(dirSur, dirExp);
+        if (getDirNum(dirMerge1) == 0) {
+            // if last move is impossible while you check your surroundings, should stick to the current
+            // environment, because you can't break in to a wall, at least you can't right now;
+            dirMerge1 = dirSur;
+        }
+        //else: if there is match, should stick to the last move direction
+
+        boolean[] dirMerge2 = mergeDirection(dirSur, dirCom);
+        if (getDirNum(dirMerge2) == 0) {
+            // if last move is impossible while you check your surroundings, should stick to the current
+            // environment, because you can't break in to a wall, at least you can't right now;
+            dirMerge2 = dirSur;
+        }
+
+        boolean[] dirMerge3 = mergeDirection(dirMerge1, dirMerge2);
+        if (getDirNum(dirMerge3) == 0) {
+
+            dirMerge3 = dirMerge2;
+        }
+
+        int dirNum = getDirNum(dirMerge3);
+        if (dirNum == 0) {
+            System.out.println("No step to take, and this should never occur");
+            return null;
+        }
+        else {
+            // toll the dice.
+            int randomIndex = RandomUtils.uniform(RANDOM, dirNum);
+            int looper;
+            for (looper = 0; looper < DIRECTION_NUM; looper++) {
+                if (dirMerge3[looper]) {
+                    randomIndex--;
+                    if (randomIndex == -1) {
+                        break;
+                    }
+                }
+            }
+            return Direction.getDirectionByIndex(looper);
+        }
     }
 
     private boolean[] getDirectionFromCoordinatesDifference(Position posSrc, Position posDst) {
@@ -358,66 +450,5 @@ public class RoadSearch {
         }
 
         return dirExp;
-    }
-
-    // get next direction based on the src, dst and world
-    public Direction getNextMoveDirection() {
-        // 3, check your surroundings, which direction is the right direction?
-        // 3.1 you should not take the back direction where you just come from, UNLESS YOU HAVE NOWHERE ELSE TO GO;
-        // 3.2 you must not run into a wall;
-        boolean[] dirSur = checkSurroundings();
-
-        // 1, check the compass, get a direction guide
-        boolean[] dirCom = checkTheCompass();
-
-        // Use your experience to dig, or other might think you are not an experienced digger
-        boolean[] dirExp = checkExperienceOrientation();
-
-        // 4, finally:
-        // 4.1 if there are more than one direction to take, use a fucking dice, may the god guide you.
-        // merge d1 and d2
-
-        // move in to a new Tile, trying to move forward, walk left or walk right, but need to check surroundings,
-        // because digger might run into a wall or something
-        boolean[] dirMerge1 = mergeDirection(dirSur, dirExp);
-        if (getDirNum(dirMerge1) == 0) {
-            // if last move is impossible while you check your surroundings, should stick to the current
-            // environment, because you can't break in to a wall, at least you can't right now;
-            dirMerge1 = dirSur;
-        }
-        //else: if there is match, should stick to the last move direction
-
-        boolean[] dirMerge2 = mergeDirection(dirSur, dirCom);
-        if (getDirNum(dirMerge2) == 0) {
-            // if last move is impossible while you check your surroundings, should stick to the current
-            // environment, because you can't break in to a wall, at least you can't right now;
-            dirMerge2 = dirSur;
-        }
-
-        boolean[] dirMerge3 = mergeDirection(dirMerge1, dirMerge2);
-        if (getDirNum(dirMerge3) == 0) {
-
-            dirMerge3 = dirMerge2;
-        }
-
-        int dirNum = getDirNum(dirMerge3);
-        if (dirNum == 0) {
-            System.out.println("No step to take, and this should never occur");
-            return null;
-        }
-        else {
-            // toll the dice.
-            int randomIndex = RandomUtils.uniform(RANDOM, dirNum);
-            int looper;
-            for (looper = 0; looper < DIRECTION_NUM; looper++) {
-                if (dirMerge3[looper]) {
-                    randomIndex--;
-                    if (randomIndex == -1) {
-                        break;
-                    }
-                }
-            }
-            return Direction.getDirectionByIndex(looper);
-        }
     }
 }

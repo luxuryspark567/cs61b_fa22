@@ -4,29 +4,40 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import static byow.Core.Direction.*;
-import static byow.Core.Directionset.*;
 import static byow.Core.Engine.*;
 import static byow.Core.TileUtils.*;
 
 public class DiggerAvatar extends RoadSearch{
 
-    TETile[][] world;
-    TETile[][] refWorld;
+    //TETile[][] world;
+    //TETile[][] refWorld;
     Door srcDoor;
     Door dstDoor;
 
     int len;// how many tiles are dug for this tunnel
 
     public DiggerAvatar(TETile[][]world) {
-        super(null, null, world);
-        this.world = world;
-
-        this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+        super(null, null, null, world, null);
     }
 
-
+    public DiggerAvatar(Door srcDoor, Door dstDoor, TETile[][]world) {
+        super(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), world, srcDoor.getDir());
+        this.srcDoor = srcDoor;
+        this.dstDoor = dstDoor;
+        this.len = 0;
+        //this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+    }
     public void arrangeDiggingJog(Door srcDoor, Door dstDoor) {
-
+        initRoadSearch(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), world, srcDoor.getDir());
+        this.srcDoor = srcDoor;
+        this.dstDoor = dstDoor;
+        this.len = 0;
+        //this.world = world;
+        //this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+    }
+/*
+    public void arrangeDiggingJog(Door srcDoor, Door dstDoor) {
+        super(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), world, srcDoor.getDir());
         this.srcDoor = srcDoor;
         this.dstDoor = dstDoor;
         //this.dirOrg = getDirectionFromCoordinatesDifference(srcDoor.getPosition(), dstDoor.getPosition());
@@ -38,22 +49,25 @@ public class DiggerAvatar extends RoadSearch{
 
         // must create new object,
         // because position will be modified, thus the original data will be modified, which is not right.
-        this.setPosCur(srcDoor.getPosition());
+        //this.setPosCur(srcDoor.getPosition());
         //this.posCur = Position.copyOf(srcDoor.getPosition());
-        this.setCurMoveDir(null);
+        //this.setCurMoveDir(srcDoor.getDir());
         //this.curMoveDir = null;
 
-        this.setPosPre(new Position(-1, -1));
+        //this.setPosPre(new Position(-1, -1));
         //this.posPre = new Position(-1, -1);
-        this.setPosDst(dstDoor.getPosition());
+        //this.setPosDst(dstDoor.getPosition());
         //this.posDst = dstDoor.getPosition();
-
-        backUpCurrentStatus();// back up current status
+        //this.posPre = Position.copyOf(this.posCur);
+        //this.lastMoveDir = this.curMoveDir;
+        //backUpCurrentStatus();// back up current status
 
         //this.curMoveDir = srcDoor.getDir();// take a first step, out of the door first
-        this.setCurMoveDir(srcDoor.getDir());// take a first step, out of the door first
-        digOneTile(this.getCurMoveDir());
+        //this.setCurMoveDir(srcDoor.getDir());// take a first step, out of the door first
+        //digOneTile(this.getCurMoveDir());
     }
+
+ */
     public Hallway digATunnel() {
 
         // digger got a campus, he walks towards the dst door, until reaching it.

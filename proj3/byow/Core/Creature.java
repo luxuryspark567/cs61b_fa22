@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 import static byow.Core.TileUtils.isTileType;
 
-public class Creature {
+public class Creature extends RoadSearch{
     private int damage;
     private int health;
     private int age;
@@ -41,6 +41,7 @@ public class Creature {
     }
 
     public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, RoomGraph rg, TETile[][] world) {
+        super();
         this.damage = damage;
         this.health = health;
         this.age = age;
