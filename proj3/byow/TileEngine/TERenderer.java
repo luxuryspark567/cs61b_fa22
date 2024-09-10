@@ -1,9 +1,12 @@
 package byow.TileEngine;
 
+import byow.Core.Avatar;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
+
+import static byow.Core.TileUtils.paintTile;
 
 /**
  * Utility class for rendering tiles. You do not need to modify this file. You're welcome
@@ -108,4 +111,37 @@ public class TERenderer {
         StdDraw.show();
     }
 
+    public void paintAvatar(Avatar hero, TETile[][] world) {
+        //this.world = TETile.copyOf(this.refWorld);
+        if (hero.getBackedPosition() != null) {
+            paintTile(hero.getBackedPosition(), hero.getBakedTile(), world);
+        }
+        paintTile(hero.getPosition(), Tileset.AVATAR, world);
+    }
+
+    public void renderGamePage(Avatar hero, TETile[][] world) {
+        // print avatar
+        if (hero != null) {
+            paintAvatar(hero, world);
+        }
+
+        //debug, fill empty
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height; j++) {
+                if (world[i][j] == null) {
+                    world[i][j] = Tileset.NOTHING;
+                }
+            }
+        }
+
+        this.renderFrame(world);
+    }
+
+    public void renderMenuPage() {
+        this.renderText("CS61B: THE GAME");
+    }
+
+    public void renderPause(int count) {
+        StdDraw.pause(count);
+    }
 }

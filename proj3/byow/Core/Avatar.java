@@ -20,6 +20,8 @@ public class Avatar extends Creature{
     private static final Size SIZE = new Size(1, 1);
     private static final int AFFECTION_DFT = 100;
 
+    private Position bakPos;
+    private TETile bakTile;
     // arms at hand
     private Arm helmet;
     private Arm chestPlate;
@@ -42,6 +44,9 @@ public class Avatar extends Creature{
         this.world = world;
 
         this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+
+        this.bakPos = null;
+        this.bakTile = null;
 
         helmet = null;
         chestPlate = null;
@@ -66,11 +71,14 @@ public class Avatar extends Creature{
 
         // shift one sep
         Position pos = this.getPosition();
+        this.bakPos = Position.copyOf(pos);
+        this.bakTile = refWorld[pos.x][pos.y];
+
         Direction.shiftPosition(pos, dir);
 
-        this.setPosition(pos);
-        return true;
-/*
+        //this.setPosition(pos);
+        //return true;
+
         // check if the new position is OK
         if (isTileType(pos, Tileset.WALL, this.refWorld)) {
             System.out.println("you a running into a wall, it is not allowed!");
@@ -80,17 +88,22 @@ public class Avatar extends Creature{
             this.setPosition(pos);
             return true;
         }
+        else if (isTileType(pos, Tileset.UNLOCKED_DOOR, this.refWorld)) {
+            this.setPosition(pos);
+            return true;
+        }
         else {
             // rule 1: can not run into a wall
             // rule 2: can only run onto a floor
             System.out.println("undefined!");
             return false;
         }
-
- */
+    }
+    public Position getBackedPosition() {
+        return bakPos;
     }
 
-    void paintAvatar() {
-        paintTile(this.getPosition(), Tileset.AVATAR, world);
+    public TETile getBakedTile() {
+        return bakTile;
     }
 }

@@ -16,7 +16,7 @@ public class Main {
             TETile[][] frame = engine.interactWithInputString(args[1]);
 
             // initial default size render and print the world on that canvas (renderer)
-            engine.ter.initialize(40, 40, 0, 0);
+            engine.ter.initialize(80, 40, 0, 0);
             engine.ter.renderFrame(frame);
             //engine.ter.renderText("CS61B: THE GAME");
             System.out.println(engine.toString());

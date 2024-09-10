@@ -13,12 +13,13 @@ import java.util.List;
 import static byow.Core.CommandNode.getCommandList;
 import static byow.Core.TileUtils.paintTile;
 
+
 public class Engine {
     TERenderer ter = new TERenderer();
     RoomGraph rg = new RoomGraph();
 
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 40;
+    public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
     public static final int WIDTH_CANVAS = 80;
     public static final int HEIGHT_CANVAS = 40;
@@ -39,201 +40,46 @@ public class Engine {
 
     public static final int DIRECTION_NUM = 4; // north, west, south and east
     public static Random RANDOM = new Random(SEED);
-/*
-    void listenForUserInput(TETile[][] world, Avatar hero) {
 
-        // 0, idle
-        // 1, "N###S": create new world
-        // 2, ":Q": save and quite
-        int parseState = 0;
-        //char[] charArray = input.toCharArray();
-        StringBuilder randomKey = new StringBuilder();
-        //List<CommandNode> cmdList = new LinkedList<>();
-
-        while (true) {
-            if (ter.hasNextKeyTyped()) {
-                // get the char
-                char c = ter.nextKeyTyped();
-
-                switch (parseState) {
-                    case 0: // idle state
-                        if (c == 'l' || c == 'L') {
-                            //cmdList.add(new CommandNode(ByowCommandSet.LOAD));
-                        }
-                        else if (c == 'w' || c == 'W') {
-                            System.out.println("Move North");
-                        }
-                        else if (c == 'a' || c == 'A') {
-                            System.out.println("Move West");
-                        }
-                        else if (c == 's' || c == 'S') {
-                            System.out.println("Move South");
-                        }
-                        else if (c == 'd' || c == 'D') {
-                            System.out.println("Move East");
-                        }
-                        else if (c == 'n' || c == 'N') {
-                            randomKey.delete(0, randomKey.length());
-                            ter.displayClear();
-                            parseState = 1;
-                        }
-                        else if (c == ':') {
-                            parseState = 2;
-                        }
-                        break;
-                    case 1: //create new world command analysis
-                        if (c >= '0' && c <= '9') {
-                            randomKey.append(c);
-                            ter.displayUserInput(randomKey.toString());
-                            System.out.println(randomKey);
-
-                        } else {
-                            if (c == 's' || c == 'S') {
-                                // got a valid random key
-                                if (randomKey.isEmpty()) {
-                                    //cmdList.add(new CommandNode(ByowCommandSet.CREATE_NEW_WORLD));
-                                } else {
-                                    // create the world
-                                    SEED = Integer.parseInt(randomKey.toString());
-                                    RANDOM = new Random(SEED);
-                                    rg.initiate(world);
-
-                                    // should add avatars after the world is generated
-                                    //hero = new Avatar(world, Position.getRandomPositionInRandomRoom(rg));
-                                    //cmdList.add(new CommandNode(ByowCommandSet.CREATE_NEW_WORLD, Integer.parseInt(randomKey.toString())));
-                                    // print avatar
-                                    //if (hero != null) {
-                                    //    hero.paintAvatar();
-                                   // }
-
-                                    //debug, fill empty
-                                    for (int i = 0; i < WIDTH; i++) {
-                                        for (int j = 0; j < HEIGHT; j++) {
-                                            if (world[i][j] == null) {
-                                                world[i][j] = Tileset.NOTHING;
-                                            }
-                                        }
-                                    }
-
-                                    // render the world
-                                    ter.initialize(WIDTH, HEIGHT, 0, 0);
-                                    ter.renderFrame(world);
-                                }
-                            } else {
-                                randomKey.delete(0, randomKey.length());
-                                System.out.println("invalid create new world command!");
-                            }
-                            parseState = 0;
-                        }
-                        break;
-                    case 2:
-                        if (c == 'q' || c == 'Q') {
-                            //cmdList.add(new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME));
-                        } else {
-                            System.out.println("invalid quit & save command!");
-                        }
-                        parseState = 0;
-                        break;
-                    default:
-                        parseState = 0;
-                        break;
-                }
-            }
-        }
-    }
-
- */
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
-
-        // add avatar
-        Avatar hero = null;
-
         // generate world
         TETile[][] world = new TETile[WIDTH][HEIGHT];
-        this.ter.initialize(40, 40, 0, 0);
-        this.ter.renderText("CS61B: THE GAME");
+        ter.initialize(WIDTH, HEIGHT, 0, 0);
 
-        while (true) {
-            if (StdDraw.hasNextKeyTyped()) {
-                char c = StdDraw.nextKeyTyped();
-                System.out.println(c);
+        // add monitor, which will listen commands typed by user;
+        CommandMonitor cMonitor = new CommandMonitor();
 
-                this.rg.initiate(world);
+        // render menu page
+        ter.renderMenuPage();
 
-                //debug, fill empty
-                for (int i = 0; i < WIDTH; i++) {
-                    for (int j = 0; j < HEIGHT; j++) {
-                        if (world[i][j] == null) {
-                            world[i][j] = Tileset.NOTHING;
-                        }
-                    }
-                }
+        // listening menu page
+        cMonitor.initiate();
+        cMonitor.monitorMenuPage(ter);
+        cMonitor.executeCommands(null, world, ter);
 
-                this.ter.initialize(40, 40, 0, 0);
+        // render game page
 
-                this.ter.renderFrame(world);
-            }
+        // generate world data base (rooms and tunnels)
+        SEED = cMonitor.cn.rNum;
+        RANDOM = new Random(SEED);
+        rg.initiate(world);
+        Avatar hero = new Avatar(world, Position.getRandomPositionInRandomRoom(rg));
+
+        ter.initialize(WIDTH, HEIGHT, 0, 0);
+        ter.renderGamePage(hero, world);
+
+        // listening game page;
+        cMonitor.initiate();
+
+        while (cMonitor.isIdleCommand() || cMonitor.isMoveCommand()) {
+            cMonitor.initiate();
+            cMonitor.monitorGamePage();
+            cMonitor.executeCommands(hero, world, ter);
         }
-
-            //engine.ter.renderText("CS61B: THE GAME");
-            /*
-            if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD) {
-                // create the world
-                SEED = cn.rNum;
-                RANDOM = new Random(SEED);
-                rg.initiate(finalWorldFrame);
-
-                // should add avatars after the world is generated
-                hero = new Avatar(finalWorldFrame, Position.getRandomPositionInRandomRoom(rg));
-            }
-            else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
-
-            }
-            else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
-                if (hero != null) {
-                    hero.MoveOneStep(Directionset.NORTH);
-                }
-            }
-            else if (cn.bc == ByowCommandSet.MOVE_WEST) {
-                if (hero != null) {
-                    hero.MoveOneStep(Directionset.WEST);
-                }
-            }
-            else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
-                if (hero != null) {
-                    hero.MoveOneStep(Directionset.SOUTH);
-                }
-            }
-            else if (cn.bc == ByowCommandSet.MOVE_EAST) {
-                if (hero != null) {
-                    hero.MoveOneStep(Directionset.EAST);
-                }
-            }
-            else if (cn.bc == ByowCommandSet.LOAD) {
-
-            }
-        } // end of while
-
-        // print avatar
-        if (hero != null) {
-            hero.paintAvatar();
-        }
-
-        //debug, fill empty
-        for (int i = 0; i < WIDTH; i++) {
-            for (int j = 0; j < HEIGHT; j++) {
-                if (finalWorldFrame[i][j] == null) {
-                    finalWorldFrame[i][j] = Tileset.NOTHING;
-                }
-            }
-        }
-
-             */
-
     }
 
     /**
@@ -316,7 +162,7 @@ public class Engine {
 
         // print avatar
         if (hero != null) {
-            hero.paintAvatar();
+            ter.paintAvatar(hero, finalWorldFrame);
         }
 
         //debug, fill empty
