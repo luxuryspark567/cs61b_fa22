@@ -1,6 +1,7 @@
 package byow.TileEngine;
 
 import byow.Core.Avatar;
+import byow.Core.Creature;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
@@ -111,20 +112,22 @@ public class TERenderer {
         StdDraw.show();
     }
 
-    public void paintAvatar(Avatar hero, TETile[][] world) {
+    public void paintCreature(Creature creature, TETile type, TETile[][] world) {
         //this.world = TETile.copyOf(this.refWorld);
-        if (hero.getBackedPosition() != null) {
-            paintTile(hero.getBackedPosition(), hero.getBakedTile(), world);
+        if (creature.getBackedPosition() != null) {
+            paintTile(creature.getBackedPosition(), creature.getBackedTile(), world);
         }
-        paintTile(hero.getPosition(), Tileset.AVATAR, world);
+        paintTile(creature.getPosition(), type, world);
     }
 
-    public void renderGamePage(Avatar hero, TETile[][] world) {
+    public void renderCreature(Creature rabit, TETile tile, TETile[][] world) {
         // print avatar
-        if (hero != null) {
-            paintAvatar(hero, world);
+        if (rabit != null) {
+            paintCreature(rabit, tile, world);
         }
+    }
 
+    public void renderGamePage(TETile[][] world) {
         //debug, fill empty
         for (int i = 0; i < this.width; i++) {
             for (int j = 0; j < this.height; j++) {

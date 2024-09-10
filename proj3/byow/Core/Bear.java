@@ -1,5 +1,7 @@
 package byow.Core;
 
+import byow.TileEngine.TETile;
+
 import java.util.LinkedList;
 public class Bear extends Creature{
     private static final int DAMAGE_DFT = 30;
@@ -9,12 +11,11 @@ public class Bear extends Creature{
     private static final Size SIZE = new Size(2, 2);
     private static final int AFFECTION_DFT = -100;
     // arms at hand
-    public Bear() {
-        super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, new Position(0, 0));
+    public Bear(Position pos, RoomGraph rg, TETile[][] world) {
+        super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, pos, rg, world);
     }
-    public Bear(int damage, int health, int age, int weight, Size size, int affection, Position pos) {
-        super(damage, health, age, weight, size, affection, pos);
-
+    public Bear(int damage, int health, int age, int weight, Size size, int affection, Position pos, TETile[][] world, RoomGraph rg) {
+        super(damage, health, age, weight, size, affection, pos, rg, world);
         this.inventory.add(new ChestPlate());
     }
 }

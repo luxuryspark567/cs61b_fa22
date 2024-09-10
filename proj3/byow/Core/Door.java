@@ -21,13 +21,15 @@ public class Door{
             this.type = c;
         }
     }
-
+/*
     public static class Doorset {
         public static final DoorType INVISIBLE = new DoorType("invisible");
         public static final DoorType CLOSE = new DoorType("close");
         public static final DoorType OPEN = new DoorType("open");
         public static final DoorType INVALID = new DoorType("invalid");
     }
+
+ */
     public Door() {
         //this.pr = null;
         this.pos = null;

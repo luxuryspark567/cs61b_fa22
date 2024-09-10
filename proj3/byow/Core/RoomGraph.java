@@ -10,6 +10,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeMap;
 
 import static byow.Core.Engine.*;
 import static byow.Core.TileUtils.*;
@@ -19,8 +20,23 @@ public class RoomGraph extends EdgeWeightedGraph {
     public List<Room> roomLut;
     // 0, creat an avatar
     DiggerAvatar digger;
-    public RoomGraph() {
+
+    TreeMap<Position, Object> tm;
+
+    int canvasWidth;
+    int canvasHeight;
+    public RoomGraph(int w, int h) {
         super(ROOM_NUM);
+        this.canvasWidth = w;
+        this.canvasHeight = h;
+        tm = new TreeMap<Position, Object>(new PositionComparator());
+    }
+
+    public static class PositionComparator implements Comparator{
+        @Override
+        public int compare(Object o1, Object o2) {
+            return ((Position)o1).getIndex() - ((Position)o2).getIndex();
+        }
     }
 
     public void initiate(TETile[][] world) {
@@ -53,8 +69,8 @@ public class RoomGraph extends EdgeWeightedGraph {
 
     private Position getRandomPosition() {
         Position ret = new Position();
-        ret.x = RandomUtils.uniform(RANDOM, WIDTH);
-        ret.y = RandomUtils.uniform(RANDOM, HEIGHT);
+        ret.setX(RandomUtils.uniform(RANDOM, WIDTH));
+        ret.setY(RandomUtils.uniform(RANDOM, HEIGHT));
         return ret;
     }
 
@@ -90,7 +106,7 @@ public class RoomGraph extends EdgeWeightedGraph {
             this.adj(roomLut.indexOf(r));
         }
     }
-
+/*
     boolean isRoomBesidesNorthMargin(Position pos, Size size, Direction side) {
         return ((pos.y + size.h - 1 == HEIGHT - 2 || pos.y + size.h - 1 == HEIGHT - 1) && side == Directionset.NORTH);
     }
@@ -106,6 +122,8 @@ public class RoomGraph extends EdgeWeightedGraph {
     boolean isRoomBesidesEastMargin(Position pos, Size size, Direction side) {
         return ((pos.x + size.w - 1 == WIDTH - 2 || pos.x + size.w - 1 == WIDTH - 1) && side == Directionset.EAST);
     }
+
+ */
     private Door checkAndGetDoor(Position pos, Direction dir, TETile[][] world) {
         // if the door is besides wall, then this door is invalid
         Position posShift1 = Direction.getShiftPosition(pos, dir);
@@ -137,28 +155,28 @@ public class RoomGraph extends EdgeWeightedGraph {
                 // pick a random position on the north side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.x + index, posRoom.y + sizeRoom.h - 1);
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1);
                 newDoor = checkAndGetDoor(doorPos, Directionset.NORTH, world);
             }
             else if (side == Directionset.WEST) {
                 // pick a random position on the west side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.x, posRoom.y + index);
+                Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index);
                 newDoor = checkAndGetDoor(doorPos, Directionset.WEST, world);
             }
             else if (side == Directionset.SOUTH) {
                 // pick a random position on the south side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w -1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.x + index, posRoom.y);
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY());
                 newDoor = checkAndGetDoor(doorPos, Directionset.SOUTH, world);
             }
             else if (side == Directionset.EAST) {
                 // pick a random position on the east side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.x + sizeRoom.w - 1, posRoom.y + index);
+                Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1, posRoom.getY() + index);
                 newDoor = checkAndGetDoor(doorPos, Directionset.EAST, world);
             }
             looperLimit--;
@@ -175,7 +193,7 @@ public class RoomGraph extends EdgeWeightedGraph {
             {
                 // paint door
                 r.setDoor(door);
-                world[door.getPosition().x][door.getPosition().y] = Tileset.UNLOCKED_DOOR;
+                world[door.getPosition().getX()][door.getPosition().getY()] = Tileset.UNLOCKED_DOOR;
             }
         }
 
@@ -252,14 +270,14 @@ public class RoomGraph extends EdgeWeightedGraph {
         Position pos = getRandomPosition();
         Size size = getRandomSize();
         //check if room location is out of canvas
-        if ((pos.x + size.w - 1) > (WIDTH - 1) || (pos.y + size.h - 1) > (HEIGHT - 1)) {
+        if ((pos.getX() + size.w - 1) > (WIDTH - 1) || (pos.getY() + size.h - 1) > (HEIGHT - 1)) {
             return null;
         }
         //check if overlaps
         for (int i = 0; i < size.w; i++) {
             for (int j = 0; j < size.h; j++) {
-                int localX = pos.x + i;
-                int localY = pos.y + j;
+                int localX = pos.getX() + i;
+                int localY = pos.getY() + j;
 
                 if (world[localX][localY] != null) {
                     return null; // overlaps
@@ -272,19 +290,19 @@ public class RoomGraph extends EdgeWeightedGraph {
         // paint the room on the canvas
         // create wall
         for (int i = 0; i < size.w; i++) {
-            world[pos.x + i][pos.y] = Tileset.WALL;
-            world[pos.x + i][pos.y + size.h - 1] = Tileset.WALL;
+            world[pos.getX() + i][pos.getY()] = Tileset.WALL;
+            world[pos.getX() + i][pos.getY() + size.h - 1] = Tileset.WALL;
         }
 
         for (int j = 0; j < size.h; j++) {
-            world[pos.x][pos.y + j] = Tileset.WALL;
-            world[pos.x + size.w - 1][pos.y + j] = Tileset.WALL;
+            world[pos.getX()][pos.getY() + j] = Tileset.WALL;
+            world[pos.getX() + size.w - 1][pos.getY() + j] = Tileset.WALL;
         }
         //create tile
         for (int i = 1; i < size.w - 1; i++) {
             for (int j = 1; j < size.h - 1; j++) {
-                int localX = pos.x + i;
-                int localY = pos.y + j;
+                int localX = pos.getX() + i;
+                int localY = pos.getY() + j;
                 world[localX][localY] = Tileset.FLOOR;
             }
         }
@@ -294,7 +312,10 @@ public class RoomGraph extends EdgeWeightedGraph {
 
     // don't care about the room distance, room distance is measured by door distance.
     private double distanceOfRooms(Room r1, Room r2) {
-        return Math.sqrt(Math.pow(r1.getDoor().getPosition().x - r2.getDoor().getPosition().x, 2) + Math.pow(r1.getDoor().getPosition().y - r2.getDoor().getPosition().y, 2));
+        return Math.sqrt(Math.pow(r1.getDoor().getPosition().getX()
+                - r2.getDoor().getPosition().getX(), 2)
+                + Math.pow(r1.getDoor().getPosition().getY()
+                - r2.getDoor().getPosition().getY(), 2));
     }
 
     private static class valueRoomPair {

@@ -15,10 +15,7 @@ import static byow.Core.TileUtils.paintTile;
 
 
 public class Engine {
-    TERenderer ter = new TERenderer();
-    RoomGraph rg = new RoomGraph();
 
-    /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
     public static final int WIDTH_CANVAS = 80;
@@ -29,7 +26,6 @@ public class Engine {
     public static final int ROOM_WIDTH_MIN = 5;
     public static final int ROOM_HEIGHT_MIN = 5;
     private static long SEED = 19900219;
-
     // limit the length of the tunnel, this is very important to find the best route,
     // because if the current road is too much, should try another way.
     // and because a MPQ is used to find the closest pair of nodes, there is a high chance that
@@ -40,6 +36,8 @@ public class Engine {
 
     public static final int DIRECTION_NUM = 4; // north, west, south and east
     public static Random RANDOM = new Random(SEED);
+    TERenderer ter = new TERenderer();
+    RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -59,7 +57,7 @@ public class Engine {
         // listening menu page
         cMonitor.initiate();
         cMonitor.monitorMenuPage(ter);
-        cMonitor.executeCommands(null, world, ter);
+        cMonitor.executeCommands(null, null, world, ter);
 
         // render game page
 
@@ -67,10 +65,13 @@ public class Engine {
         SEED = cMonitor.cn.rNum;
         RANDOM = new Random(SEED);
         rg.initiate(world);
-        Avatar hero = new Avatar(world, Position.getRandomPositionInRandomRoom(rg));
+        Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, world);
+        Bear bear = new Bear(Position.getRandomPositionInRandomRoom(rg), rg, world);
 
         ter.initialize(WIDTH, HEIGHT, 0, 0);
-        ter.renderGamePage(hero, world);
+        ter.renderCreature(hero, Tileset.AVATAR, world);
+        ter.renderCreature(bear, Tileset.GANON, world);
+        ter.renderGamePage(world);
 
         // listening game page;
         cMonitor.initiate();
@@ -78,7 +79,9 @@ public class Engine {
         while (cMonitor.isIdleCommand() || cMonitor.isMoveCommand()) {
             cMonitor.initiate();
             cMonitor.monitorGamePage();
-            cMonitor.executeCommands(hero, world, ter);
+            cMonitor.executeCommands(hero, bear, world, ter);
+            System.out.println(rg.tm);
+
         }
     }
 
@@ -130,7 +133,7 @@ public class Engine {
                 rg.initiate(finalWorldFrame);
 
                 // should add avatars after the world is generated
-                hero = new Avatar(finalWorldFrame, Position.getRandomPositionInRandomRoom(rg));
+                hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, finalWorldFrame);
             }
             else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
 
@@ -162,7 +165,7 @@ public class Engine {
 
         // print avatar
         if (hero != null) {
-            ter.paintAvatar(hero, finalWorldFrame);
+            ter.paintCreature(hero, Tileset.AVATAR, finalWorldFrame);
         }
 
         //debug, fill empty

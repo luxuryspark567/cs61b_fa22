@@ -2,6 +2,7 @@ package byow.Core;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class CommandMonitor {
@@ -87,7 +88,7 @@ public class CommandMonitor {
 
     }
 
-    public void executeCommands(Avatar hero, TETile[][] world, TERenderer ter) {
+    public void executeCommands(Avatar hero, Bear bear, TETile[][] world, TERenderer ter) {
         // return true means not a command to break out
         // return false means a command to break outer while loop, and no need to monitor anymore.
 
@@ -110,26 +111,37 @@ public class CommandMonitor {
         }
         else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
             if (hero != null) {
+                ter.renderCreature(bear, Tileset.GANON, world);
+
                 hero.MoveOneStep(Directionset.NORTH);
-                ter.renderGamePage(hero, world);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+
+                ter.renderGamePage(world);
             }
         }
         else if (cn.bc == ByowCommandSet.MOVE_WEST) {
             if (hero != null) {
+
+                ter.renderCreature(bear, Tileset.GANON, world);
                 hero.MoveOneStep(Directionset.WEST);
-                ter.renderGamePage(hero, world);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderGamePage(world);
             }
         }
         else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
             if (hero != null) {
+                ter.renderCreature(bear, Tileset.GANON, world);
                 hero.MoveOneStep(Directionset.SOUTH);
-                ter.renderGamePage(hero, world);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderGamePage(world);
             }
         }
         else if (cn.bc == ByowCommandSet.MOVE_EAST) {
             if (hero != null) {
                 hero.MoveOneStep(Directionset.EAST);
-                ter.renderGamePage(hero, world);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderCreature(bear, Tileset.GANON, world);
+                ter.renderGamePage(world);
             }
         }
     }

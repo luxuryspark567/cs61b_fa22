@@ -64,16 +64,16 @@ public class Direction {
         }
 
         if (Directionset.NORTH == dir) {
-            pos.y = pos.y + 1;
+            pos.setY(pos.getY() + 1);
         }
         else if (Directionset.WEST == dir) {
-            pos.x = pos.x - 1;
+            pos.setX(pos.getX() - 1);
         }
         else if (Directionset.SOUTH == dir) {
-            pos.y = pos.y - 1;
+            pos.setY(pos.getY() - 1);
         }
         else {//if (Directionset.EAST == dir) {
-            pos.x = pos.x + 1;
+            pos.setX(pos.getX() + 1);
         }
     }
 
@@ -154,16 +154,16 @@ public class Direction {
         }
 
         if (Directionset.NORTH == dir) {
-            return new Position(pos.x, pos.y + 1);
+            return new Position(pos.getX(), pos.getY() + 1);
         }
         else if (Directionset.WEST == dir) {
-            return new Position(pos.x - 1, pos.y);
+            return new Position(pos.getX() - 1, pos.getY());
         }
         else if (Directionset.SOUTH == dir) {
-            return new Position(pos.x, pos.y - 1);
+            return new Position(pos.getX(), pos.getY() - 1);
         }
         else {//if (Directionset.EAST == dir) {
-            return new Position(pos.x + 1, pos.y);
+            return new Position(pos.getX() + 1, pos.getY());
         }
     }
 }

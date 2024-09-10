@@ -11,12 +11,12 @@ public class TileUtils {
 
 
     public static boolean isInCanvas(Position pos) {
-        return pos.x >= 0 && pos.y >= 0 && pos.x < WIDTH && pos.y < HEIGHT;
+        return pos.getX() >= 0 && pos.getY() >= 0 && pos.getX() < WIDTH && pos.getY() < HEIGHT;
     }
 
     public static boolean isTileType(Position pos, TETile type, TETile[][] world) {
         if (isInCanvas(pos)) {
-            return world[pos.x][pos.y] == type;
+            return world[pos.getX()][pos.getY()] == type;
         }
         else {
             return false; // out of canvas, then it is surely not a "type"
@@ -34,7 +34,7 @@ public class TileUtils {
 
     public static boolean isNullTile(Position pos, TETile[][] world) {
         if (isInCanvas(pos)) {
-            return world[pos.x][pos.y] == null;
+            return world[pos.getX()][pos.getY()] == null;
         }
         else {
             // already reach the end, and there is no Tile there, then this it definitely not a wanted Tile
@@ -61,7 +61,7 @@ public class TileUtils {
 
     public static void paintTile(Position pos, TETile type, TETile[][] world) {
         if (isInCanvas(pos)) {
-            world[pos.x][pos.y] = type;
+            world[pos.getX()][pos.getY()] = type;
         }
         else {
             System.out.println("out of canvas!!!");

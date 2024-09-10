@@ -4,85 +4,69 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import static byow.Core.Direction.*;
-import static byow.Core.Directionset.*;
+import static byow.Core.Direction.setTrueBoolArrayByDirection;
+import static byow.Core.Directionset.SOUTH;
 import static byow.Core.Engine.*;
-import static byow.Core.TileUtils.*;
+import static byow.Core.Engine.WIDTH;
+import static byow.Core.TileUtils.isInCanvas;
+import static byow.Core.TileUtils.isTileType;
 
-public class DiggerAvatar extends RoadSearch{
+public class RoadSearch {
 
-    TETile[][] world;
-    TETile[][] refWorld;
-    Door srcDoor;
-    Door dstDoor;
+    private Position posSrc;
+    private Position posDst; // dst position;
+    private Position posCur; // the current position of our digger;
+    private Position posPre; // previous position;
+    private Direction lastMoveDir; // last move direction, 0-north, 1-west, 2-south, 3-east
+    private Direction curMoveDir;
 
-    int len;// how many tiles are dug for this tunnel
+    public TETile[][] world;
+    public TETile[][] refWorld;
 
-    public DiggerAvatar(TETile[][]world) {
-        super(null, null, world);
+    public RoadSearch(Position posSrc, Position posDst, TETile[][] world) {
+        this.posSrc = posSrc;
+        this.posDst = posDst;
         this.world = world;
-
-        this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+        this.refWorld = TETile.copyOf(world);
     }
 
-
-    public void arrangeDiggingJog(Door srcDoor, Door dstDoor) {
-
-        this.srcDoor = srcDoor;
-        this.dstDoor = dstDoor;
-        //this.dirOrg = getDirectionFromCoordinatesDifference(srcDoor.getPosition(), dstDoor.getPosition());
-        //this.orgDistance = new Size(Math.abs(srcDoor.getPosition().x - dstDoor.getPosition().x) / 2,
-        //        Math.abs(srcDoor.getPosition().y - dstDoor.getPosition().y) / 2);
-        this.len = 0;
-
-        //this.walkStraightCounts = 0;
-
-        // must create new object,
-        // because position will be modified, thus the original data will be modified, which is not right.
-        this.setPosCur(srcDoor.getPosition());
-        //this.posCur = Position.copyOf(srcDoor.getPosition());
-        this.setCurMoveDir(null);
-        //this.curMoveDir = null;
-
-        this.setPosPre(new Position(-1, -1));
-        //this.posPre = new Position(-1, -1);
-        this.setPosDst(dstDoor.getPosition());
-        //this.posDst = dstDoor.getPosition();
-
-        backUpCurrentStatus();// back up current status
-
-        //this.curMoveDir = srcDoor.getDir();// take a first step, out of the door first
-        this.setCurMoveDir(srcDoor.getDir());// take a first step, out of the door first
-        digOneTile(this.getCurMoveDir());
+    public void setPosCur(Position pos) {
+        this.posCur = Position.copyOf(pos);
     }
-    public Hallway digATunnel() {
 
-        // digger got a campus, he walks towards the dst door, until reaching it.
-        int looperLimit = LOOP_LIMIT;
-        while (!this.getPosCur().equals(this.getPosDst()) && looperLimit > 0) {
-            backUpCurrentStatus();// back status before update everything
-            //curMoveDir = decideTheNextMove();// decide should move to which direction;
-            this.setCurMoveDir(getNextMoveDirection());// decide should move to which direction;
-            if (this.getCurMoveDir() == null) {
-                return null;
-            }
-            digOneTile(this.getCurMoveDir());
-            looperLimit--;
-        }
-        if (looperLimit == 0) {
-            return null;
-        }
-        else {
-            return new Hallway(srcDoor, dstDoor, len);
-        }
+    public void setPosPre(Position pos) {
+        this.posPre = Position.copyOf(pos);
     }
-/*
-    private void backUpCurrentStatus() {
+
+    public void setPosDst(Position pos) {
+        this.posDst = Position.copyOf(pos);
+    }
+    public void setCurMoveDir(Direction dir) {
+        this.curMoveDir = dir;
+    }
+
+    public Position getPosCur() {
+        return this.posCur;
+    }
+
+    public Position getPosPre() {
+        return posPre;
+    }
+    Direction getLastMoveDir() {
+        return this.lastMoveDir;
+    }
+    public Position getPosDst() {
+        return this.posDst;
+    }
+    public Direction getCurMoveDir() {
+        return this.curMoveDir;
+    }
+    public void backUpCurrentStatus() {
         this.posPre.setX(this.posCur.getX());
         this.posPre.setY(this.posCur.getY());
         this.lastMoveDir = this.curMoveDir;
     }
-*/
-    /*
+
     private boolean[] getDirectionFromCoordinatesDifference(Position posSrc, Position posDst) {
         int diffX = posDst.getX() - posSrc.getX();
         int diffY = posDst.getY() - posSrc.getY();
@@ -92,7 +76,7 @@ public class DiggerAvatar extends RoadSearch{
          * --------o-------
          *         |
          *         |
-         *
+         * */
         if (diffX > 0 && diffY > 0) {
             return new boolean[]{true, false, false, true};
         }
@@ -102,7 +86,7 @@ public class DiggerAvatar extends RoadSearch{
          * --------o-------
          *         |
          *         |    x
-         *
+         * */
         else if (diffX > 0 && diffY < 0) {
             return new boolean[]{false, false, true, true};
         }
@@ -112,7 +96,7 @@ public class DiggerAvatar extends RoadSearch{
          * --------o-------
          *         |
          *         |
-         *
+         * */
         else if (diffX < 0 && diffY > 0){ //
             return new boolean[]{true, true, false, false};
         }
@@ -122,7 +106,7 @@ public class DiggerAvatar extends RoadSearch{
          * --------o-------
          *         |
          *     x   |
-         *
+         * */
         else if (diffX < 0 && diffY < 0){ //
             return new boolean[]{false, true, true, false};
         }
@@ -133,7 +117,7 @@ public class DiggerAvatar extends RoadSearch{
          * --------o-------
          *         |
          *         |
-         *
+         * */
         else if (diffX == 0 && diffY > 0){ //
             return new boolean[]{true, false, false, false};
         }
@@ -143,7 +127,7 @@ public class DiggerAvatar extends RoadSearch{
          * ---x----o-------
          *         |
          *         |
-         *
+         * */
         else if (diffX < 0 && diffY == 0){ //
             return new boolean[]{false, true, false, false};
         }
@@ -154,7 +138,7 @@ public class DiggerAvatar extends RoadSearch{
          *         |
          *         x
          *         |
-         *
+         * */
         else if (diffX == 0 && diffY < 0){ //
             return new boolean[]{false, false, true, false};
         }
@@ -164,15 +148,13 @@ public class DiggerAvatar extends RoadSearch{
          * --------o----x---
          *         |
          *         |
-         *
+         * */
         else if (diffX > 0 && diffY == 0){ //
             return new boolean[]{false, false, false, true};
         }
         return new boolean[]{false, false, false, false};
     }
-*/
 
-    /*
     // Manhattan Distance compass
     private boolean[] checkTheCompass() {
         return getDirectionFromCoordinatesDifference(posCur, posDst);
@@ -212,8 +194,8 @@ public class DiggerAvatar extends RoadSearch{
 
         if (isTileType(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
-            if (dstDoor.getPosition().getX() == posCurNorth.getX()
-                    && dstDoor.getPosition().getY() == posCurNorth.getY()) {
+            if (posDst.getX() == posCurNorth.getX()
+                    && posDst.getY() == posCurNorth.getY()) {
 
             }
             else {
@@ -223,8 +205,8 @@ public class DiggerAvatar extends RoadSearch{
 
         if (isTileType(posCurWest, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
-            if (dstDoor.getPosition().getX() == posCurWest.getX()
-                    && dstDoor.getPosition().getY() == posCurWest.getY()) {
+            if (posDst.getX() == posCurWest.getX()
+                    && posDst.getY() == posCurWest.getY()) {
 
             }
             else {
@@ -235,8 +217,8 @@ public class DiggerAvatar extends RoadSearch{
             // door is unlocked door
 
             // if a unlocked door is the destination door, is OK to enter
-            if (dstDoor.getPosition().getX() == posCurSouth.getX()
-                    && dstDoor.getPosition().getY() == posCurSouth.getY()) {
+            if (posDst.getX() == posCurSouth.getX()
+                    && posDst.getY() == posCurSouth.getY()) {
 
             }
             else {
@@ -245,8 +227,8 @@ public class DiggerAvatar extends RoadSearch{
         }
         if (isTileType(posCurEast, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
-            if (dstDoor.getPosition().getX() == posCurEast.getX()
-                    && dstDoor.getPosition().getY() == posCurEast.getY()) {
+            if (posDst.getX() == posCurEast.getX()
+                    && posDst.getY() == posCurEast.getY()) {
 
             }
             else {
@@ -294,7 +276,6 @@ public class DiggerAvatar extends RoadSearch{
         }
         return counter;
     }
-    */
 /*
     private int getStraightWalkingLimit() {
         if (lastMoveDir == NORTH || lastMoveDir == SOUTH) {
@@ -320,7 +301,7 @@ public class DiggerAvatar extends RoadSearch{
         }
     }
 */
-/*
+
     private int getLastWallCounts(Position posFake, Direction dir) {
         int counter = 0;
         Position pos = Position.copyOf(posFake);
@@ -331,8 +312,7 @@ public class DiggerAvatar extends RoadSearch{
         }
         return counter;
     }
-*/
-    /*
+
     private boolean[] checkExperienceOrientation() {
 
         boolean[] dirExp;
@@ -342,6 +322,16 @@ public class DiggerAvatar extends RoadSearch{
 
         // experience 2: if move toward one direction more than
         // half the original distance in x or y, best to turn 90 toward the dst.
+/*
+        if (this.walkStraightCounts > getStraightWalkingLimit()) {
+            dirExp = shiftDirectionRightAngle(lastMoveDir);
+
+            // should clear distance counting
+            // if it failed once, means it is not a right trying;
+            // if not clear it, this check will keep trying to turn a right angle
+            this.walkStraightCounts = 0;
+        }
+*/
 
         // experience 3: when walk into a wall, check the wall distance of each side,
         // and add the shorter side direction to the result.
@@ -368,10 +358,10 @@ public class DiggerAvatar extends RoadSearch{
         }
 
         return dirExp;
-    }*/
-    /*
-    private Direction decideTheNextMove() {
+    }
 
+    // get next direction based on the src, dst and world
+    public Direction getNextMoveDirection() {
         // 3, check your surroundings, which direction is the right direction?
         // 3.1 you should not take the back direction where you just come from, UNLESS YOU HAVE NOWHERE ELSE TO GO;
         // 3.2 you must not run into a wall;
@@ -428,51 +418,6 @@ public class DiggerAvatar extends RoadSearch{
                 }
             }
             return Direction.getDirectionByIndex(looper);
-        }
-    }
-    */
-/*
-    private void updateWalkStraightCounts() {
-
-        // clear counts if direction changed
-        if (lastMoveDir != curMoveDir) {
-            this.walkStraightCounts = 0;
-        }
-        else {
-            this.walkStraightCounts++;
-        }
-
-    }
- */
-    private void digOneTile(Direction dir) {
-
-        Direction.shiftPosition(this.getPosCur(), dir); // shift the next position
-
-        //updateWalkStraightCounts();
-
-        if (!isTileType(this.getPosCur(), Tileset.UNLOCKED_DOOR, this.refWorld)) {
-            paintTile(this.getPosCur(),Tileset.FLOOR, this.world);// Update canvas
-            this.len++;
-        }
-
-        // paint wall along the way
-        // 1, paint the side
-        paintSideWall(this.getPosCur(), dir, this.world);
-
-        // 2, if turned 90 degree
-        if (isTurned90Degree(this.getLastMoveDir(), this.getCurMoveDir())) {
-            // get position if moved in the lastMoveDir direction
-            Position posFake = getShiftPosition(this.getPosPre(), this.getLastMoveDir());
-            paintWallTile(posFake, this.world);
-            paintSideWall(posFake, this.getLastMoveDir(), this.world);
-        }
-
-        // 3, if turned 180 degree
-        if (isTurned180Degree(this.getLastMoveDir(), this.getCurMoveDir())) {
-            // get position if moved in the lastMoveDir direction
-            Position posFake = getShiftPosition(this.getPosPre(), this.getLastMoveDir());
-            paintWallTile(posFake, this.world);
-            paintSideWall(posFake, this.getLastMoveDir(), this.world);
         }
     }
 }
