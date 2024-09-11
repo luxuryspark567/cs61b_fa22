@@ -5,6 +5,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 //import edu.princeton.cs.introcs.StdDraw;
 
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -36,6 +37,26 @@ public class Engine {
     public static Random RANDOM = new Random(SEED);
     TERenderer ter = new TERenderer();
     //RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
+
+    public static void saveGameState(String filePath) {
+        try (FileOutputStream fileOut = new FileOutputStream(filePath);
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(gameState);
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
+
+    public static GameState loadGameState(String filePath) {
+        GameState gameState = null;
+        try (FileInputStream fileIn = new FileInputStream(filePath);
+             ObjectInputStream in = new ObjectInputStream(fileIn)) {
+            gameState = (GameState) in.readObject();
+        } catch (IOException | ClassNotFoundException i) {
+            i.printStackTrace();
+        }
+        return gameState;
+    }
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,

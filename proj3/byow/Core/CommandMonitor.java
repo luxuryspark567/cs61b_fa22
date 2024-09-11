@@ -158,12 +158,12 @@ public class CommandMonitor {
             //ter.initialize(40, 40, 0, 0);
             //engine.ter.renderText("LOAD GAME");
             // TODO: this is not the most efficient way
-            gameState = GameState.loadGameState("/byow/Core/savefile.txt");
+            gameState = Engine.loadGameState("/byow/Core/savefile.txt");
         }
         else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
             engine.ter.renderText("GAME OVER");
             //Engine.GameState gState = new Engine.GameState(rg, world, refWorld, hero, bear);
-            GameState.saveGameState("savefile.txt");
+            Engine.saveGameState("savefile.txt");
         }
         else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD){
             //ter.initialize(40, 40, 0, 0);
