@@ -4,9 +4,10 @@ import byow.TileEngine.TETile;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 
-import static byow.Core.Engine.HEIGHT;
-import static byow.Core.Engine.RANDOM;
+import static byow.Core.Engine.*;
+import static byow.Core.Main.gameState;
 
 // position of an object on canvas
 public class Position implements Serializable {
@@ -37,7 +38,12 @@ public class Position implements Serializable {
         }
         return false;
     }
-
+    public static class PositionComparator implements Comparator, Serializable {
+        @Override
+        public int compare(Object o1, Object o2) {
+            return ((Position)o1).getIndex() - ((Position)o2).getIndex();
+        }
+    }
     public static Position copyOf(Position pos) {
         if (pos == null) {
             return null;
@@ -104,15 +110,15 @@ public class Position implements Serializable {
         return s.toString();
     }
 
-    public static Position getRandomPositionInRandomRoom(RoomGraph rg) {
-        int roomIndex = RandomUtils.uniform(RANDOM, rg.roomLut.size());
-        Room r = rg.roomLut.get(roomIndex);
+    public static Position getRandomPositionInRandomRoom(GameState gameState) {
+        int roomIndex = RandomUtils.uniform(RANDOM, gameState.roomLut.size());
+        Room r = gameState.roomLut.get(roomIndex);
 
         // should not take wall into account
         int offX = RandomUtils.uniform(RANDOM, r.getSize().w - 2);
         int offY = RandomUtils.uniform(RANDOM, r.getSize().h - 2);
 
-        return new Position(r.getPosition().x + offX + 1, r.getPosition().y + offY + 1, rg.canvasWidth, rg. canvasHeight);
+        return new Position(r.getPosition().x + offX + 1, r.getPosition().y + offY + 1, WIDTH, HEIGHT);
 
     }
 }

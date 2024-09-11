@@ -5,11 +5,11 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 //import edu.princeton.cs.introcs.StdDraw;
 
-import java.io.*;
 import java.util.*;
 import java.util.List;
 
 import static byow.Core.CommandNode.getCommandList;
+import static byow.Core.Main.gameState;
 
 
 public class Engine {
@@ -35,68 +35,18 @@ public class Engine {
     public static final int DIRECTION_NUM = 4; // north, west, south and east
     public static Random RANDOM = new Random(SEED);
     TERenderer ter = new TERenderer();
-    RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
+    //RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
 
-
-    public static class GameState implements Serializable {
-
-        private RoomGraph rg;
-        private TETile[][] world;
-        private TETile[][] refWorld;
-
-        private Avatar player;
-
-        private Bear bear;
-
-        public GameState(RoomGraph rg, TETile[][] world, TETile[][] refWorld, Avatar player, Bear bear) {
-            this.rg = rg;
-            this.world = world;
-            this.refWorld = refWorld;
-            this.player = player;
-            this.bear = bear;
-        }
-    }
-
-    public static void saveGameStateTest(Avatar avatar, String filePath) {
-        try (FileOutputStream fileOut = new FileOutputStream(filePath);
-             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
-            out.writeObject(avatar);
-        } catch (IOException i) {
-            i.printStackTrace();
-        }
-    }
-
-    public static void saveGameState(GameState gameState, String filePath) {
-        try (FileOutputStream fileOut = new FileOutputStream(filePath);
-             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
-            out.writeObject(gameState);
-        } catch (IOException i) {
-            i.printStackTrace();
-        }
-    }
-
-    public static class LoadGame {
-        public static GameState loadGameState(String filePath) {
-            GameState gameState = null;
-            try (FileInputStream fileIn = new FileInputStream(filePath);
-                 ObjectInputStream in = new ObjectInputStream(fileIn)) {
-                gameState = (GameState) in.readObject();
-            } catch (IOException | ClassNotFoundException i) {
-                i.printStackTrace();
-            }
-            return gameState;
-        }
-    }
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
         // generate world
-        TETile[][] world = new TETile[WIDTH][HEIGHT];
+        //TETile[][] world = new TETile[WIDTH][HEIGHT];
 
         // add monitor, which will listen commands typed by user;
-        CommandMonitor cMonitor = new CommandMonitor();
+        CommandMonitor cMonitor = new CommandMonitor(this, gameState);
 
         // render menu page
         ter.initialize(WIDTH, HEIGHT, 0, 0);
@@ -106,24 +56,27 @@ public class Engine {
         cMonitor.initiate();
         cMonitor.monitorMenuPage(ter);
         // the start menu should never execute any command that uses a "refWorld"
-        cMonitor.executeCommands(null, null, world, null, ter, rg);
+        cMonitor.executeCommands(this, gameState);
 
         // render game page
 
         // generate world data base (rooms and tunnels)
         SEED = cMonitor.cn.rNum;
         RANDOM = new Random(SEED);
-        TETile[][] refWorld = rg.initiate(world);
+        gameState.refWorld = TETile.copyOf(gameState.world);
 
-        Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, world, refWorld);
-        Bear bear = new Bear(Position.getRandomPositionInRandomRoom(rg), rg, world, refWorld);
-        Key key1 = new Key(ter, world, refWorld);
+        Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(gameState), gameState);
+        Bear bear = new Bear(Position.getRandomPositionInRandomRoom(gameState), gameState);
+        Key key1 = new Key(this, gameState);
         hero.pickUpKey(key1);
 
+        gameState.hero = hero;
+        gameState.bear = bear;
+
         ter.initialize(WIDTH, HEIGHT, 0, 0);
-        ter.renderCreature(hero, Tileset.AVATAR, world);
-        ter.renderCreature(bear, Tileset.GANON, world);
-        ter.renderGamePage(world);
+        ter.renderCreature(hero, Tileset.AVATAR, gameState.world);
+        ter.renderCreature(bear, Tileset.GANON, gameState.world);
+        ter.renderGamePage(gameState.world);
 
         // listening game page;
         cMonitor.initiate();
@@ -131,8 +84,8 @@ public class Engine {
         while (cMonitor.isIdleCommand() || cMonitor.isMoveCommand()) {
             cMonitor.initiate();
             cMonitor.monitorGamePage();
-            cMonitor.executeCommands(hero, bear, world, refWorld, ter, rg);
-            System.out.println(rg.environmentDatabase);
+            cMonitor.executeCommands(this, gameState);
+            System.out.println(gameState.tmDB);
 
         }
     }
@@ -175,7 +128,7 @@ public class Engine {
 
         // generate world
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
-
+/*
         for (CommandNode cn: commands) {
 
             if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD) {
@@ -228,7 +181,7 @@ public class Engine {
                 }
             }
         }
-
+*/
         return finalWorldFrame;
     }
     public static void main(String[] s) {

@@ -10,27 +10,23 @@ import static byow.Core.TileUtils.*;
 
 public class DiggerAvatar extends RoadSearch{
 
-    TETile[][] world;
-    TETile[][] refWorld;
+    //TETile[][] world;
+    //TETile[][] refWorld;
     Door srcDoor;
     Door dstDoor;
 
     int len;// how many tiles are dug for this tunnel
 
-    public DiggerAvatar(TETile[][] world, TETile[][] refWorld) {
-        super(null, null, null, world, refWorld);
-        this.world = world;
-        this.refWorld = refWorld;
+    public DiggerAvatar(GameState gameState) {
+        super(null, null, null, gameState.world, gameState.refWorld);
     }
 
-    public DiggerAvatar(Door srcDoor, Door dstDoor, TETile[][]world, TETile[][] refWorld) {
-        super(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), world, refWorld);
+    public DiggerAvatar(Door srcDoor, Door dstDoor, GameState gameState) {
+        super(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), gameState.world, gameState.refWorld);
         this.srcDoor = srcDoor;
         this.dstDoor = dstDoor;
         this.len = 0;
-        this.world = world;
-        this.refWorld = refWorld;
-        //this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+        // back up the world, and use the backup to search for routes.
     }
     public void arrangeDiggingJob(Door srcDoor, Door dstDoor) {
         initRoadSearch(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir());

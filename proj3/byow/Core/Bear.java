@@ -14,11 +14,11 @@ public class Bear extends Creature{
     private static final Size SIZE = new Size(2, 2);
     private static final int AFFECTION_DFT = -100;
     // arms at hand
-    public Bear(Position pos, RoomGraph rg, TETile[][] world, TETile[][] refWorld) {
-        super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, pos, rg, world, refWorld);
+    public Bear(Position pos, GameState gameState) {
+        super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, pos, gameState);
     }
-    public Bear(int damage, int health, int age, int weight, Size size, int affection, Position pos, RoomGraph rg, TETile[][] world, TETile[][] refWorld) {
-        super(damage, health, age, weight, size, affection, pos, rg, world, refWorld);
+    public Bear(int damage, int health, int age, int weight, Size size, int affection, Position pos, GameState gameState) {
+        super(damage, health, age, weight, size, affection, pos, gameState);
         this.inventory.add(new ChestPlate());
     }
 

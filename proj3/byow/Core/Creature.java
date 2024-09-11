@@ -8,8 +8,6 @@ import java.util.LinkedList;
 import static byow.Core.Direction.getRevertDir;
 import static byow.Core.Direction.getShiftPosition;
 import static byow.Core.Directionset.SOUTH;
-import static byow.Core.Engine.HEIGHT;
-import static byow.Core.Engine.WIDTH;
 import static byow.Core.TileUtils.isTileType;
 
 public class Creature extends RoadSearch{
@@ -21,12 +19,9 @@ public class Creature extends RoadSearch{
     private int affection;
     private Position position;
     LinkedList<Item> inventory;
-
-    public TETile[][] world;
-    public TETile[][] refWorld;
-    private RoomGraph rg; // just a pointer
     private Position bakPos;
     private TETile bakTile;
+    private GameState mgs;
 
     public Creature() {
         super(null, null, null, null, null);
@@ -38,16 +33,14 @@ public class Creature extends RoadSearch{
         this.affection = 0;
         this.position = new Position(0, 0);
         this.inventory = new LinkedList<>();
-
-        this.rg = null;
         this.world = null;
         this.refWorld = null;
         this.bakPos = null;
         this.bakTile = null;
     }
 
-    public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, RoomGraph rg, TETile[][] world, TETile[][] refWorld) {
-        super(null, null, null, world, refWorld);
+    public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, GameState gameState) {
+        super(null, null, null, gameState.world, gameState.refWorld);
         this.damage = damage;
         this.health = health;
         this.age = age;
@@ -56,12 +49,10 @@ public class Creature extends RoadSearch{
         this.affection = affection;
         this.position = Position.copyOf(pos);
         this.inventory = new LinkedList<>();
-        this.rg = rg;
-        rg.environmentDatabase.put(this.getPosition(), this);
-        this.world = world;
-        this.refWorld = refWorld;
+        gameState.tmDB.put(this.getPosition(), this);
         this.bakPos = Position.copyOf(pos);
         this.bakTile = Tileset.NOTHING;
+        this.mgs = gameState;
     }
 
     public void arrangeSearchJob(Position posSrc, Position posDst) {
@@ -83,15 +74,15 @@ public class Creature extends RoadSearch{
             return false;
         }
         else if (isTileType(pos, Tileset.FLOOR, this.world)) {
-            this.getRoomGraph().environmentDatabase.remove(this.getBackedPosition(), this);
+            this.mgs.tmDB.remove(this.getBackedPosition(), this);
             this.setPosition(pos);
-            this.getRoomGraph().environmentDatabase.put(this.getPosition(), this);
+            this.mgs.tmDB.put(this.getPosition(), this);
             return true;
         }
         else if (isTileType(pos, Tileset.UNLOCKED_DOOR, this.world)) {
-            this.getRoomGraph().environmentDatabase.remove(this.getBackedPosition(), this);
+            this.mgs.tmDB.remove(this.getBackedPosition(), this);
             this.setPosition(pos);
-            this.getRoomGraph().environmentDatabase.put(this.getPosition(), this);
+            this.mgs.tmDB.put(this.getPosition(), this);
             return true;
         }
         else {
@@ -217,13 +208,5 @@ public class Creature extends RoadSearch{
 
     public void setBackedTile(TETile tile) {
         this.bakTile = tile;
-    }
-
-    public RoomGraph getRoomGraph() {
-        return this.rg;
-    }
-
-    public void setRoomGraph(RoomGraph rg) {
-        this.rg = rg;
     }
 }

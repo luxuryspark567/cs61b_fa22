@@ -10,6 +10,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.Serializable;
 
+import static byow.Core.Main.engine;
+import static byow.Core.Main.gameState;
 import static byow.Core.TileUtils.paintTile;
 
 /**

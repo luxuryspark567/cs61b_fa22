@@ -1,6 +1,5 @@
 package byow.Core;
 
-import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import java.util.LinkedList;
@@ -32,43 +31,46 @@ public class Avatar extends Creature{
     private LinkedList<Weapon> weaponInventory;
 
     private LinkedList<Key> keyInventory;
+    private GameState mgs;
 
-    public Avatar(Position pos, RoomGraph rg, TETile[][] world, TETile[][] refWorld) {
+    public Avatar(Position pos, GameState gameState) {
 
-        super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, pos, rg, world, refWorld);
+        super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, pos, gameState);
 
-        helmet = null;
-        chestPlate = null;
-        leggings = null;
-        boots = null;
+        this.helmet = null;
+        this.chestPlate = null;
+        this.leggings = null;
+        this.boots = null;
 
         // weapon at hand
-        weapon = null;
+        this.weapon = null;
 
-        helmetInventory = new LinkedList<>();
-        chestPlateInventory = new LinkedList<>();
-        leggingsInventory = new LinkedList<>();
-        bootsInventory = new LinkedList<>();
-        weaponInventory = new LinkedList<>();
-        keyInventory = new LinkedList<>();
+        this.helmetInventory = new LinkedList<>();
+        this.chestPlateInventory = new LinkedList<>();
+        this.leggingsInventory = new LinkedList<>();
+        this.bootsInventory = new LinkedList<>();
+        this.weaponInventory = new LinkedList<>();
+        this.keyInventory = new LinkedList<>();
+        this.mgs = gameState;
     }
 
-    public Avatar(int damage, int health, int age, int weight, Size size, int affection, Position pos, RoomGraph rg, TETile[][] world, TETile[][] refWorld) {
-        super(damage, health, age, weight, size, affection, pos, rg, world, refWorld);
-        helmet = null;
-        chestPlate = null;
-        leggings = null;
-        boots = null;
+    public Avatar(int damage, int health, int age, int weight, Size size, int affection, Position pos, GameState gameState) {
+        super(damage, health, age, weight, size, affection, pos, gameState);
+        this.helmet = null;
+        this.chestPlate = null;
+        this.leggings = null;
+        this.boots = null;
 
         // weapon at hand
-        weapon = null;
+        this.weapon = null;
 
-        helmetInventory = new LinkedList<>();
-        chestPlateInventory = new LinkedList<>();
-        leggingsInventory = new LinkedList<>();
-        bootsInventory = new LinkedList<>();
-        weaponInventory = new LinkedList<>();
-        keyInventory = new LinkedList<>();
+        this.helmetInventory = new LinkedList<>();
+        this.chestPlateInventory = new LinkedList<>();
+        this.leggingsInventory = new LinkedList<>();
+        this.bootsInventory = new LinkedList<>();
+        this.weaponInventory = new LinkedList<>();
+        this.keyInventory = new LinkedList<>();
+        this.mgs = gameState;
     }
 
     public boolean pickUpKey(Key key) {
@@ -96,7 +98,7 @@ public class Avatar extends Creature{
             //get the door instance, corresponds to this locked door
 
             // 2, get the object at "pos" from database;
-            Object o = this.getRoomGraph().environmentDatabase.get(pos);
+            Object o = this.mgs.tmDB.get(pos);
             if (o instanceof Door d) {
 
                 // search the inventory for a matched key

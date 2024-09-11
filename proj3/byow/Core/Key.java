@@ -21,28 +21,37 @@ public class Key extends Item implements Serializable {
     TETile[][] world;
     TETile[][] refWorld;
 
-    public Key(TERenderer ter, TETile[][] world, TETile[][] refWorld) {
+    Engine engine;
+    GameState gameState;
+
+    public Key(Engine engine, GameState gameState) {
         super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
         this.signature = SIGNATURE_DFT;
-        this.ter = ter;
-        this.world = world;
-        this.refWorld = refWorld;
+        this.ter = engine.ter;
+        this.world = gameState.world;
+        this.refWorld = gameState.refWorld;
+        this.gameState = gameState;
+        this.engine = engine;
     }
 
-    public Key(int signature, TERenderer ter, TETile[][] world, TETile[][] refWorld) {
+    public Key(int signature, Engine engine, GameState gameState) {
         super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
         this.signature = signature;
-        this.ter = ter;
-        this.world = world;
-        this.refWorld = refWorld;
+        this.ter = engine.ter;
+        this.world = gameState.world;
+        this.refWorld = gameState.refWorld;
+        this.gameState = gameState;
+        this.engine = engine;
     }
 
-    public Key(int weight, int value, int dur, int signature, TERenderer ter, TETile[][] world, TETile[][] refWorld) {
+    public Key(int weight, int value, int dur, int signature, Engine engine, GameState gameState) {
         super(weight, value, dur);
         this.signature = signature;
-        this.ter = ter;
-        this.world = world;
-        this.refWorld = refWorld;
+        this.ter = engine.ter;
+        this.world = gameState.world;
+        this.refWorld = gameState.refWorld;
+        this.gameState = gameState;
+        this.engine = engine;
     }
 
     int getSignature() {
@@ -59,7 +68,7 @@ public class Key extends Item implements Serializable {
         if (o instanceof Door d){
             if (this.signature == d.getSiginature()) {
                 // add monitor, which will listen commands typed by user;
-                CommandMonitor cMonitor = new CommandMonitor();
+                CommandMonitor cMonitor = new CommandMonitor(engine, gameState);
                 cMonitor.initiate();
 
                 // 1, pops up action selection menu

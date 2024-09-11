@@ -3,71 +3,19 @@ package byow.Core;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.Edge;
-import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import java.util.TreeMap;
-
+//import static byow.Core.Main.gameState;
 import static byow.Core.Engine.*;
 import static byow.Core.TileUtils.*;
 
-public class RoomGraph extends EdgeWeightedGraph implements Serializable {
+public class WorldGenerateUtils {
 
-    public List<Room> roomLut;
-    // 0, creat an avatar
-    DiggerAvatar digger;
+    private DiggerAvatar digger;
 
-    TreeMap<Position, Object> environmentDatabase;
-
-    int canvasWidth;
-    int canvasHeight;
-    public RoomGraph(int w, int h) {
-        super(ROOM_NUM);
-        this.canvasWidth = w;
-        this.canvasHeight = h;
-        environmentDatabase = new TreeMap<Position, Object>(new PositionComparator());
-    }
-
-    public static class PositionComparator implements Comparator, Serializable {
-        @Override
-        public int compare(Object o1, Object o2) {
-            return ((Position)o1).getIndex() - ((Position)o2).getIndex();
-        }
-    }
-
-    public TETile[][] initiate(TETile[][] world) {
-        // randomly generate all rooms
-        // roomArray is a lookup table;
-        // 1, generate rooms, and each room have a random door.
-        generateRooms(world);
-/*
-        Room tmp = new Room(new Position(0, 0),new Size(0,0));
-        for (Room r: roomLut) {
-            if (tmp.getPosition().x < r.getPosition().x) {
-                tmp.setPosition(Position.copyOf(r.getPosition()));
-            }
-        }
-        System.out.println(tmp);
-*/
-        generateDoors(world);
-
-        //debug
-        for (Room r: roomLut) {
-            System.out.println(r);
-        }
-        //System.out.println(roomLut);
-
-        generateHallways(world);
-
-        System.out.println(this);
-
-        return TETile.copyOf(world);
-
+    public WorldGenerateUtils() {
     }
 
     private Position getRandomPosition() {
@@ -86,16 +34,16 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
         return ret;
     }
 
-    private void generateRooms(TETile[][] world) {
-        roomLut = new ArrayList<>(ROOM_NUM);
+    public void generateRooms(GameState gameState) {
+        //gameState.roomLut = new ArrayList<>(ROOM_NUM);
 
         int looper = 0;
         int looperLimit = LOOP_LIMIT;
         while (looper < ROOM_NUM && looperLimit > 0) {
-            Room newRoom = generateRoom(world);
+            Room newRoom = generateRoom(gameState.world);
             if (newRoom != null) {
                 looper++;
-                roomLut.add(newRoom);
+                gameState.roomLut.add(newRoom);
                 System.out.println("Create a room success!");
             }
             //else {
@@ -105,28 +53,11 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
         }
 
         // save rooms to Graph;
-        for (Room r:roomLut) {
-            this.adj(roomLut.indexOf(r));
+        for (Room r:gameState.roomLut) {
+            gameState.ewg.adj(gameState.roomLut.indexOf(r));
         }
     }
-/*
-    boolean isRoomBesidesNorthMargin(Position pos, Size size, Direction side) {
-        return ((pos.y + size.h - 1 == HEIGHT - 2 || pos.y + size.h - 1 == HEIGHT - 1) && side == Directionset.NORTH);
-    }
 
-    boolean isRoomBesidesWestMargin(Position pos, Direction side) {
-        return ((pos.x == 0 || pos.x == 1) && side == Directionset.WEST);
-    }
-
-    boolean isRoomBesidesSouthMargin(Position pos, Direction side) {
-        return ((pos.y == 0 || pos.y == 1) && side == Directionset.SOUTH);
-    }
-
-    boolean isRoomBesidesEastMargin(Position pos, Size size, Direction side) {
-        return ((pos.x + size.w - 1 == WIDTH - 2 || pos.x + size.w - 1 == WIDTH - 1) && side == Directionset.EAST);
-    }
-
- */
     private Door checkAndGetDoor(Position pos, Direction dir, TETile[][] world) {
         // if the door is besides wall, then this door is invalid
         Position posShift1 = Direction.getShiftPosition(pos, dir);
@@ -188,10 +119,10 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
         //System.out.println(looperLimit);
         return newDoor;
     }
-    private void generateDoors(TETile[][] world) {
-        for (Room r: this.roomLut) {
+    public void generateDoors(GameState gameState) {
+        for (Room r: gameState.roomLut) {
             // generate a random door
-            Door door = generateRandomDoor(r.getPosition(), r.getSize(), world);
+            Door door = generateRandomDoor(r.getPosition(), r.getSize(), gameState.world);
             if (door != null)
             {
                 // paint door
@@ -201,12 +132,12 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
                 // generate locked or unlocked randomly
                 int index = RandomUtils.uniform(RANDOM, 2);
                 if (index == 0) {
-                    paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, world);
-                    this.environmentDatabase.put(door.getPosition(), door); // add to database
+                    paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, gameState.world);
+                    gameState.tmDB.put(door.getPosition(), door); // add to database
                 }
                 else {
-                    paintTile(door.getPosition(), Tileset.LOCKED_DOOR, world);
-                    this.environmentDatabase.put(door.getPosition(), door);// add to database
+                    paintTile(door.getPosition(), Tileset.LOCKED_DOOR, gameState.world);
+                    gameState.tmDB.put(door.getPosition(), door);// add to database
                 }
 
             }
@@ -214,14 +145,14 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
 
     }
 
-    public void generateHallways(TETile[][] world) {
+    public void generateHallways(GameState gameState) {
 
-        MinPQ<distanceNode> mpq = getRoomDistanceMPQ();
+        MinPQ<distanceNode> mpq = getRoomDistanceMPQ(gameState);
 
         // create a digger to dig tunnels
-        this.digger = new DiggerAvatar(world, TETile.copyOf(world));
+        this.digger = new DiggerAvatar(gameState);
 
-        WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(roomLut.size());
+        WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(gameState.roomLut.size());
 
         int safeProofLooper = LOOP_LIMIT;
         //int safeProofLooper = 2;
@@ -235,7 +166,7 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
             if (dsNode.value.r1.getDoor() != null && dsNode.value.r2.getDoor() != null )
             {
                 // 2, are they already connected?
-                if (!wqu.connected(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2))) {
+                if (!wqu.connected(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2))) {
                     //if (dsNode.value.r1.getDoor().getPosition().y == 38
                     //    || dsNode.value.r2.getDoor().getPosition().y == 38) {
                     //    System.out.println("Gocha!!!");
@@ -247,8 +178,8 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
                     //}
                     if (hw != null) {
                         //union them
-                        wqu.union(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2));
-                        Edge e = new Edge(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2), hw.getWeight());
+                        wqu.union(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2));
+                        Edge e = new Edge(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2), hw.getWeight());
 
                         // update edge to door.
                         //hw.getSrc().setEdge(e);
@@ -256,7 +187,7 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
                         ///hw.getSrc().setHallway(hw);
                         //hw.getDst().setHallway(hw);
 
-                        this.addEdge(e);
+                        gameState.ewg.addEdge(e);
                     }
                 }
             }
@@ -359,17 +290,17 @@ public class RoomGraph extends EdgeWeightedGraph implements Serializable {
         }
     }
 
-    private MinPQ<distanceNode> getRoomDistanceMPQ () {
+    private MinPQ<distanceNode> getRoomDistanceMPQ (GameState gameState) {
         // 1, calc a distance, and use pq to save the distance, because a MinPQ will always O(1) to get
         // minimum value
         MinPQ<distanceNode> mpq = new MinPQ<>(new nodeDistanceComparator());
-        for (int i = 0; i < this.roomLut.size(); i++) {
-            for (int j = i + 1; j < this.roomLut.size(); j++) {
+        for (int i = 0; i < gameState.roomLut.size(); i++) {
+            for (int j = i + 1; j < gameState.roomLut.size(); j++) {
                 // calc
                 // calc distance and save to a MPQ;
-                if (this.roomLut.get(i).getDoor() != null && this.roomLut.get(i).getDoor() != null ) {
-                    double dis = distanceOfRooms(this.roomLut.get(i), this.roomLut.get(j));
-                    valueRoomPair vrp = new valueRoomPair(this.roomLut.get(i), this.roomLut.get(j));
+                if (gameState.roomLut.get(i).getDoor() != null && gameState.roomLut.get(i).getDoor() != null ) {
+                    double dis = distanceOfRooms(gameState.roomLut.get(i), gameState.roomLut.get(j));
+                    valueRoomPair vrp = new valueRoomPair(gameState.roomLut.get(i), gameState.roomLut.get(j));
                     mpq.insert(new distanceNode(dis, vrp));
                 }
             }
