@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Random;
 
+import byow.Core.Position;
 import edu.princeton.cs.algs4.StdDraw;
 import byow.Core.RandomUtils;
 
@@ -189,5 +190,27 @@ public class TETile implements Serializable {
         }
 
         return copy;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof TETile tile){
+            if (tile.filepath == null && this.filepath == null) {
+                return tile.character == this.character
+                        && tile.textColor.equals(this.textColor)
+                        && tile.backgroundColor.equals(this.backgroundColor)
+                        && tile.description.equals(this.description);
+            }
+            else if (this.filepath != null && tile.filepath != null) {
+                return tile.character == this.character
+                        && tile.textColor.equals(this.textColor)
+                        && tile.backgroundColor.equals(this.backgroundColor)
+                        && tile.description.equals(this.description)
+                        && tile.filepath.equals(this.filepath);
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
     }
 }

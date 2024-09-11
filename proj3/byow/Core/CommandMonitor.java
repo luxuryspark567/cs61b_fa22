@@ -5,6 +5,11 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Random;
 import java.util.TreeMap;
 
 import static byow.Core.Engine.ROOM_NUM;
@@ -45,6 +50,7 @@ public class CommandMonitor {
                     case 0: // idle state
                         if (c == 'l' || c == 'L') {
                             cn = new CommandNode(ByowCommandSet.LOAD);
+                            looperFlag = false;
                         }
                         else if (c == 'n' || c == 'N') {
                             randomKey.delete(0, randomKey.length());
@@ -141,11 +147,27 @@ public class CommandMonitor {
 
     public void updateWorldAndRender(Engine engine, GameState gameState, Direction dir) {
         gameState.hero.MoveOneStep(dir);
-        engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
-        gameState.bear.huntHero(gameState.hero.getPosition());
         engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+        gameState.bear.huntHero(gameState.hero.getPosition());
+        engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
         engine.ter.renderGamePage(gameState.world);
     }
+
+    /**
+     * Uses serialization to create a copy of the given Random, needed for
+     * repeatability in some tests.
+     */
+    /*
+    public static Random cloneRandom(Random src) throws Exception {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bo);
+        oos.writeObject(src);
+        oos.close();
+        ObjectInputStream ois = new ObjectInputStream(
+                new ByteArrayInputStream(bo.toByteArray()));
+        return (Random)(ois.readObject());
+    }
+    */
     public void executeCommands(Engine engine, GameState gameState) {
         // return true means not a command to break out
         // return false means a command to break outer while loop, and no need to monitor anymore.
@@ -158,7 +180,8 @@ public class CommandMonitor {
             //ter.initialize(40, 40, 0, 0);
             //engine.ter.renderText("LOAD GAME");
             // TODO: this is not the most efficient way
-            gameState = Engine.loadGameState("/byow/Core/savefile.txt");
+            Engine.loadGameState("savefile.txt");
+            Engine.RANDOM = new Random(gameState.randomSeed);
         }
         else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
             engine.ter.renderText("GAME OVER");
@@ -175,6 +198,20 @@ public class CommandMonitor {
             wgu.generateDoors(gameState);
             gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
             wgu.generateHallways(gameState);
+
+            // generate world data base (rooms and tunnels)
+            //engine.SEED = cn.rNum;
+            Engine.RANDOM = new Random(cn.rNum);
+            gameState.randomSeed = cn.rNum;
+            gameState.refWorld = TETile.copyOf(gameState.world);
+
+            Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(gameState), gameState);
+            Bear bear = new Bear(Position.getRandomPositionInRandomRoom(gameState), gameState);
+            Key key1 = new Key(gameState);
+            hero.pickUpKey(key1);
+
+            gameState.hero = hero;
+            gameState.bear = bear;
 
         }
         else if (cn.bc == ByowCommandSet.MOVE_NORTH) {

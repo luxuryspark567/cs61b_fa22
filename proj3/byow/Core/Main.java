@@ -17,7 +17,7 @@ public class Main {
     public static GameState gameState;
     public static Engine engine;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (args.length > 2) {
             System.out.println("Can only have two arguments - the flag and input string");
             System.exit(0);
@@ -31,13 +31,17 @@ public class Main {
             //engine.ter.renderText("CS61B: THE GAME");
             System.out.println(engine.toString());
         } else {
-            Engine engine = new Engine();
+            engine = new Engine();
 
+            gameState = new GameState(new TETile[Engine.WIDTH][Engine.HEIGHT],
+                    new ArrayList<>(Engine.ROOM_NUM),
+                    new TreeMap<Position, Object>(new Position.PositionComparator()));
+/*
             gameState = new GameState(new TETile[Engine.WIDTH][Engine.HEIGHT],
                     new ArrayList<>(Engine.ROOM_NUM),
                     new EdgeWeightedGraph(Engine.ROOM_NUM),
                     new TreeMap<Position, Object>(new Position.PositionComparator()));
-
+ */
             engine.interactWithKeyboard();
         }
     }

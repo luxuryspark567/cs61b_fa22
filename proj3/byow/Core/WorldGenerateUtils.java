@@ -6,6 +6,7 @@ import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 //import static byow.Core.Main.gameState;
 import static byow.Core.Engine.*;
@@ -53,9 +54,9 @@ public class WorldGenerateUtils {
         }
 
         // save rooms to Graph;
-        for (Room r:gameState.roomLut) {
-            gameState.ewg.adj(gameState.roomLut.indexOf(r));
-        }
+        //for (Room r:gameState.roomLut) {
+        //    gameState.ewg.adj(gameState.roomLut.indexOf(r));
+        //}
     }
 
     private Door checkAndGetDoor(Position pos, Direction dir, TETile[][] world) {
@@ -125,7 +126,6 @@ public class WorldGenerateUtils {
             Door door = generateRandomDoor(r.getPosition(), r.getSize(), gameState.world);
             if (door != null)
             {
-                // paint door
                 r.setDoor(door);
                 //world[door.getPosition().getX()][door.getPosition().getY()] = Tileset.UNLOCKED_DOOR;
 
@@ -134,10 +134,12 @@ public class WorldGenerateUtils {
                 if (index == 0) {
                     paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, gameState.world);
                     gameState.tmDB.put(door.getPosition(), door); // add to database
+                    //gameState.doorLut.add(door);
                 }
                 else {
                     paintTile(door.getPosition(), Tileset.LOCKED_DOOR, gameState.world);
                     gameState.tmDB.put(door.getPosition(), door);// add to database
+                    //gameState.doorLut.add(door);
                 }
 
             }
@@ -179,7 +181,7 @@ public class WorldGenerateUtils {
                     if (hw != null) {
                         //union them
                         wqu.union(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2));
-                        Edge e = new Edge(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2), hw.getWeight());
+                        //Edge e = new Edge(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2), hw.getWeight());
 
                         // update edge to door.
                         //hw.getSrc().setEdge(e);
@@ -187,15 +189,15 @@ public class WorldGenerateUtils {
                         ///hw.getSrc().setHallway(hw);
                         //hw.getDst().setHallway(hw);
 
-                        gameState.ewg.addEdge(e);
+                        //gameState.ewg.addEdge(e);
                     }
                 }
             }
             safeProofLooper--;
         }
 
-        System.out.println(mpq);
-        System.out.println(wqu.count());
+        //System.out.println(mpq);
+        //System.out.println(wqu.count());
     }
 
     // generate a hallway between two doors

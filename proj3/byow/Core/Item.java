@@ -1,6 +1,8 @@
 package byow.Core;
 
-public class Item {
+import java.io.Serializable;
+
+public class Item implements Serializable {
 
     private static final String DESCRIPTION_DFT = "an undefined item";
     private static final int WEIGHT_DFT = 0;

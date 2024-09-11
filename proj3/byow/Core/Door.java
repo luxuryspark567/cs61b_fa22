@@ -6,7 +6,7 @@ import edu.princeton.cs.algs4.Edge;
 
 import java.io.Serializable;
 
-public class Door extends Item implements Serializable {
+public class Door extends Item {
     private static final String DESCRIPTION_DFT = "Door";
     private static final int WEIGHT_DFT = 100;
     private static final int VALUE_DFT = 0;

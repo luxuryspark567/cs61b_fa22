@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 import static byow.Core.Engine.HEIGHT;
 import static byow.Core.Engine.WIDTH;
+import static byow.Core.Main.engine;
 
 public class Key extends Item implements Serializable {
 
@@ -21,37 +22,37 @@ public class Key extends Item implements Serializable {
     TETile[][] world;
     TETile[][] refWorld;
 
-    Engine engine;
+    //Engine engine;
     GameState gameState;
 
-    public Key(Engine engine, GameState gameState) {
+    public Key(GameState gameState) {
         super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
         this.signature = SIGNATURE_DFT;
         this.ter = engine.ter;
         this.world = gameState.world;
         this.refWorld = gameState.refWorld;
         this.gameState = gameState;
-        this.engine = engine;
+        //this.engine = engine;
     }
 
-    public Key(int signature, Engine engine, GameState gameState) {
+    public Key(int signature, GameState gameState) {
         super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
         this.signature = signature;
         this.ter = engine.ter;
         this.world = gameState.world;
         this.refWorld = gameState.refWorld;
         this.gameState = gameState;
-        this.engine = engine;
+        //this.engine = engine;
     }
 
-    public Key(int weight, int value, int dur, int signature, Engine engine, GameState gameState) {
+    public Key(int weight, int value, int dur, int signature, GameState gameState) {
         super(weight, value, dur);
         this.signature = signature;
         this.ter = engine.ter;
         this.world = gameState.world;
         this.refWorld = gameState.refWorld;
         this.gameState = gameState;
-        this.engine = engine;
+        //this.engine = engine;
     }
 
     int getSignature() {

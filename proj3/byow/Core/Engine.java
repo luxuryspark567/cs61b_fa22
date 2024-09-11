@@ -43,26 +43,28 @@ public class Engine {
              ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
             out.writeObject(gameState);
         } catch (IOException i) {
-            i.printStackTrace();
+            //i.printStackTrace();
+            throw new IllegalArgumentException();
         }
     }
 
-    public static GameState loadGameState(String filePath) {
-        GameState gameState = null;
+    public static void loadGameState(String filePath) {
+        //GameState gameState = null;
         try (FileInputStream fileIn = new FileInputStream(filePath);
              ObjectInputStream in = new ObjectInputStream(fileIn)) {
             gameState = (GameState) in.readObject();
         } catch (IOException | ClassNotFoundException i) {
-            i.printStackTrace();
+            throw new IllegalArgumentException();
+            //i.printStackTrace();
         }
-        return gameState;
+        //return gameState;
     }
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
-    public void interactWithKeyboard() {
+    public void interactWithKeyboard() throws Exception {
         // generate world
         //TETile[][] world = new TETile[WIDTH][HEIGHT];
 
@@ -81,22 +83,9 @@ public class Engine {
 
         // render game page
 
-        // generate world data base (rooms and tunnels)
-        SEED = cMonitor.cn.rNum;
-        RANDOM = new Random(SEED);
-        gameState.refWorld = TETile.copyOf(gameState.world);
-
-        Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(gameState), gameState);
-        Bear bear = new Bear(Position.getRandomPositionInRandomRoom(gameState), gameState);
-        Key key1 = new Key(this, gameState);
-        hero.pickUpKey(key1);
-
-        gameState.hero = hero;
-        gameState.bear = bear;
-
         ter.initialize(WIDTH, HEIGHT, 0, 0);
-        ter.renderCreature(hero, Tileset.AVATAR, gameState.world);
-        ter.renderCreature(bear, Tileset.GANON, gameState.world);
+        ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+        ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
         ter.renderGamePage(gameState.world);
 
         // listening game page;
