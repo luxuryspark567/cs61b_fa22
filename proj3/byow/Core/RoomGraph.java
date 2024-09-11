@@ -21,7 +21,7 @@ public class RoomGraph extends EdgeWeightedGraph {
     // 0, creat an avatar
     DiggerAvatar digger;
 
-    TreeMap<Position, Object> tm;
+    TreeMap<Position, Object> environmentDatabase;
 
     int canvasWidth;
     int canvasHeight;
@@ -29,7 +29,7 @@ public class RoomGraph extends EdgeWeightedGraph {
         super(ROOM_NUM);
         this.canvasWidth = w;
         this.canvasHeight = h;
-        tm = new TreeMap<Position, Object>(new PositionComparator());
+        environmentDatabase = new TreeMap<Position, Object>(new PositionComparator());
     }
 
     public static class PositionComparator implements Comparator{
@@ -39,7 +39,7 @@ public class RoomGraph extends EdgeWeightedGraph {
         }
     }
 
-    public void initiate(TETile[][] world) {
+    public TETile[][] initiate(TETile[][] world) {
         // randomly generate all rooms
         // roomArray is a lookup table;
         // 1, generate rooms, and each room have a random door.
@@ -64,6 +64,8 @@ public class RoomGraph extends EdgeWeightedGraph {
         generateHallways(world);
 
         System.out.println(this);
+
+        return TETile.copyOf(world);
 
     }
 
@@ -136,7 +138,7 @@ public class RoomGraph extends EdgeWeightedGraph {
                 return null;
             }
             else {
-                return new Door(pos, null, null, null, dir);
+                return new Door(pos, null, null, dir);
             }
         }
         else{
@@ -155,28 +157,28 @@ public class RoomGraph extends EdgeWeightedGraph {
                 // pick a random position on the north side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1);
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1, WIDTH, HEIGHT);
                 newDoor = checkAndGetDoor(doorPos, Directionset.NORTH, world);
             }
             else if (side == Directionset.WEST) {
                 // pick a random position on the west side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index);
+                Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index, WIDTH, HEIGHT);
                 newDoor = checkAndGetDoor(doorPos, Directionset.WEST, world);
             }
             else if (side == Directionset.SOUTH) {
                 // pick a random position on the south side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w -1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY());
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY(), WIDTH, HEIGHT);
                 newDoor = checkAndGetDoor(doorPos, Directionset.SOUTH, world);
             }
             else if (side == Directionset.EAST) {
                 // pick a random position on the east side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1, posRoom.getY() + index);
+                Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1, posRoom.getY() + index, WIDTH, HEIGHT);
                 newDoor = checkAndGetDoor(doorPos, Directionset.EAST, world);
             }
             looperLimit--;
@@ -193,7 +195,19 @@ public class RoomGraph extends EdgeWeightedGraph {
             {
                 // paint door
                 r.setDoor(door);
-                world[door.getPosition().getX()][door.getPosition().getY()] = Tileset.UNLOCKED_DOOR;
+                //world[door.getPosition().getX()][door.getPosition().getY()] = Tileset.UNLOCKED_DOOR;
+
+                // generate locked or unlocked randomly
+                int index = RandomUtils.uniform(RANDOM, 2);
+                if (index == 0) {
+                    paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, world);
+                    this.environmentDatabase.put(door.getPosition(), door); // add to database
+                }
+                else {
+                    paintTile(door.getPosition(), Tileset.LOCKED_DOOR, world);
+                    this.environmentDatabase.put(door.getPosition(), door);// add to database
+                }
+
             }
         }
 
@@ -204,7 +218,7 @@ public class RoomGraph extends EdgeWeightedGraph {
         MinPQ<distanceNode> mpq = getRoomDistanceMPQ();
 
         // create a digger to dig tunnels
-        this.digger = new DiggerAvatar(world);
+        this.digger = new DiggerAvatar(world, TETile.copyOf(world));
 
         WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(roomLut.size());
 
@@ -259,7 +273,7 @@ public class RoomGraph extends EdgeWeightedGraph {
         Door dstDoor = dstRoom.getDoor();
 
         // arrange a digging job to the digger
-        this.digger.arrangeDiggingJog(srcDoor, dstDoor);
+        this.digger.arrangeDiggingJob(srcDoor, dstDoor);
         return this.digger.digATunnel();
     }
 

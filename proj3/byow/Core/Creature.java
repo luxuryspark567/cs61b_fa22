@@ -5,6 +5,11 @@ import byow.TileEngine.Tileset;
 
 import java.util.LinkedList;
 
+import static byow.Core.Direction.getRevertDir;
+import static byow.Core.Direction.getShiftPosition;
+import static byow.Core.Directionset.SOUTH;
+import static byow.Core.Engine.HEIGHT;
+import static byow.Core.Engine.WIDTH;
 import static byow.Core.TileUtils.isTileType;
 
 public class Creature extends RoadSearch{
@@ -24,6 +29,7 @@ public class Creature extends RoadSearch{
     private TETile bakTile;
 
     public Creature() {
+        super(null, null, null, null, null);
         this.damage = 0;
         this.health = 0;
         this.age = 0;
@@ -40,8 +46,8 @@ public class Creature extends RoadSearch{
         this.bakTile = null;
     }
 
-    public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, RoomGraph rg, TETile[][] world) {
-        super();
+    public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, RoomGraph rg, TETile[][] world, TETile[][] refWorld) {
+        super(null, null, null, world, refWorld);
         this.damage = damage;
         this.health = health;
         this.age = age;
@@ -51,11 +57,15 @@ public class Creature extends RoadSearch{
         this.position = Position.copyOf(pos);
         this.inventory = new LinkedList<>();
         this.rg = rg;
-        rg.tm.put(this.getPosition(), this);
+        rg.environmentDatabase.put(this.getPosition(), this);
         this.world = world;
-        this.refWorld = TETile.copyOf(world);// back up the world, and use the backup to search for routes.
+        this.refWorld = refWorld;
         this.bakPos = Position.copyOf(pos);
         this.bakTile = Tileset.NOTHING;
+    }
+
+    public void arrangeSearchJob(Position posSrc, Position posDst) {
+        initRoadSearch(posSrc, posDst, null);
     }
 
     public boolean MoveOneStep(Direction dir) {
@@ -73,15 +83,15 @@ public class Creature extends RoadSearch{
             return false;
         }
         else if (isTileType(pos, Tileset.FLOOR, this.world)) {
-            this.getRoomGraph().tm.remove(this.getBackedPosition(), this);
+            this.getRoomGraph().environmentDatabase.remove(this.getBackedPosition(), this);
             this.setPosition(pos);
-            this.getRoomGraph().tm.put(this.getPosition(), this);
+            this.getRoomGraph().environmentDatabase.put(this.getPosition(), this);
             return true;
         }
         else if (isTileType(pos, Tileset.UNLOCKED_DOOR, this.world)) {
-            this.getRoomGraph().tm.remove(this.getBackedPosition(), this);
+            this.getRoomGraph().environmentDatabase.remove(this.getBackedPosition(), this);
             this.setPosition(pos);
-            this.getRoomGraph().tm.put(this.getPosition(), this);
+            this.getRoomGraph().environmentDatabase.put(this.getPosition(), this);
             return true;
         }
         else {
@@ -91,6 +101,42 @@ public class Creature extends RoadSearch{
             return false;
         }
     }
+
+    @Override
+    public boolean[] checkSurroundings() {
+
+        boolean[] dirBool = new boolean[] {true, true, true, true};
+
+        Direction MoveBackDir = getRevertDir(this.getLastMoveDir());
+        // 1, check every direction except the one you come from
+        // to start with, you should not take the back direction where you just come from;
+        Direction.setFalseBoolArrayByDirection(dirBool, MoveBackDir);
+
+        Position posCurNorth = getShiftPosition(this.getPosCur(), Directionset.NORTH);
+        Position posCurWest = getShiftPosition(this.getPosCur(), Directionset.WEST);
+        Position posCurSouth = getShiftPosition(this.getPosCur(), SOUTH);
+        Position posCurEast = getShiftPosition(this.getPosCur(), Directionset.EAST);
+
+        // new rule 1: creature should not not run into a locked door
+        // check Door
+
+        if (isTileType(posCurNorth, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
+        }
+        if (isTileType(posCurWest, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
+        }
+        if (isTileType(posCurSouth, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
+        }
+        if (isTileType(posCurEast, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        }
+
+        return Direction.mergeDirection(dirBool, super.checkSurroundings());
+
+    }
+
     public int getDamage() {
         return this.damage;
     }

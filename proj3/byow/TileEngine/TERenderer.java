@@ -1,7 +1,9 @@
 package byow.TileEngine;
 
 import byow.Core.Avatar;
+import byow.Core.ByowCommandSet;
 import byow.Core.Creature;
+import byow.Core.Position;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
@@ -112,6 +114,15 @@ public class TERenderer {
         StdDraw.show();
     }
 
+    public void renderTextWithoutClear(String str, int size, Position pos) {
+        //StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(pos.getX(), pos.getY(), str);
+        StdDraw.show();
+    }
+
     public void paintCreature(Creature creature, TETile type, TETile[][] world) {
         //this.world = TETile.copyOf(this.refWorld);
         if (creature.getBackedPosition() != null) {
@@ -142,6 +153,12 @@ public class TERenderer {
 
     public void renderMenuPage() {
         this.renderText("CS61B: THE GAME");
+    }
+
+    public void renderKeyMenu() {
+        //this.renderTextWithoutClear("Actions:", 16, new Position(width/2, height/2));
+        this.renderTextWithoutClear("1: " + ByowCommandSet.LOCK.toString(), 16, new Position(width/2, height/2));
+        this.renderTextWithoutClear("2: " + ByowCommandSet.UNLOCK.toString(), 16, new Position(width/2, height/2 - 2));
     }
 
     public void renderPause(int count) {

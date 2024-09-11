@@ -3,15 +3,12 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import edu.princeton.cs.algs4.StdDraw;
 //import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
 import static byow.Core.CommandNode.getCommandList;
-import static byow.Core.TileUtils.paintTile;
 
 
 public class Engine {
@@ -46,27 +43,31 @@ public class Engine {
     public void interactWithKeyboard() {
         // generate world
         TETile[][] world = new TETile[WIDTH][HEIGHT];
-        ter.initialize(WIDTH, HEIGHT, 0, 0);
 
         // add monitor, which will listen commands typed by user;
         CommandMonitor cMonitor = new CommandMonitor();
 
         // render menu page
+        ter.initialize(WIDTH, HEIGHT, 0, 0);
         ter.renderMenuPage();
 
         // listening menu page
         cMonitor.initiate();
         cMonitor.monitorMenuPage(ter);
-        cMonitor.executeCommands(null, null, world, ter);
+        // the start menu should never execute any command that uses a "refWorld"
+        cMonitor.executeCommands(null, null, world, null, ter);
 
         // render game page
 
         // generate world data base (rooms and tunnels)
         SEED = cMonitor.cn.rNum;
         RANDOM = new Random(SEED);
-        rg.initiate(world);
-        Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, world);
-        Bear bear = new Bear(Position.getRandomPositionInRandomRoom(rg), rg, world);
+        TETile[][] refWorld = rg.initiate(world);
+
+        Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, world, refWorld);
+        Bear bear = new Bear(Position.getRandomPositionInRandomRoom(rg), rg, world, refWorld);
+        Key key1 = new Key(ter, world, refWorld);
+        hero.pickUpKey(key1);
 
         ter.initialize(WIDTH, HEIGHT, 0, 0);
         ter.renderCreature(hero, Tileset.AVATAR, world);
@@ -79,8 +80,8 @@ public class Engine {
         while (cMonitor.isIdleCommand() || cMonitor.isMoveCommand()) {
             cMonitor.initiate();
             cMonitor.monitorGamePage();
-            cMonitor.executeCommands(hero, bear, world, ter);
-            System.out.println(rg.tm);
+            cMonitor.executeCommands(hero, bear, world, refWorld, ter);
+            System.out.println(rg.environmentDatabase);
 
         }
     }
@@ -133,7 +134,7 @@ public class Engine {
                 rg.initiate(finalWorldFrame);
 
                 // should add avatars after the world is generated
-                hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, finalWorldFrame);
+                hero = new Avatar(Position.getRandomPositionInRandomRoom(rg), rg, finalWorldFrame, TETile.copyOf(finalWorldFrame));
             }
             else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
 

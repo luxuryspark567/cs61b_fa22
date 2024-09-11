@@ -2,6 +2,8 @@ package byow.Core;
 
 import java.awt.*;
 
+import static byow.Core.Engine.DIRECTION_NUM;
+
 public class Direction {
     private final String description;
 
@@ -79,7 +81,7 @@ public class Direction {
 
     public static boolean[] getBooleanArrayFromDir(Direction dir) {
         if (dir == null) {
-            return null;
+            return new boolean[]{true, true, true, true};
         }
         if (dir == Directionset.NORTH) {
             return new boolean[]{true, false, false, false};
@@ -162,8 +164,29 @@ public class Direction {
         else if (Directionset.SOUTH == dir) {
             return new Position(pos.getX(), pos.getY() - 1);
         }
-        else {//if (Directionset.EAST == dir) {
+        else if (Directionset.EAST == dir) {
             return new Position(pos.getX() + 1, pos.getY());
         }
+        else {
+            return Position.copyOf(pos);
+        }
+    }
+
+    public static boolean[] mergeDirection(boolean[] dir1, boolean[] dir2) {
+        boolean[] dirRet = new boolean[DIRECTION_NUM];
+        for (int i = 0; i < DIRECTION_NUM; i++) {
+            dirRet[i] = dir1[i] && dir2[i];
+        }
+        return dirRet;
+    }
+
+    public static int getDirNum(boolean[] dir) {
+        int counter = 0;
+        for (int i = 0; i < DIRECTION_NUM; i++) {
+            if (dir[i]) {
+                counter++;
+            }
+        }
+        return counter;
     }
 }

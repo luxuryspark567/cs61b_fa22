@@ -44,6 +44,16 @@ public class Position {
         return new Position(pos.x, pos.y, pos.canvasWidth, pos.canvasHeight);
     }
 
+    public static void copyValue(Position posSrc, Position posDst) {
+        if (posSrc == null || posDst == null) {
+            return;
+        }
+        posDst.x = posSrc.x;
+        posDst.y = posSrc.y;
+        posDst.canvasWidth = posSrc.canvasWidth;
+        posDst.canvasHeight = posSrc.canvasHeight;
+    }
+
     public void setCanvasWidth(int canvasW) {
         this.canvasWidth = canvasW;
     }

@@ -1,0 +1,88 @@
+package byow.Core;
+
+import byow.TileEngine.TERenderer;
+import byow.TileEngine.TETile;
+
+import static byow.Core.Engine.HEIGHT;
+import static byow.Core.Engine.WIDTH;
+
+public class Key extends Item {
+
+    private static final int WEIGHT_DFT = 0;
+    private static final int VALUE_DFT = 0;
+    private static final int DURATION_DFT = 100;
+    private static final int SIGNATURE_DFT = 1;
+
+    private final int signature; // only if the key signature matches the door signature will it be able to open it
+
+    TERenderer ter;
+    TETile[][] world;
+    TETile[][] refWorld;
+
+    public Key(TERenderer ter, TETile[][] world, TETile[][] refWorld) {
+        super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
+        this.signature = SIGNATURE_DFT;
+        this.ter = ter;
+        this.world = world;
+        this.refWorld = refWorld;
+    }
+
+    public Key(int signature, TERenderer ter, TETile[][] world, TETile[][] refWorld) {
+        super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
+        this.signature = signature;
+        this.ter = ter;
+        this.world = world;
+        this.refWorld = refWorld;
+    }
+
+    public Key(int weight, int value, int dur, int signature, TERenderer ter, TETile[][] world, TETile[][] refWorld) {
+        super(weight, value, dur);
+        this.signature = signature;
+        this.ter = ter;
+        this.world = world;
+        this.refWorld = refWorld;
+    }
+
+    int getSignature() {
+        return this.signature;
+    }
+    /**
+     * a key to handle a door
+     * @true:  could open the door
+     * @false: cannot open the door
+     */
+
+    @Override
+    boolean handle(Object o) {
+        if (o instanceof Door d){
+            if (this.signature == d.getSiginature()) {
+                // add monitor, which will listen commands typed by user;
+                CommandMonitor cMonitor = new CommandMonitor();
+                cMonitor.initiate();
+
+                // 1, pops up action selection menu
+                ter.initialize(WIDTH, HEIGHT, 0, 0); //re init the menu
+                ter.renderKeyMenu();
+
+                // 2, listening user's option, for user to choose an action;
+                cMonitor.monitorKeyMenu(ter);
+
+                // 3, perform the action, and render the result
+                cMonitor.executeKeyCommands(this, d, world, refWorld, ter);
+
+                // 4, return result
+                // if a new menu is popped ,should re-initiate the canvas
+                ter.initialize(WIDTH, HEIGHT, 0, 0);
+                return true;
+            }
+            else {
+                System.out.println("unmatched key!");
+                return false;
+            }
+
+        }
+
+        return false;
+    }
+}
+

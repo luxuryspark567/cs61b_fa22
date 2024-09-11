@@ -23,40 +23,45 @@ public class RoadSearch {
 
     public TETile[][] world;
     public TETile[][] refWorld;
-
+/*
     public RoadSearch() {
         this.posSrc = null;
         this.posDst = null;
         this.world = null;
         this.refWorld = null;
     }
-
+*/
     // lastMoveDir is very important, because it will define the very first move direction in checkSurroundings()
     // 1, if lastMoveDir is specified, then the initial moveDir in checkSurroundings() could not be inverse(lastMoveDir)
     //    because we may not want to go backwards;
     // 2, if lastMoveDir is null, it means that all direction is OK to run.
-    public RoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world, Direction lastMoveDir) {
+    public RoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world,TETile[][] refWorld) {
         this.posSrc = Position.copyOf(posSrc);
         this.posCur = Position.copyOf(posSrc);
         this.posPre = Position.copyOf(posSrc);
         this.posDst = Position.copyOf(posDst);
         this.curMoveDir = dirCur;
         this.world = world;
-        this.refWorld = TETile.copyOf(world);
-        this.lastMoveDir = lastMoveDir;
+        this.refWorld = refWorld;
+        this.lastMoveDir = dirCur;
     }
 
-    public void initRoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world, Direction lastMoveDir) {
+    /**
+     * dirCur is the preference on the first move, if not sure set to null
+     * */
+    public void initRoadSearch(Position posSrc, Position posDst, Direction dirCur) {
         this.posSrc = Position.copyOf(posSrc);
         this.posCur = Position.copyOf(posSrc);
         this.posPre = Position.copyOf(posSrc);
         this.posDst = Position.copyOf(posDst);
+
+        //curMoveDir and lastMoveDir should be set the same at initialization
         this.curMoveDir = dirCur;
 
         //do not init the refWorld multiple times, refWorld should be fixed when Digger is made.
         //this.world = world;
         //this.refWorld = TETile.copyOf(world);
-        this.lastMoveDir = lastMoveDir;
+        this.lastMoveDir = dirCur;
     }
     public void setPosCur(Position pos) {
         this.posCur = Position.copyOf(pos);
@@ -252,7 +257,7 @@ public class RoadSearch {
         return getDirectionFromCoordinatesDifference(posCur, posDst);
     }
 
-    private boolean[] checkSurroundings() {
+    public boolean[] checkSurroundings() {
 
         boolean[] dirBool = new boolean[] {true, true, true, true};
 
@@ -283,7 +288,7 @@ public class RoadSearch {
 
         // 3.1 you should not run into a door if the door is not the destination;
         // check Door
-
+/*
         if (isTileType(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
             // if a unlocked door is the destination door, is OK to enter
             if (posDst.getX() == posCurNorth.getX()
@@ -327,6 +332,24 @@ public class RoadSearch {
                 Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
             }
         }
+*/
+
+        // 3.1 you can not run into a locked door
+        // check Door
+/*
+        if (isTileType(posCurNorth, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
+        }
+        if (isTileType(posCurWest, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
+        }
+        if (isTileType(posCurSouth, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
+        }
+        if (isTileType(posCurEast, Tileset.LOCKED_DOOR, this.refWorld)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        }
+*/
 
         // 3.1 you should not run out of the canvas ;
         // 3.2 you should not run to the frame the canvas, because there is no space to build walls;
@@ -351,23 +374,6 @@ public class RoadSearch {
 
     }
 
-    private boolean[] mergeDirection(boolean[] dir1, boolean[] dir2) {
-        boolean[] dirRet = new boolean[DIRECTION_NUM];
-        for (int i = 0; i < DIRECTION_NUM; i++) {
-            dirRet[i] = dir1[i] && dir2[i];
-        }
-        return dirRet;
-    }
-
-    private int getDirNum(boolean[] dir) {
-        int counter = 0;
-        for (int i = 0; i < DIRECTION_NUM; i++) {
-            if (dir[i]) {
-                counter++;
-            }
-        }
-        return counter;
-    }
 /*
     private int getStraightWalkingLimit() {
         if (lastMoveDir == NORTH || lastMoveDir == SOUTH) {

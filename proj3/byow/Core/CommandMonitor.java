@@ -5,6 +5,10 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
+import static byow.Core.Engine.HEIGHT;
+import static byow.Core.Engine.WIDTH;
+import static byow.Core.TileUtils.paintTile;
+
 public class CommandMonitor {
     int parseState;
     StringBuilder randomKey;
@@ -85,67 +89,7 @@ public class CommandMonitor {
                 }
             }
         }
-
     }
-
-    public void executeCommands(Avatar hero, Bear bear, TETile[][] world, TERenderer ter) {
-        // return true means not a command to break out
-        // return false means a command to break outer while loop, and no need to monitor anymore.
-
-        if (cn == null) {
-            return;
-        }
-
-        if (cn.bc == ByowCommandSet.LOAD) {
-            //ter.initialize(40, 40, 0, 0);
-            ter.renderText("LOAD GAME");
-        }
-        else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD){
-            //ter.initialize(40, 40, 0, 0);
-            ter.renderText("CREATING NEW WORLD...");
-            ter.renderPause(500);
-        }
-        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
-            //this.ter.initialize(40, 40, 0, 0);
-            ter.renderText("GAME OVER");
-        }
-        else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
-            if (hero != null) {
-                ter.renderCreature(bear, Tileset.GANON, world);
-
-                hero.MoveOneStep(Directionset.NORTH);
-                ter.renderCreature(hero, Tileset.AVATAR, world);
-
-                ter.renderGamePage(world);
-            }
-        }
-        else if (cn.bc == ByowCommandSet.MOVE_WEST) {
-            if (hero != null) {
-
-                ter.renderCreature(bear, Tileset.GANON, world);
-                hero.MoveOneStep(Directionset.WEST);
-                ter.renderCreature(hero, Tileset.AVATAR, world);
-                ter.renderGamePage(world);
-            }
-        }
-        else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
-            if (hero != null) {
-                ter.renderCreature(bear, Tileset.GANON, world);
-                hero.MoveOneStep(Directionset.SOUTH);
-                ter.renderCreature(hero, Tileset.AVATAR, world);
-                ter.renderGamePage(world);
-            }
-        }
-        else if (cn.bc == ByowCommandSet.MOVE_EAST) {
-            if (hero != null) {
-                hero.MoveOneStep(Directionset.EAST);
-                ter.renderCreature(hero, Tileset.AVATAR, world);
-                ter.renderCreature(bear, Tileset.GANON, world);
-                ter.renderGamePage(world);
-            }
-        }
-    }
-
     // monitor game page on time, return a valid command
     public void monitorGamePage() {
 
@@ -195,6 +139,69 @@ public class CommandMonitor {
         }
     }
 
+    public void executeCommands(Avatar hero, Bear bear, TETile[][] world, TETile[][] refWorld, TERenderer ter) {
+        // return true means not a command to break out
+        // return false means a command to break outer while loop, and no need to monitor anymore.
+
+        if (cn == null) {
+            return;
+        }
+
+        if (cn.bc == ByowCommandSet.LOAD) {
+            //ter.initialize(40, 40, 0, 0);
+            ter.renderText("LOAD GAME");
+        }
+        else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD){
+            //ter.initialize(40, 40, 0, 0);
+            ter.renderText("CREATING NEW WORLD...");
+            ter.renderPause(500);
+        }
+        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
+            //this.ter.initialize(40, 40, 0, 0);
+            ter.renderText("GAME OVER");
+        }
+        else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
+            if (hero != null) {
+                //ter.initialize(WIDTH, HEIGHT, 0, 0);
+                bear.huntHero(hero.getPosition());
+                ter.renderCreature(bear, Tileset.GANON, world);
+                hero.MoveOneStep(Directionset.NORTH);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderGamePage(world);
+            }
+        }
+        else if (cn.bc == ByowCommandSet.MOVE_WEST) {
+            if (hero != null) {
+                //ter.initialize(WIDTH, HEIGHT, 0, 0);
+                bear.huntHero(hero.getPosition());
+                ter.renderCreature(bear, Tileset.GANON, world);
+                hero.MoveOneStep(Directionset.WEST);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderGamePage(world);
+            }
+        }
+        else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
+            if (hero != null) {
+                //ter.initialize(WIDTH, HEIGHT, 0, 0);
+                bear.huntHero(hero.getPosition());
+                ter.renderCreature(bear, Tileset.GANON, world);
+                hero.MoveOneStep(Directionset.SOUTH);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderGamePage(world);
+            }
+        }
+        else if (cn.bc == ByowCommandSet.MOVE_EAST) {
+            if (hero != null) {
+                //ter.initialize(WIDTH, HEIGHT, 0, 0);
+                bear.huntHero(hero.getPosition());
+                hero.MoveOneStep(Directionset.EAST);
+                ter.renderCreature(hero, Tileset.AVATAR, world);
+                ter.renderCreature(bear, Tileset.GANON, world);
+                ter.renderGamePage(world);
+            }
+        }
+    }
+
     boolean isMoveCommand() {
         return this.cn.bc == ByowCommandSet.MOVE_NORTH
                 || this.cn.bc== ByowCommandSet.MOVE_WEST
@@ -205,4 +212,65 @@ public class CommandMonitor {
     boolean isIdleCommand() {
         return this.cn.bc == ByowCommandSet.IDLE;
     }
+
+
+
+    public void monitorKeyMenu (TERenderer ter) {
+
+        boolean looperFlag = true;
+
+        while (looperFlag) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                System.out.println(c);
+
+                switch (parseState) {
+                    case 0: // idle state
+                        if (c == '1') {
+                            cn = new CommandNode(ByowCommandSet.LOCK);
+                            looperFlag = false;
+                        }
+                        else if (c == '2') {
+                            cn = new CommandNode(ByowCommandSet.UNLOCK);
+                            looperFlag = false;
+                        }
+                        else{
+                            System.out.println("invalid option!!");
+                        }
+                        parseState = 0;
+                        break;
+                    default:
+                        parseState = 0;
+                        break;
+                }
+            }
+        }
+    }
+
+    public void executeKeyCommands(Key key, Door door, TETile[][] world, TETile[][] refWorld, TERenderer ter) {
+        // return true means not a command to break out
+        // return false means a command to break outer while loop, and no need to monitor anymore.
+
+        if (cn == null) {
+            return;
+        }
+
+        if (cn.bc == ByowCommandSet.LOCK) {
+            if (door != null) {
+                // both the ref word and real world need to be checked
+                paintTile(door.getPosition(), Tileset.LOCKED_DOOR, world);
+                paintTile(door.getPosition(), Tileset.LOCKED_DOOR, refWorld);
+                ter.renderGamePage(world);
+            }
+        }
+        else if (cn.bc == ByowCommandSet.UNLOCK){
+            if (door != null) {
+                paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, world);
+                paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, refWorld);
+                ter.renderGamePage(world);
+            }
+        }
+    }
+
+
 }

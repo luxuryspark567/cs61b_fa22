@@ -7,13 +7,11 @@ public class Weapon extends Item {
 
     private int range;
 
-    private int durability;
 
     public Weapon(int damage, int attackSpeed, int range, int dur, int weight, int value) {
-        super(weight, value);
+        super(weight, value, dur);
         this.damage = damage;
         this.attackSpeed = attackSpeed;
         this.range = range;
-        this.durability = dur;
     }
 }
