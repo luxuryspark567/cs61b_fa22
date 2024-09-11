@@ -1,10 +1,11 @@
 package byow.Core;
 
 import java.awt.*;
+import java.io.Serializable;
 
 import static byow.Core.Engine.DIRECTION_NUM;
 
-public class Direction {
+public class Direction implements Serializable {
     private final String description;
 
     public Direction(String description) {

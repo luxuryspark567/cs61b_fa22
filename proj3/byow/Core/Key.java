@@ -3,10 +3,12 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
+import java.io.Serializable;
+
 import static byow.Core.Engine.HEIGHT;
 import static byow.Core.Engine.WIDTH;
 
-public class Key extends Item {
+public class Key extends Item implements Serializable {
 
     private static final int WEIGHT_DFT = 0;
     private static final int VALUE_DFT = 0;

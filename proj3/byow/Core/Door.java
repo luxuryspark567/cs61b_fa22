@@ -4,7 +4,9 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.Edge;
 
-public class Door extends Item {
+import java.io.Serializable;
+
+public class Door extends Item implements Serializable {
     private static final String DESCRIPTION_DFT = "Door";
     private static final int WEIGHT_DFT = 100;
     private static final int VALUE_DFT = 0;
@@ -17,9 +19,9 @@ public class Door extends Item {
     //private Position pos; // position of a door
     //private DoorType type; // is it a closed door or open door, or door to a hallway;
 
-    private Edge edge;// if a door is chosen, hero could take an edge (route) to another room
+    //private Edge edge;// if a door is chosen, hero could take an edge (route) to another room
 
-    private Hallway hw;
+    //private Hallway hw;
 
     private Direction dir;
 
@@ -48,8 +50,8 @@ public class Door extends Item {
  */
     public Door() {
         super();
-        this.edge = null;
-        this.hw = null;
+        //this.edge = null;
+        //this.hw = null;
         this.dir = null;
         this.siginature = SIGNATURE_DFT;
         this.type = Tileset.UNLOCKED_DOOR;
@@ -57,8 +59,8 @@ public class Door extends Item {
     public Door(Position pos, Edge e, Hallway hw, Direction dir) {
         super(DESCRIPTION_DFT, pos);
         //this.type = type;
-        this.edge = e;
-        this.hw = hw;
+        //this.edge = e;
+        //this.hw = hw;
         this.dir = dir;
         this.siginature = SIGNATURE_DFT;
         this.type = Tileset.UNLOCKED_DOOR;
@@ -72,13 +74,13 @@ public class Door extends Item {
     //    return type;
     //}
 
-    public Edge getEdge(){
-        return edge;
-    }
+    //public Edge getEdge(){
+    //    return edge;
+    //}
 
-    public Hallway getHallway(){
-        return this.hw;
-    }
+    //public Hallway getHallway(){
+    //    return this.hw;
+    //}
 
     public Direction getDir() {
         return this.dir;
@@ -95,13 +97,13 @@ public class Door extends Item {
     //public void setDoorType(DoorType dt){
     //    this.type = dt;
     //}
-    public void setEdge(Edge edge){
-        this.edge = edge;
-    }
+    //public void setEdge(Edge edge){
+    //    this.edge = edge;
+    //}
 
-    public void setHallway(Hallway hw){
-        this.hw = hw;
-    }
+    //public void setHallway(Hallway hw){
+    //    this.hw = hw;
+    //}
     public void setDir(Direction dir) {
         this.dir = dir;
     }

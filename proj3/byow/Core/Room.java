@@ -1,6 +1,8 @@
 package byow.Core;
 
-public class Room {
+import java.io.Serializable;
+
+public class Room implements Serializable {
     private Position pos; // position
     private Size si; //size
     private Door door; // north door, west door, south door and east door

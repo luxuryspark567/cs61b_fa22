@@ -8,6 +8,7 @@ import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.Serializable;
 
 import static byow.Core.TileUtils.paintTile;
 
@@ -17,7 +18,7 @@ import static byow.Core.TileUtils.paintTile;
  * messing with this renderer, unless you're trying to do something fancy like
  * allowing scrolling of the screen or tracking the avatar or something similar.
  */
-public class TERenderer {
+public class TERenderer implements Serializable {
     private static final int TILE_SIZE = 16;
     private int width;
     private int height;
@@ -123,6 +124,30 @@ public class TERenderer {
         StdDraw.show();
     }
 
+    public void renderClear() {
+        StdDraw.clear(new Color(0, 0, 0));
+    }
+
+    public void renderAddTextToCanvas(String str, int size, Position pos) {
+        //StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(pos.getX(), pos.getY(), str);
+        StdDraw.show();
+    }
+
+    public void renderAddTextToCanvas(String str, int size, double x, double y) {
+        //StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        Font fontBig = new Font("Monaco", Font.BOLD, size);
+        StdDraw.setFont(fontBig);
+        StdDraw.text(x, y, str);
+        StdDraw.show();
+    }
+    public void renderShow() {
+        StdDraw.show();;
+    }
     public void paintCreature(Creature creature, TETile type, TETile[][] world) {
         //this.world = TETile.copyOf(this.refWorld);
         if (creature.getBackedPosition() != null) {
@@ -152,7 +177,19 @@ public class TERenderer {
     }
 
     public void renderMenuPage() {
-        this.renderText("CS61B: THE GAME");
+        renderClear();
+        renderAddTextToCanvas("CS61B: THE GAME", 30, (double)width / 2, (double)height * 3 / 4);
+        renderAddTextToCanvas("New Game (N)", 16, (double)width / 2, (double)height / 2);
+        renderAddTextToCanvas("Load Game (L)", 16, (double)width / 2, (double)height / 2 - 1);
+        renderAddTextToCanvas("Quit Game (Q)", 16, (double)width / 2, (double)height / 2 - 2);
+        renderShow();
+    }
+
+    public void renderRandomInputPage(String Num) {
+        renderClear();
+        renderAddTextToCanvas("Type Seed:", 30, (double)width / 2, (double)height - 1);
+        renderAddTextToCanvas(Num, 30, (double)width / 2, (double)height / 2);
+        renderShow();
     }
 
     public void renderKeyMenu() {

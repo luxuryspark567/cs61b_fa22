@@ -5,6 +5,7 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 //import edu.princeton.cs.introcs.StdDraw;
 
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -36,6 +37,56 @@ public class Engine {
     TERenderer ter = new TERenderer();
     RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
 
+
+    public static class GameState implements Serializable {
+
+        private RoomGraph rg;
+        private TETile[][] world;
+        private TETile[][] refWorld;
+
+        private Avatar player;
+
+        private Bear bear;
+
+        public GameState(RoomGraph rg, TETile[][] world, TETile[][] refWorld, Avatar player, Bear bear) {
+            this.rg = rg;
+            this.world = world;
+            this.refWorld = refWorld;
+            this.player = player;
+            this.bear = bear;
+        }
+    }
+
+    public static void saveGameStateTest(Avatar avatar, String filePath) {
+        try (FileOutputStream fileOut = new FileOutputStream(filePath);
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(avatar);
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
+
+    public static void saveGameState(GameState gameState, String filePath) {
+        try (FileOutputStream fileOut = new FileOutputStream(filePath);
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(gameState);
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
+
+    public static class LoadGame {
+        public static GameState loadGameState(String filePath) {
+            GameState gameState = null;
+            try (FileInputStream fileIn = new FileInputStream(filePath);
+                 ObjectInputStream in = new ObjectInputStream(fileIn)) {
+                gameState = (GameState) in.readObject();
+            } catch (IOException | ClassNotFoundException i) {
+                i.printStackTrace();
+            }
+            return gameState;
+        }
+    }
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
@@ -55,7 +106,7 @@ public class Engine {
         cMonitor.initiate();
         cMonitor.monitorMenuPage(ter);
         // the start menu should never execute any command that uses a "refWorld"
-        cMonitor.executeCommands(null, null, world, null, ter);
+        cMonitor.executeCommands(null, null, world, null, ter, rg);
 
         // render game page
 
@@ -80,7 +131,7 @@ public class Engine {
         while (cMonitor.isIdleCommand() || cMonitor.isMoveCommand()) {
             cMonitor.initiate();
             cMonitor.monitorGamePage();
-            cMonitor.executeCommands(hero, bear, world, refWorld, ter);
+            cMonitor.executeCommands(hero, bear, world, refWorld, ter, rg);
             System.out.println(rg.environmentDatabase);
 
         }

@@ -1,7 +1,9 @@
 package byow.Core;
 
+import java.io.Serializable;
+
 // size of an object
-public class Size {
+public class Size implements Serializable {
     int w;
     int h;
 

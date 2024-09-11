@@ -2,13 +2,14 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import static byow.Core.Engine.HEIGHT;
 import static byow.Core.Engine.RANDOM;
 
 // position of an object on canvas
-public class Position {
+public class Position implements Serializable {
     private int x;
     private int y;
     private int canvasWidth;//WIDTH;

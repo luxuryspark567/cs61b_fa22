@@ -3,6 +3,8 @@ package byow.Core;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
+import java.io.Serializable;
+
 import static byow.Core.Direction.*;
 import static byow.Core.Direction.setTrueBoolArrayByDirection;
 import static byow.Core.Directionset.SOUTH;
@@ -11,7 +13,7 @@ import static byow.Core.Engine.WIDTH;
 import static byow.Core.TileUtils.isInCanvas;
 import static byow.Core.TileUtils.isTileType;
 
-public class RoadSearch {
+public class RoadSearch implements Serializable {
 
     private Position posSrc;
     private Position posDst; // dst position;

@@ -5,8 +5,6 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
-import static byow.Core.Engine.HEIGHT;
-import static byow.Core.Engine.WIDTH;
 import static byow.Core.TileUtils.paintTile;
 
 public class CommandMonitor {
@@ -42,10 +40,12 @@ public class CommandMonitor {
                         }
                         else if (c == 'n' || c == 'N') {
                             randomKey.delete(0, randomKey.length());
+                            //ter.renderClear(); // clear the canvas.
                             parseState = 1;
                         }
-                        else if (c == ':') {
-                            parseState = 2;
+                        else if (c == 'q' || c == 'Q') {
+                            cn = new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME);
+                            looperFlag = false;
                         }
                         break;
                     case 1: //create new world command analysis
@@ -68,15 +68,6 @@ public class CommandMonitor {
                             parseState = 0;
                         }
                         break;
-                    case 2:
-                        if (c == 'q' || c == 'Q') {
-                            cn = new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME);
-                            looperFlag = false;
-                        } else {
-                            System.out.println("invalid quit & save command!");
-                        }
-                        parseState = 0;
-                        break;
                     default:
                         parseState = 0;
                         break;
@@ -85,7 +76,8 @@ public class CommandMonitor {
                 //render
                 if (parseState == 1 && cn.bc == ByowCommandSet.IDLE) {
                     //ter.initialize(40, 40, 0, 0);
-                    ter.renderText(randomKey.toString());
+                    ter.renderRandomInputPage(randomKey.toString());
+                    //ter.renderText();
                 }
             }
         }
@@ -139,7 +131,7 @@ public class CommandMonitor {
         }
     }
 
-    public void executeCommands(Avatar hero, Bear bear, TETile[][] world, TETile[][] refWorld, TERenderer ter) {
+    public void executeCommands(Avatar hero, Bear bear, TETile[][] world, TETile[][] refWorld, TERenderer ter, RoomGraph rg) {
         // return true means not a command to break out
         // return false means a command to break outer while loop, and no need to monitor anymore.
 
@@ -150,6 +142,7 @@ public class CommandMonitor {
         if (cn.bc == ByowCommandSet.LOAD) {
             //ter.initialize(40, 40, 0, 0);
             ter.renderText("LOAD GAME");
+            Engine.GameState gState = Engine.LoadGame.loadGameState("/byow/Core/savefile.txt");
         }
         else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD){
             //ter.initialize(40, 40, 0, 0);
@@ -157,8 +150,9 @@ public class CommandMonitor {
             ter.renderPause(500);
         }
         else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
-            //this.ter.initialize(40, 40, 0, 0);
             ter.renderText("GAME OVER");
+            Engine.GameState gState = new Engine.GameState(rg, world, refWorld, hero, bear);
+            Engine.saveGameState(gState, "savefile.txt");
         }
         else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
             if (hero != null) {

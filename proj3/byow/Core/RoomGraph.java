@@ -7,6 +7,7 @@ import edu.princeton.cs.algs4.EdgeWeightedGraph;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.TreeMap;
 import static byow.Core.Engine.*;
 import static byow.Core.TileUtils.*;
 
-public class RoomGraph extends EdgeWeightedGraph {
+public class RoomGraph extends EdgeWeightedGraph implements Serializable {
 
     public List<Room> roomLut;
     // 0, creat an avatar
@@ -32,7 +33,7 @@ public class RoomGraph extends EdgeWeightedGraph {
         environmentDatabase = new TreeMap<Position, Object>(new PositionComparator());
     }
 
-    public static class PositionComparator implements Comparator{
+    public static class PositionComparator implements Comparator, Serializable {
         @Override
         public int compare(Object o1, Object o2) {
             return ((Position)o1).getIndex() - ((Position)o2).getIndex();
@@ -250,10 +251,10 @@ public class RoomGraph extends EdgeWeightedGraph {
                         Edge e = new Edge(roomLut.indexOf(dsNode.value.r1), roomLut.indexOf(dsNode.value.r2), hw.getWeight());
 
                         // update edge to door.
-                        hw.getSrc().setEdge(e);
-                        hw.getDst().setEdge(e);
-                        hw.getSrc().setHallway(hw);
-                        hw.getDst().setHallway(hw);
+                        //hw.getSrc().setEdge(e);
+                        //hw.getDst().setEdge(e);
+                        ///hw.getSrc().setHallway(hw);
+                        //hw.getDst().setHallway(hw);
 
                         this.addEdge(e);
                     }
