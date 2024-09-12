@@ -1,20 +1,16 @@
 package byow.Core;
 
-import byow.TileEngine.TETile;
-
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Comparator;
 
 import static byow.Core.Engine.*;
-import static byow.Core.Main.gameState;
 
 // position of an object on canvas
 public class Position implements Serializable {
     private int x;
     private int y;
-    private int canvasWidth;//WIDTH;
-    private int canvasHeight;//HEIGHT;
+    private int tileWidth; // WIDTH;
+    private int tileHeight; // HEIGHT;
 
     public Position() {
         this.x = 0;
@@ -28,8 +24,8 @@ public class Position implements Serializable {
     public Position(int x, int y, int WIDTH, int HEIGHT) {
         this.x = x;
         this.y = y;
-        this.canvasWidth = WIDTH;
-        this.canvasHeight = HEIGHT;
+        this.tileWidth = WIDTH;
+        this.tileHeight = HEIGHT;
     }
     @Override
     public boolean equals(Object o) {
@@ -48,7 +44,7 @@ public class Position implements Serializable {
         if (pos == null) {
             return null;
         }
-        return new Position(pos.x, pos.y, pos.canvasWidth, pos.canvasHeight);
+        return new Position(pos.x, pos.y, pos.tileWidth, pos.tileHeight);
     }
 
     public static void copyValue(Position posSrc, Position posDst) {
@@ -57,24 +53,24 @@ public class Position implements Serializable {
         }
         posDst.x = posSrc.x;
         posDst.y = posSrc.y;
-        posDst.canvasWidth = posSrc.canvasWidth;
-        posDst.canvasHeight = posSrc.canvasHeight;
+        posDst.tileWidth = posSrc.tileWidth;
+        posDst.tileHeight = posSrc.tileHeight;
     }
 
-    public void setCanvasWidth(int canvasW) {
-        this.canvasWidth = canvasW;
+    public void setTileWidth(int W) {
+        this.tileWidth = W;
     }
 
-    public void setCanvasHeight(int canvasH) {
-        this.canvasHeight = canvasH;
+    public void setTileHeight(int H) {
+        this.tileHeight = H;
     }
 
-    public int getCanvasWidth() {
-        return this.canvasWidth;
+    public int getTileWidth() {
+        return this.tileWidth;
     }
 
-    public int getCanvasHeight() {
-        return this.canvasHeight;
+    public int getTileHeight() {
+        return this.tileHeight;
     }
 
     public void setX(int x) {
@@ -94,18 +90,18 @@ public class Position implements Serializable {
     }
 
     public int getIndex() {
-        return (this.getX() * this.getCanvasHeight() + this.getY());
+        return (this.getX() * this.tileHeight + this.getY());
     }
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder("Position(");
         s.append(this.x);
         s.append("/");
-        s.append(this.canvasWidth);
+        s.append(this.tileWidth);
         s.append(", ");
         s.append(this.y);
         s.append("/");
-        s.append(this.canvasHeight);
+        s.append(this.tileHeight);
         s.append(")");
         return s.toString();
     }
@@ -120,7 +116,7 @@ public class Position implements Serializable {
 
         return new Position(r.getPosition().x + offX + 1,
                 r.getPosition().y + offY + 1,
-                TileUtils.getCanvasWidth(),
-                TileUtils.getCanvasHeight());
+                TileUtils.getTileWorldWidth(),
+                TileUtils.getTileWorldHeight());
     }
 }

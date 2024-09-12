@@ -2,11 +2,9 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import edu.princeton.cs.algs4.Edge;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 //import static byow.Core.Main.gameState;
 import static byow.Core.Engine.*;
@@ -21,8 +19,8 @@ public class WorldGenerateUtils {
 
     private Position getRandomPosition() {
         Position ret = new Position();
-        ret.setX(RandomUtils.uniform(RANDOM, TileUtils.getCanvasWidth()));
-        ret.setY(RandomUtils.uniform(RANDOM, TileUtils.getCanvasHeight()));
+        ret.setX(RandomUtils.uniform(RANDOM, TileUtils.getTileWorldWidth()));
+        ret.setY(RandomUtils.uniform(RANDOM, TileUtils.getTileWorldHeight()));
         return ret;
     }
 
@@ -66,7 +64,7 @@ public class WorldGenerateUtils {
         Position posShift1 = Direction.getShiftPosition(pos, dir);
         Position posShift2 = Direction.getShiftPosition(posShift1, dir);
 
-        if (isInCanvas(posShift1) && isInCanvas(posShift2)) {
+        if (isInTileWorld(posShift1) && isInTileWorld(posShift2)) {
             // created a wall at least 2 tiles away from the edge, which is OK.
             if (isTileType(posShift1, Tileset.WALL, world)) {
                 System.out.println("Create a door facing a wall!");
@@ -93,7 +91,7 @@ public class WorldGenerateUtils {
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w - 1);
                 //System.out.println(index);
                 Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1,
-                        TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
+                        TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.NORTH, world);
             }
             else if (side == Directionset.WEST) {
@@ -101,7 +99,7 @@ public class WorldGenerateUtils {
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
                 Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index,
-                        TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
+                        TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.WEST, world);
             }
             else if (side == Directionset.SOUTH) {
@@ -109,7 +107,7 @@ public class WorldGenerateUtils {
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w -1);
                 //System.out.println(index);
                 Position doorPos = new Position(posRoom.getX() + index, posRoom.getY(),
-                        TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
+                        TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.SOUTH, world);
             }
             else if (side == Directionset.EAST) {
@@ -117,7 +115,7 @@ public class WorldGenerateUtils {
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
                 Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1,
-                        posRoom.getY() + index, TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
+                        posRoom.getY() + index, TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.EAST, world);
             }
             looperLimit--;
@@ -225,7 +223,7 @@ public class WorldGenerateUtils {
 
         //check if room location is out of canvas
         Position posRightCorner = new Position((pos.getX() + size.w - 1), (pos.getY() + size.h - 1));
-        if (!isInCanvas(posRightCorner)) {
+        if (!isInTileWorld(posRightCorner)) {
             return null;
         }
 

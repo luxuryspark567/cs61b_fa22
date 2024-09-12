@@ -2,71 +2,119 @@ package byow.Core;
 
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import edu.princeton.cs.algs4.StdDraw;
 
 import static byow.Core.Direction.getShiftPosition;
-import static byow.Core.Directionset.SOUTH;
 import static byow.Core.Engine.*;
 
 public class TileUtils {
 
+    public static class CanvasCoordinate {
+        private double x;
+        private double y;
 
-    public static boolean isInCanvas(Position pos) {
-        if (pos == null) {
-            return false;
+        public CanvasCoordinate(double x, double y) {
+            this.x = x;
+            this.y = y;
         }
-        return pos.getX() >= X_OFF
-                && pos.getY() >= Y_OFF
-                && pos.getX() < WIDTH - X_OFF
-                && pos.getY() < HEIGHT - Y_OFF;
-    }
-    public static boolean isOutOffNorthCanvas(Position pos) {
-        if (pos == null) {
-            return false;
-        }
-        return pos.getY() >= HEIGHT - Y_OFF;
-    }
 
-    public static boolean isOutOffWestCanvas(Position pos) {
-        if (pos == null) {
-            return false;
+        public double getX() {
+            return x;
         }
-        return pos.getX() < X_OFF;
+
+        public double getY() {
+            return y;
+        }
     }
 
-    public static boolean isOutOffSouthCanvas(Position pos) {
-        if (pos == null) {
-            return false;
-        }
-        return pos.getY() < Y_OFF;
+
+    public static boolean isInCanvas(int x, int y) {
+        return x >= 0 && y >= 0 && x < CANVAS_WIDTH && y < CANVAS_HEIGHT;
     }
 
-    public static boolean isOutOffEastCanvas(Position pos) {
-        if (pos == null) {
-            return false;
+    // switch a tile world position to a canvas coordinate
+    public static CanvasCoordinate getCanvasCoordFromTilePos(Position pos) {
+        int x = pos.getX() + X_OFF;
+        int y = pos.getY() + Y_OFF;
+        if (isInCanvas(x, y)) {
+            return new CanvasCoordinate(x, y);
         }
-        return pos.getX() >= WIDTH - X_OFF;
+        else {
+            return null;
+        }
+    }
+
+    // switch a canvas coordinate to a tile world position
+    public static Position getTilePosFromCanvasCoord(CanvasCoordinate cc) {
+
+        int x = (int)cc.getX() - X_OFF;
+        int y = (int)cc.getY() - Y_OFF;
+
+        Position pos = new Position(x, y);
+
+        if (isInTileWorld(pos)) {
+            return pos;
+        }
+        else {
+            return null;
+        }
     }
 
     public static int getCanvasWidth() {
-        return WIDTH + X_OFF * 2;
+        return CANVAS_WIDTH;
     }
 
     public static int getCanvasHeight() {
-        return HEIGHT + Y_OFF * 2;
+        return CANVAS_HEIGHT;
     }
 
-    public static int getInnerCanvasWidth() {
+    public static int getTileWorldWidth() {
         return WIDTH;
     }
 
-    public static int getInnerCanvasHeight() {
+    public static int getTileWorldHeight() {
         return HEIGHT;
     }
 
+    public static boolean isInTileWorld(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getX() >= 0
+                && pos.getY() >= 0
+                && pos.getX() < WIDTH
+                && pos.getY() < HEIGHT;
+    }
+    public static boolean isOutOffWorldNorth(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getY() >= HEIGHT;
+    }
 
+    public static boolean isOutOffWorldWest(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getX() < 0;
+    }
+
+    public static boolean isOutOffWorldSouth(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getY() < 0;
+    }
+
+    public static boolean isOutOffWorldEast(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getX() >= WIDTH;
+    }
 
     public static boolean isTileType(Position pos, TETile type, TETile[][] world) {
-        if (isInCanvas(pos)) {
+        if (isInTileWorld(pos)) {
             if (type == null) {
                 return world[pos.getX()][pos.getY()] == null;
             }
@@ -78,18 +126,9 @@ public class TileUtils {
             return false; // out of canvas, then it is surely not a "type"
         }
     }
-/*
-    public static boolean isUnlockedDoorTile(int x, int y, TETile[][] world) {
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) {
-            return Tileset.UNLOCKED_DOOR.equals(world[x][y]);
-        }
-        else {
-            return true; // if out of bound, should return true, because it means this direction is not doable
-        }
-    }
-*/
+
     public static boolean isNullTile(Position pos, TETile[][] world) {
-        if (isInCanvas(pos)) {
+        if (isInTileWorld(pos)) {
             return world[pos.getX()][pos.getY()] == null;
         }
         else {
@@ -116,11 +155,25 @@ public class TileUtils {
     }
 
     public static void paintTile(Position pos, TETile type, TETile[][] world) {
-        if (isInCanvas(pos)) {
+        if (isInTileWorld(pos)) {
             world[pos.getX()][pos.getY()] = type;
         }
         else {
             System.out.println("out of canvas!!!");
         }
     }
+
+    public static CanvasCoordinate getMouseCoord() {
+
+        return new CanvasCoordinate(StdDraw.mouseX(), StdDraw.mouseY());
+    }
+
+    public static String getTileDescription(Position pos, TETile[][] world) {
+
+        if (isInTileWorld(pos)) {
+            return world[pos.getX()][pos.getY()].description();
+        }
+        return null;
+    }
+
 }

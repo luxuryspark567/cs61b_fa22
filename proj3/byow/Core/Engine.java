@@ -18,11 +18,10 @@ public class Engine {
 
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-
-    public static final int X_OFF = 2;
-    public static final int Y_OFF = 3;
-    //public static final int WIDTH_CANVAS = 80;
-    //public static final int HEIGHT_CANVAS = 40;
+    public static final int CANVAS_WIDTH = 84;
+    public static final int CANVAS_HEIGHT = 44;
+    public static final int X_OFF = 4;
+    public static final int Y_OFF = 4;
     public static final int ROOM_NUM = 7;
     public static final int ROOM_WIDTH_MAX = 30;
     public static final int ROOM_HEIGHT_MAX = 10;
@@ -73,9 +72,6 @@ public class Engine {
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() throws Exception {
-        // generate world
-        //TETile[][] world = new TETile[WIDTH][HEIGHT];
-
         // add monitor, which will listen commands typed by user;
         CommandMonitor cMonitor = new CommandMonitor(this, gameState);
 
@@ -85,6 +81,7 @@ public class Engine {
 
         boolean isKillerCommand = false;
         gameState.readyToPlay = false;
+
         // listening menu page
         cMonitor.initiate();
 
@@ -99,8 +96,8 @@ public class Engine {
         {
             // render game page
             ter.renderInitialize();
-            ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-            ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
+            ter.paintCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+            ter.paintCreature(gameState.bear, Tileset.GANON, gameState.world);
             ter.renderGamePage(gameState.world);
 
             // listening game page;

@@ -1,10 +1,8 @@
 package byow.Core;
 
 import byow.TileEngine.TETile;
-import edu.princeton.cs.algs4.EdgeWeightedGraph;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.TreeMap;
 
 import static byow.Core.Engine.*;
@@ -28,20 +26,14 @@ public class Main {
             // initial default size render and print the world on that canvas (renderer)
             engine.ter.renderInitialize();
             engine.ter.renderFrame(frame);
-            //engine.ter.renderText("CS61B: THE GAME");
             System.out.println(engine.toString());
         } else {
             engine = new Engine();
 
-            gameState = new GameState(new TETile[TileUtils.getCanvasWidth()][TileUtils.getCanvasHeight()],
+            gameState = new GameState(new TETile[TileUtils.getTileWorldWidth()][TileUtils.getTileWorldHeight()],
                     new ArrayList<>(Engine.ROOM_NUM),
                     new TreeMap<Position, Object>(new Position.PositionComparator()));
-/*
-            gameState = new GameState(new TETile[Engine.WIDTH][Engine.HEIGHT],
-                    new ArrayList<>(Engine.ROOM_NUM),
-                    new EdgeWeightedGraph(Engine.ROOM_NUM),
-                    new TreeMap<Position, Object>(new Position.PositionComparator()));
- */
+
             engine.interactWithKeyboard();
         }
     }

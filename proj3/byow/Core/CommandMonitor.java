@@ -151,15 +151,20 @@ public class CommandMonitor {
                         break;
                 }
             }
+
+            engine.ter.renderGamePage(gameState.world);
+            engine.ter.renderTileInfo();
+            engine.ter.renderPause(50);
+
         }
     }
 
     public void updateWorldAndRender(Engine engine, GameState gameState, Direction dir) {
         if (dir != null) {
             gameState.hero.MoveOneStep(dir);
-            engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+            engine.ter.paintCreature(gameState.hero, Tileset.AVATAR, gameState.world);
             gameState.bear.huntHero(gameState.hero.getPosition());
-            engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
+            engine.ter.paintCreature(gameState.bear, Tileset.GANON, gameState.world);
         }
         engine.ter.renderGamePage(gameState.world);
     }
@@ -168,17 +173,6 @@ public class CommandMonitor {
      * Uses serialization to create a copy of the given Random, needed for
      * repeatability in some tests.
      */
-    /*
-    public static Random cloneRandom(Random src) throws Exception {
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bo);
-        oos.writeObject(src);
-        oos.close();
-        ObjectInputStream ois = new ObjectInputStream(
-                new ByteArrayInputStream(bo.toByteArray()));
-        return (Random)(ois.readObject());
-    }
-    */
 
     // the boolean indicates if the command executed is a killer command: to terminate the program
     public boolean executeCommands(Engine engine, GameState gameState) {

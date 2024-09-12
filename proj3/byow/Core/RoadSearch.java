@@ -289,30 +289,30 @@ public class RoadSearch implements Serializable {
         }
 
         // 3.1 you should not run out of the canvas ;
-        if (isOutOffNorthCanvas(posCurNorth)) {
+        if (isOutOffWorldNorth(posCurNorth)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        if (isOutOffWestCanvas(posCurWest)) {
+        if (isOutOffWorldWest(posCurWest)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        if (isOutOffSouthCanvas(posCurSouth)) {
+        if (isOutOffWorldSouth(posCurSouth)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        if (isOutOffEastCanvas(posCurEast)) {
+        if (isOutOffWorldEast(posCurEast)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
 
         // 3.2 you should not run to last line of the canvas, because there is no space to build walls;
-        if (isOutOffNorthCanvas(Direction.getShiftPosition(posCurNorth, Directionset.NORTH))) {
+        if (isOutOffWorldNorth(Direction.getShiftPosition(posCurNorth, Directionset.NORTH))) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        if (isOutOffWestCanvas(Direction.getShiftPosition(posCurWest, Directionset.WEST))) {
+        if (isOutOffWorldWest(Direction.getShiftPosition(posCurWest, Directionset.WEST))) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        if (isOutOffSouthCanvas(Direction.getShiftPosition(posCurSouth, Directionset.SOUTH))) {
+        if (isOutOffWorldSouth(Direction.getShiftPosition(posCurSouth, Directionset.SOUTH))) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        if (isOutOffEastCanvas(Direction.getShiftPosition(posCurEast, Directionset.EAST))) {
+        if (isOutOffWorldEast(Direction.getShiftPosition(posCurEast, Directionset.EAST))) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
 
@@ -354,7 +354,7 @@ public class RoadSearch implements Serializable {
         int counter = 0;
         Position pos = Position.copyOf(posFake);
         // 1, check 90
-        while(isInCanvas(pos) && isTileType(pos, Tileset.WALL, this.refWorld)) {
+        while(isInTileWorld(pos) && isTileType(pos, Tileset.WALL, this.refWorld)) {
             counter++;
             shiftPosition(pos, dir);
         }

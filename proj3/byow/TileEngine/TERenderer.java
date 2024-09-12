@@ -1,9 +1,6 @@
 package byow.TileEngine;
 
-import byow.Core.Avatar;
-import byow.Core.ByowCommandSet;
-import byow.Core.Creature;
-import byow.Core.Position;
+import byow.Core.*;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
@@ -116,18 +113,45 @@ public class TERenderer implements Serializable {
     public void renderText(String str) {
         StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        StdDraw.setFont(fontBig);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
         StdDraw.text((double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2, str);
         StdDraw.show();
     }
 
-    public void renderTextWithoutClear(String str, int size, Position pos) {
+    public void renderTextWithoutClear(String str, int size, TileUtils.CanvasCoordinate  cc) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        StdDraw.setFont(fontBig);
-        StdDraw.text(pos.getX(), pos.getY(), str);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
+        StdDraw.text(cc.getX(), cc.getY(), str);
+        StdDraw.show();
+    }
+
+    public void renderTextWithoutClearRightAligned(String str, int size, TileUtils.CanvasCoordinate cc) {
+        //StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
+        StdDraw.textRight(cc.getX(), cc.getY(), str);
+        StdDraw.show();
+    }
+
+    public void renderTextWithoutClearLeftAligned(String str, int size, TileUtils.CanvasCoordinate cc) {
+        //StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
+        StdDraw.textLeft(cc.getX(), cc.getY(), str);
+        StdDraw.show();
+    }
+
+    public void renderTextRightAligned(String str, int size, Position pos) {
+        StdDraw.clear(new Color(0, 0, 0));
+        StdDraw.setPenColor(Color.WHITE);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
+        StdDraw.textRight(pos.getX(), pos.getY(), str);
         StdDraw.show();
     }
 
@@ -138,8 +162,8 @@ public class TERenderer implements Serializable {
     public void renderAddTextToCanvas(String str, int size, Position pos) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        StdDraw.setFont(fontBig);
+        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        //StdDraw.setFont(fontBig);
         StdDraw.text(pos.getX(), pos.getY(), str);
         StdDraw.show();
     }
@@ -147,33 +171,36 @@ public class TERenderer implements Serializable {
     public void renderAddTextToCanvas(String str, int size, double x, double y) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        Font fontBig = new Font("Monaco", Font.BOLD, size);
-        StdDraw.setFont(fontBig);
+        //Font fontBig = new Font("Monaco", Font.BOLD, size);
+        //StdDraw.setFont(fontBig);
         StdDraw.text(x, y, str);
         StdDraw.show();
     }
     public void renderShow() {
         StdDraw.show();;
     }
-    public void paintCreature(Creature creature, TETile type, TETile[][] world) {
-        //this.world = TETile.copyOf(this.refWorld);
-        if (creature.getBackedPosition() != null) {
-            paintTile(creature.getBackedPosition(), creature.getBackedTile(), world);
+    public void paintCreature(Creature c, TETile type, TETile[][] world) {
+        if (c == null) {
+            return;
         }
-        paintTile(creature.getPosition(), type, world);
+        //this.world = TETile.copyOf(this.refWorld);
+        if (c.getBackedPosition() != null) {
+            paintTile(c.getBackedPosition(), c.getBackedTile(), world);
+        }
+        paintTile(c.getPosition(), type, world);
     }
-
+/*
     public void renderCreature(Creature c, TETile tile, TETile[][] world) {
         // print avatar
         if (c != null) {
             paintCreature(c, tile, world);
         }
     }
-
+*/
     public void renderGamePage(TETile[][] world) {
         //debug, fill empty
-        for (int i = 0; i < getCanvasWidth(); i++) {
-            for (int j = 0; j < getCanvasHeight(); j++) {
+        for (int i = 0; i < getTileWorldWidth(); i++) {
+            for (int j = 0; j < getTileWorldHeight(); j++) {
                 if (world[i][j] == null) {
                     world[i][j] = Tileset.NOTHING;
                 }
@@ -202,9 +229,9 @@ public class TERenderer implements Serializable {
     public void renderKeyMenu() {
         //this.renderTextWithoutClear("Actions:", 16, new Position(width/2, height/2));
         this.renderTextWithoutClear("1: " + ByowCommandSet.LOCK.toString(), 16,
-                new Position(getCanvasWidth()/2, getCanvasHeight()/2));
+                new TileUtils.CanvasCoordinate((double)getCanvasWidth()/2, (double)getCanvasHeight()/2));
         this.renderTextWithoutClear("2: " + ByowCommandSet.UNLOCK.toString(), 16,
-                new Position(getCanvasWidth()/2, getCanvasHeight()/2 - 2));
+                new TileUtils.CanvasCoordinate((double)getCanvasWidth()/2, (double)getCanvasHeight()/2 - 2));
     }
 
     // pause count ms
@@ -234,5 +261,15 @@ public class TERenderer implements Serializable {
         renderShow();
 
         renderPause(500);
+    }
+
+    public void renderTileInfo() {
+
+        CanvasCoordinate cc = getMouseCoord();
+        Position posMouse = TileUtils.getTilePosFromCanvasCoord(cc);
+        String str = TileUtils.getTileDescription(posMouse, gameState.world);
+        if (str != null) {
+            renderTextWithoutClearLeftAligned(str, 30, new CanvasCoordinate(0, getCanvasHeight() - 2));
+        }
     }
 }
