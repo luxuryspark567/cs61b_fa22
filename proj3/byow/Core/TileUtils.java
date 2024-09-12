@@ -4,8 +4,8 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import static byow.Core.Direction.getShiftPosition;
-import static byow.Core.Engine.HEIGHT;
-import static byow.Core.Engine.WIDTH;
+import static byow.Core.Directionset.SOUTH;
+import static byow.Core.Engine.*;
 
 public class TileUtils {
 
@@ -14,8 +14,56 @@ public class TileUtils {
         if (pos == null) {
             return false;
         }
-        return pos.getX() >= 0 && pos.getY() >= 0 && pos.getX() < WIDTH && pos.getY() < HEIGHT;
+        return pos.getX() >= X_OFF
+                && pos.getY() >= Y_OFF
+                && pos.getX() < WIDTH - X_OFF
+                && pos.getY() < HEIGHT - Y_OFF;
     }
+    public static boolean isOutOffNorthCanvas(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getY() >= HEIGHT - Y_OFF;
+    }
+
+    public static boolean isOutOffWestCanvas(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getX() < X_OFF;
+    }
+
+    public static boolean isOutOffSouthCanvas(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getY() < Y_OFF;
+    }
+
+    public static boolean isOutOffEastCanvas(Position pos) {
+        if (pos == null) {
+            return false;
+        }
+        return pos.getX() >= WIDTH - X_OFF;
+    }
+
+    public static int getCanvasWidth() {
+        return WIDTH + X_OFF * 2;
+    }
+
+    public static int getCanvasHeight() {
+        return HEIGHT + Y_OFF * 2;
+    }
+
+    public static int getInnerCanvasWidth() {
+        return WIDTH;
+    }
+
+    public static int getInnerCanvasHeight() {
+        return HEIGHT;
+    }
+
+
 
     public static boolean isTileType(Position pos, TETile type, TETile[][] world) {
         if (isInCanvas(pos)) {

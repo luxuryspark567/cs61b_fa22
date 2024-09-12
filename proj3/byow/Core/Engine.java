@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.List;
 
 import static byow.Core.CommandNode.getCommandList;
+import static byow.Core.Main.engine;
 import static byow.Core.Main.gameState;
 
 
@@ -17,9 +18,12 @@ public class Engine {
 
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
+
+    public static final int X_OFF = 2;
+    public static final int Y_OFF = 3;
     //public static final int WIDTH_CANVAS = 80;
     //public static final int HEIGHT_CANVAS = 40;
-    public static final int ROOM_NUM = 15;
+    public static final int ROOM_NUM = 7;
     public static final int ROOM_WIDTH_MAX = 30;
     public static final int ROOM_HEIGHT_MAX = 10;
     public static final int ROOM_WIDTH_MIN = 5;
@@ -38,24 +42,28 @@ public class Engine {
     TERenderer ter = new TERenderer();
     //RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
 
-    public static void saveGameState(String filePath) {
+    public static boolean saveGameState(String filePath) {
         try (FileOutputStream fileOut = new FileOutputStream(filePath);
              ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
             out.writeObject(gameState);
+            return true;
         } catch (IOException i) {
             //i.printStackTrace();
-            throw new IllegalArgumentException();
+            //throw new IllegalArgumentException();
+            return false;
         }
     }
 
-    public static void loadGameState(String filePath) {
+    public static boolean loadGameState(String filePath) {
         //GameState gameState = null;
         try (FileInputStream fileIn = new FileInputStream(filePath);
              ObjectInputStream in = new ObjectInputStream(fileIn)) {
             gameState = (GameState) in.readObject();
+            return true;
         } catch (IOException | ClassNotFoundException i) {
-            throw new IllegalArgumentException();
+            //throw new IllegalArgumentException();
             //i.printStackTrace();
+            return false;
         }
         //return gameState;
     }
@@ -72,32 +80,40 @@ public class Engine {
         CommandMonitor cMonitor = new CommandMonitor(this, gameState);
 
         // render menu page
-        ter.initialize(WIDTH, HEIGHT, 0, 0);
+        ter.renderInitialize();
         ter.renderMenuPage();
 
+        boolean isKillerCommand = false;
+        gameState.readyToPlay = false;
         // listening menu page
         cMonitor.initiate();
-        cMonitor.monitorMenuPage(ter);
-        // the start menu should never execute any command that uses a "refWorld"
-        cMonitor.executeCommands(this, gameState);
 
-        // render game page
-
-        ter.initialize(WIDTH, HEIGHT, 0, 0);
-        ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-        ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
-        ter.renderGamePage(gameState.world);
-
-        // listening game page;
-        cMonitor.initiate();
-
-        while (cMonitor.isIdleCommand() || cMonitor.isMoveCommand()) {
-            cMonitor.initiate();
-            cMonitor.monitorGamePage();
-            cMonitor.executeCommands(this, gameState);
-            System.out.println(gameState.tmDB);
-
+        while (!isKillerCommand) {
+            cMonitor.monitorMenuPage(ter);
+            // the start menu should never execute any command that uses a "refWorld"
+            isKillerCommand = cMonitor.executeCommands(this, gameState);
+            cMonitor.commandClear();
         }
+
+        if (gameState.readyToPlay)
+        {
+            // render game page
+            ter.renderInitialize();
+            ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+            ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
+            ter.renderGamePage(gameState.world);
+
+            // listening game page;
+            isKillerCommand = false;
+            while (!isKillerCommand) {
+                cMonitor.initiate();
+                cMonitor.monitorGamePage();
+                isKillerCommand = cMonitor.executeCommands(this, gameState);
+                cMonitor.commandClear();
+                //System.out.println(gameState.tmDB);
+            }
+        }
+
     }
 
     /**
@@ -200,7 +216,7 @@ public class Engine {
         TETile[][] tr = eng.interactWithInputString("n1234s");
 
         // initial default size render and print the world on that canvas (renderer)
-        eng.ter.initialize(WIDTH, HEIGHT, 0, 0);
+        eng.ter.renderInitialize();
         eng.ter.renderFrame(tr);
     }
 }

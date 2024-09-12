@@ -5,9 +5,10 @@ public class ByowCommandSet {
     // Start Menu command
     public static final ByowCommand IDLE = new ByowCommand("Idle opt");
     public static final ByowCommand CREATE_NEW_WORLD = new ByowCommand("create new world");
-    public static final ByowCommand QUIT_AND_SAVE_GAME = new ByowCommand("quit & save game");
-    public static final ByowCommand LOAD = new ByowCommand("load game");
-
+    public static final ByowCommand QUIT_AND_SAVE_GAME = new ByowCommand("quit & save game on the start menu");
+    public static final ByowCommand QUIT_AND_SAVE_GAME2 = new ByowCommand("quit & save game while playing");
+    public static final ByowCommand LOAD = new ByowCommand("load game on the start menu");
+    public static final ByowCommand LOAD2 = new ByowCommand("load game while playing");
 
     // move command
     public static final ByowCommand MOVE_NORTH = new ByowCommand("move north");

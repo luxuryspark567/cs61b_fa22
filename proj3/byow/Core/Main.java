@@ -26,14 +26,14 @@ public class Main {
             TETile[][] frame = engine.interactWithInputString(args[1]);
 
             // initial default size render and print the world on that canvas (renderer)
-            engine.ter.initialize(WIDTH, HEIGHT, 0, 0);
+            engine.ter.renderInitialize();
             engine.ter.renderFrame(frame);
             //engine.ter.renderText("CS61B: THE GAME");
             System.out.println(engine.toString());
         } else {
             engine = new Engine();
 
-            gameState = new GameState(new TETile[Engine.WIDTH][Engine.HEIGHT],
+            gameState = new GameState(new TETile[TileUtils.getCanvasWidth()][TileUtils.getCanvasHeight()],
                     new ArrayList<>(Engine.ROOM_NUM),
                     new TreeMap<Position, Object>(new Position.PositionComparator()));
 /*

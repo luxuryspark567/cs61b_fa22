@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 import static byow.Core.Direction.*;
 import static byow.Core.Direction.setTrueBoolArrayByDirection;
-import static byow.Core.Directionset.SOUTH;
+//import static byow.Core.Directionset.SOUTH;
 import static byow.Core.Engine.*;
-import static byow.Core.Engine.WIDTH;
-import static byow.Core.TileUtils.isInCanvas;
-import static byow.Core.TileUtils.isTileType;
+import static byow.Core.TileUtils.*;
+//import static byow.Core.Engine.WIDTH;
+
 
 public class RoadSearch implements Serializable {
 
@@ -270,7 +270,7 @@ public class RoadSearch implements Serializable {
 
         Position posCurNorth = getShiftPosition(posCur, Directionset.NORTH);
         Position posCurWest = getShiftPosition(posCur, Directionset.WEST);
-        Position posCurSouth = getShiftPosition(posCur, SOUTH);
+        Position posCurSouth = getShiftPosition(posCur, Directionset.SOUTH);
         Position posCurEast = getShiftPosition(posCur, Directionset.EAST);
 
         // 3.1 you should not run into a wall;
@@ -282,92 +282,40 @@ public class RoadSearch implements Serializable {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
         if (isTileType(posCurSouth, Tileset.WALL, this.refWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
         if (isTileType(posCurEast, Tileset.WALL, this.refWorld)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
 
-        // 3.1 you should not run into a door if the door is not the destination;
-        // check Door
-/*
-        if (isTileType(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
-            // if a unlocked door is the destination door, is OK to enter
-            if (posDst.getX() == posCurNorth.getX()
-                    && posDst.getY() == posCurNorth.getY()) {
-
-            }
-            else {
-                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-            }
-        }
-
-        if (isTileType(posCurWest, Tileset.UNLOCKED_DOOR, this.refWorld)) {
-            // if a unlocked door is the destination door, is OK to enter
-            if (posDst.getX() == posCurWest.getX()
-                    && posDst.getY() == posCurWest.getY()) {
-
-            }
-            else {
-                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-            }
-        }
-        if (isTileType(posCurSouth, Tileset.UNLOCKED_DOOR, this.refWorld)) {
-            // door is unlocked door
-
-            // if a unlocked door is the destination door, is OK to enter
-            if (posDst.getX() == posCurSouth.getX()
-                    && posDst.getY() == posCurSouth.getY()) {
-
-            }
-            else {
-                Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
-            }
-        }
-        if (isTileType(posCurEast, Tileset.UNLOCKED_DOOR, this.refWorld)) {
-            // if a unlocked door is the destination door, is OK to enter
-            if (posDst.getX() == posCurEast.getX()
-                    && posDst.getY() == posCurEast.getY()) {
-
-            }
-            else {
-                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
-            }
-        }
-*/
-
-        // 3.1 you can not run into a locked door
-        // check Door
-/*
-        if (isTileType(posCurNorth, Tileset.LOCKED_DOOR, this.refWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-        }
-        if (isTileType(posCurWest, Tileset.LOCKED_DOOR, this.refWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-        }
-        if (isTileType(posCurSouth, Tileset.LOCKED_DOOR, this.refWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
-        }
-        if (isTileType(posCurEast, Tileset.LOCKED_DOOR, this.refWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
-        }
-*/
-
         // 3.1 you should not run out of the canvas ;
-        // 3.2 you should not run to the frame the canvas, because there is no space to build walls;
-        // check Wall
-        if (posCurNorth.getY() >= HEIGHT - 1) {
+        if (isOutOffNorthCanvas(posCurNorth)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        if (posCurWest.getX() < 1) {
+        if (isOutOffWestCanvas(posCurWest)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        if (posCurSouth.getY() < 1) {
-            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
+        if (isOutOffSouthCanvas(posCurSouth)) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        if (posCurEast.getX() >= WIDTH - 1) {
+        if (isOutOffEastCanvas(posCurEast)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
+
+        // 3.2 you should not run to last line of the canvas, because there is no space to build walls;
+        if (isOutOffNorthCanvas(Direction.getShiftPosition(posCurNorth, Directionset.NORTH))) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
+        }
+        if (isOutOffWestCanvas(Direction.getShiftPosition(posCurWest, Directionset.WEST))) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
+        }
+        if (isOutOffSouthCanvas(Direction.getShiftPosition(posCurSouth, Directionset.SOUTH))) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+        }
+        if (isOutOffEastCanvas(Direction.getShiftPosition(posCurEast, Directionset.EAST))) {
+            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        }
+
         // last step, if there is no place to go, move back
         if (!(dirBool[0] || dirBool[1] || dirBool [2] || dirBool[3])) {
             Direction.setTrueBoolArrayByDirection(dirBool,MoveBackDir);

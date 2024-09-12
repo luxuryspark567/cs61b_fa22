@@ -10,9 +10,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.Serializable;
 
+import static byow.Core.Engine.*;
 import static byow.Core.Main.engine;
 import static byow.Core.Main.gameState;
-import static byow.Core.TileUtils.paintTile;
+import static byow.Core.TileUtils.*;
 
 /**
  * Utility class for rendering tiles. You do not need to modify this file. You're welcome
@@ -108,12 +109,16 @@ public class TERenderer implements Serializable {
         StdDraw.show();
     }
 
+    public void renderInitialize() {
+        initialize(getCanvasWidth(), getCanvasHeight(), X_OFF, Y_OFF);
+        //initialize(WIDTH, HEIGHT, X_OFF, Y_OFF * 2);
+    }
     public void renderText(String str) {
         StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
         Font fontBig = new Font("Monaco", Font.BOLD, 30);
         StdDraw.setFont(fontBig);
-        StdDraw.text(this.width / 2, this.height / 2, str);
+        StdDraw.text((double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2, str);
         StdDraw.show();
     }
 
@@ -158,17 +163,17 @@ public class TERenderer implements Serializable {
         paintTile(creature.getPosition(), type, world);
     }
 
-    public void renderCreature(Creature rabit, TETile tile, TETile[][] world) {
+    public void renderCreature(Creature c, TETile tile, TETile[][] world) {
         // print avatar
-        if (rabit != null) {
-            paintCreature(rabit, tile, world);
+        if (c != null) {
+            paintCreature(c, tile, world);
         }
     }
 
     public void renderGamePage(TETile[][] world) {
         //debug, fill empty
-        for (int i = 0; i < this.width; i++) {
-            for (int j = 0; j < this.height; j++) {
+        for (int i = 0; i < getCanvasWidth(); i++) {
+            for (int j = 0; j < getCanvasHeight(); j++) {
                 if (world[i][j] == null) {
                     world[i][j] = Tileset.NOTHING;
                 }
@@ -180,27 +185,54 @@ public class TERenderer implements Serializable {
 
     public void renderMenuPage() {
         renderClear();
-        renderAddTextToCanvas("CS61B: THE GAME", 30, (double)width / 2, (double)height * 3 / 4);
-        renderAddTextToCanvas("New Game (N)", 16, (double)width / 2, (double)height / 2);
-        renderAddTextToCanvas("Load Game (L)", 16, (double)width / 2, (double)height / 2 - 1);
-        renderAddTextToCanvas("Quit Game (Q)", 16, (double)width / 2, (double)height / 2 - 2);
+        renderAddTextToCanvas("CS61B: THE GAME", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() * 3 / 4);
+        renderAddTextToCanvas("New Game (N)", 16, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
+        renderAddTextToCanvas("Load Game (L)", 16, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2 - 1);
+        renderAddTextToCanvas("Quit Game (Q)", 16, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2 - 2);
         renderShow();
     }
 
     public void renderRandomInputPage(String Num) {
         renderClear();
-        renderAddTextToCanvas("Type Seed:", 30, (double)width / 2, (double)height - 1);
-        renderAddTextToCanvas(Num, 30, (double)width / 2, (double)height / 2);
+        renderAddTextToCanvas("Type Seed:", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() - 1);
+        renderAddTextToCanvas(Num, 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
         renderShow();
     }
 
     public void renderKeyMenu() {
         //this.renderTextWithoutClear("Actions:", 16, new Position(width/2, height/2));
-        this.renderTextWithoutClear("1: " + ByowCommandSet.LOCK.toString(), 16, new Position(width/2, height/2));
-        this.renderTextWithoutClear("2: " + ByowCommandSet.UNLOCK.toString(), 16, new Position(width/2, height/2 - 2));
+        this.renderTextWithoutClear("1: " + ByowCommandSet.LOCK.toString(), 16,
+                new Position(getCanvasWidth()/2, getCanvasHeight()/2));
+        this.renderTextWithoutClear("2: " + ByowCommandSet.UNLOCK.toString(), 16,
+                new Position(getCanvasWidth()/2, getCanvasHeight()/2 - 2));
     }
 
+    // pause count ms
     public void renderPause(int count) {
         StdDraw.pause(count);
+    }
+
+    public void renderLoadFailPage() {
+        renderClear();
+        renderAddTextToCanvas("Load Fail", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
+        renderShow();
+
+        renderPause(500);
+    }
+/*
+    public void renderQuitelPage() {
+        renderClear();
+        renderAddTextToCanvas("Quite", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
+        renderShow();
+
+        renderPause(500);
+    }
+*/
+    public void renderSaveFailPage() {
+        renderClear();
+        renderAddTextToCanvas("Save Fail", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
+        renderShow();
+
+        renderPause(500);
     }
 }

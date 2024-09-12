@@ -21,8 +21,8 @@ public class WorldGenerateUtils {
 
     private Position getRandomPosition() {
         Position ret = new Position();
-        ret.setX(RandomUtils.uniform(RANDOM, WIDTH));
-        ret.setY(RandomUtils.uniform(RANDOM, HEIGHT));
+        ret.setX(RandomUtils.uniform(RANDOM, TileUtils.getCanvasWidth()));
+        ret.setY(RandomUtils.uniform(RANDOM, TileUtils.getCanvasHeight()));
         return ret;
     }
 
@@ -57,6 +57,8 @@ public class WorldGenerateUtils {
         //for (Room r:gameState.roomLut) {
         //    gameState.ewg.adj(gameState.roomLut.indexOf(r));
         //}
+
+        gameState.refWorld = TETile.copyOf(gameState.world);
     }
 
     private Door checkAndGetDoor(Position pos, Direction dir, TETile[][] world) {
@@ -90,28 +92,32 @@ public class WorldGenerateUtils {
                 // pick a random position on the north side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1, WIDTH, HEIGHT);
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1,
+                        TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.NORTH, world);
             }
             else if (side == Directionset.WEST) {
                 // pick a random position on the west side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index, WIDTH, HEIGHT);
+                Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index,
+                        TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.WEST, world);
             }
             else if (side == Directionset.SOUTH) {
                 // pick a random position on the south side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w -1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY(), WIDTH, HEIGHT);
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY(),
+                        TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.SOUTH, world);
             }
             else if (side == Directionset.EAST) {
                 // pick a random position on the east side
                 int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1, posRoom.getY() + index, WIDTH, HEIGHT);
+                Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1,
+                        posRoom.getY() + index, TileUtils.getCanvasWidth(), TileUtils.getCanvasHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.EAST, world);
             }
             looperLimit--;
@@ -144,7 +150,7 @@ public class WorldGenerateUtils {
 
             }
         }
-
+        gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
     }
 
     public void generateHallways(GameState gameState) {
@@ -196,8 +202,7 @@ public class WorldGenerateUtils {
             safeProofLooper--;
         }
 
-        //System.out.println(mpq);
-        //System.out.println(wqu.count());
+        gameState.refWorld = TETile.copyOf(gameState.world);
     }
 
     // generate a hallway between two doors
@@ -217,10 +222,13 @@ public class WorldGenerateUtils {
     private Room generateRoom(TETile[][] world) {
         Position pos = getRandomPosition();
         Size size = getRandomSize();
+
         //check if room location is out of canvas
-        if ((pos.getX() + size.w - 1) > (WIDTH - 1) || (pos.getY() + size.h - 1) > (HEIGHT - 1)) {
+        Position posRightCorner = new Position((pos.getX() + size.w - 1), (pos.getY() + size.h - 1));
+        if (!isInCanvas(posRightCorner)) {
             return null;
         }
+
         //check if overlaps
         for (int i = 0; i < size.w; i++) {
             for (int j = 0; j < size.h; j++) {
@@ -234,7 +242,6 @@ public class WorldGenerateUtils {
         }
 
         // reach here means it is a valid room
-
         // paint the room on the canvas
         // create wall
         for (int i = 0; i < size.w; i++) {

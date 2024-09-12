@@ -84,6 +84,9 @@ public class Avatar extends Creature{
     @Override
     public boolean MoveOneStep(Direction dir) {
 
+        if (dir == null) {
+            return false;
+        }
         // Add some extended abilities for Avtar
         // shift one sep
         Position pos = this.getPosition();

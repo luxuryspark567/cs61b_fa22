@@ -118,7 +118,9 @@ public class Position implements Serializable {
         int offX = RandomUtils.uniform(RANDOM, r.getSize().w - 2);
         int offY = RandomUtils.uniform(RANDOM, r.getSize().h - 2);
 
-        return new Position(r.getPosition().x + offX + 1, r.getPosition().y + offY + 1, WIDTH, HEIGHT);
-
+        return new Position(r.getPosition().x + offX + 1,
+                r.getPosition().y + offY + 1,
+                TileUtils.getCanvasWidth(),
+                TileUtils.getCanvasHeight());
     }
 }

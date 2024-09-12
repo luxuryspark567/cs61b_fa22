@@ -26,13 +26,14 @@ public class GameState implements Serializable {
     public Avatar hero;
     public Bear bear;
     public long randomSeed;
-
+    public boolean readyToPlay;
     public GameState(TETile[][] world, List<Room> roomLut, TreeMap<Position, Object> tmDB) {
         this.world = world;
         this.refWorld = null;
         this.roomLut = roomLut;
         //this.doorLut = doorLut;
         this.tmDB = tmDB;
+        this.readyToPlay = true;
     }
     /*
     public GameState(TETile[][] world, List<Room> roomLut, EdgeWeightedGraph ewg, TreeMap<Position, Object> tmDB) {

@@ -5,8 +5,6 @@ import byow.TileEngine.TETile;
 
 import java.io.Serializable;
 
-import static byow.Core.Engine.HEIGHT;
-import static byow.Core.Engine.WIDTH;
 import static byow.Core.Main.engine;
 
 public class Key extends Item implements Serializable {
@@ -73,7 +71,7 @@ public class Key extends Item implements Serializable {
                 cMonitor.initiate();
 
                 // 1, pops up action selection menu
-                ter.initialize(WIDTH, HEIGHT, 0, 0); //re init the menu
+                ter.renderInitialize(); //re init the menu
                 ter.renderKeyMenu();
 
                 // 2, listening user's option, for user to choose an action;
@@ -84,7 +82,7 @@ public class Key extends Item implements Serializable {
 
                 // 4, return result
                 // if a new menu is popped ,should re-initiate the canvas
-                ter.initialize(WIDTH, HEIGHT, 0, 0);
+                ter.renderInitialize();
                 return true;
             }
             else {

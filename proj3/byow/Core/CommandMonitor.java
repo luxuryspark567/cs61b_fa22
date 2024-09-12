@@ -96,6 +96,11 @@ public class CommandMonitor {
             }
         }
     }
+
+    public void commandClear() {
+        cn.bc = ByowCommandSet.IDLE;
+        cn.rNum = -1;
+    }
     // monitor game page on time, return a valid command
     public void monitorGamePage() {
 
@@ -108,7 +113,11 @@ public class CommandMonitor {
 
                 switch (parseState) {
                     case 0: // idle state
-                        if (c == 'w' || c == 'W') {
+                        if (c == 'l' || c == 'L') {
+                            cn = new CommandNode(ByowCommandSet.LOAD2);
+                            looperFlag = false;
+                        }
+                        else if (c == 'w' || c == 'W') {
                             cn = new CommandNode(ByowCommandSet.MOVE_NORTH);
                             looperFlag = false;
                         }
@@ -130,7 +139,7 @@ public class CommandMonitor {
                         break;
                     case 2:
                         if (c == 'q' || c == 'Q') {
-                            cn = new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME);
+                            cn = new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME2);
                             looperFlag = false;
                         } else {
                             System.out.println("invalid quit & save command!");
@@ -146,10 +155,12 @@ public class CommandMonitor {
     }
 
     public void updateWorldAndRender(Engine engine, GameState gameState, Direction dir) {
-        gameState.hero.MoveOneStep(dir);
-        engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-        gameState.bear.huntHero(gameState.hero.getPosition());
-        engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
+        if (dir != null) {
+            gameState.hero.MoveOneStep(dir);
+            engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+            gameState.bear.huntHero(gameState.hero.getPosition());
+            engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
+        }
         engine.ter.renderGamePage(gameState.world);
     }
 
@@ -168,42 +179,96 @@ public class CommandMonitor {
         return (Random)(ois.readObject());
     }
     */
-    public void executeCommands(Engine engine, GameState gameState) {
+
+    // the boolean indicates if the command executed is a killer command: to terminate the program
+    public boolean executeCommands(Engine engine, GameState gameState) {
         // return true means not a command to break out
         // return false means a command to break outer while loop, and no need to monitor anymore.
 
         if (cn == null) {
-            return;
+            return false;
         }
 
-        if (cn.bc == ByowCommandSet.LOAD) {
+        if (cn.bc == ByowCommandSet.LOAD) { // in menu page
+            if (Engine.loadGameState("savefile.txt")) {
+                Engine.RANDOM = new Random(gameState.randomSeed);
+                // in menu page, if game is reloaded should jump out of the menu loop
+                gameState.readyToPlay = true;
+                return true;
+            }
+            else {
+                engine.ter.renderLoadFailPage();
+                engine.ter.renderPause(500);
+                engine.ter.renderMenuPage();//return to menu page
+                return false;
+            }
+        }
+        if (cn.bc == ByowCommandSet.LOAD2) { // in game page
             //ter.initialize(40, 40, 0, 0);
             //engine.ter.renderText("LOAD GAME");
             // TODO: this is not the most efficient way
-            Engine.loadGameState("savefile.txt");
-            Engine.RANDOM = new Random(gameState.randomSeed);
+            if (Engine.loadGameState("savefile.txt")) {
+                Engine.RANDOM = new Random(gameState.randomSeed);
+                // in game page, if game is reloaded should NOT jump out of the game loop
+                gameState.readyToPlay = true;
+                return false;
+            }
+            else {
+                engine.ter.renderLoadFailPage();
+                engine.ter.renderPause(500);
+                engine.ter.renderInitialize();
+                updateWorldAndRender(engine, gameState, null);
+                return false;
+            }
         }
-        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) {
+        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) { // in menu page
+
+            //just quit
+            //engine.ter.renderPause(500);
             engine.ter.renderText("GAME OVER");
+            return true;
+/*
             //Engine.GameState gState = new Engine.GameState(rg, world, refWorld, hero, bear);
-            Engine.saveGameState("savefile.txt");
+            if (Engine.saveGameState("savefile.txt")) {
+                engine.ter.renderText("GAME OVER");
+                return true;
+            }
+            else {
+                engine.ter.renderSaveFailPage();
+                engine.ter.renderPause(500);
+                engine.ter.renderMenuPage();//return to menu page
+                return false;
+            }
+
+ */
         }
-        else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD){
+        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME2) { // in game page
+
+            //Engine.GameState gState = new Engine.GameState(rg, world, refWorld, hero, bear);
+            if (Engine.saveGameState("savefile.txt")) {
+                engine.ter.renderText("GAME OVER");
+                return true;
+            }
+            else {
+                engine.ter.renderSaveFailPage();
+                engine.ter.renderPause(500);
+                updateWorldAndRender(engine, gameState, null);
+                return false;
+            }
+        }
+        else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD) {
             //ter.initialize(40, 40, 0, 0);
             engine.ter.renderText("CREATING NEW WORLD...");
             engine.ter.renderPause(500);
-
-            WorldGenerateUtils wgu = new WorldGenerateUtils();
-            wgu.generateRooms(gameState);
-            wgu.generateDoors(gameState);
-            gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
-            wgu.generateHallways(gameState);
-
             // generate world data base (rooms and tunnels)
             //engine.SEED = cn.rNum;
             Engine.RANDOM = new Random(cn.rNum);
             gameState.randomSeed = cn.rNum;
-            gameState.refWorld = TETile.copyOf(gameState.world);
+
+            WorldGenerateUtils wgu = new WorldGenerateUtils();
+            wgu.generateRooms(gameState);
+            wgu.generateDoors(gameState);
+            wgu.generateHallways(gameState);
 
             Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(gameState), gameState);
             Bear bear = new Bear(Position.getRandomPositionInRandomRoom(gameState), gameState);
@@ -212,64 +277,34 @@ public class CommandMonitor {
 
             gameState.hero = hero;
             gameState.bear = bear;
-
+            gameState.readyToPlay = true;
+            return true;
         }
         else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.NORTH);
-                /*
-                gameState.hero.MoveOneStep(Directionset.NORTH);
-                engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
-                gameState.bear.huntHero(gameState.hero.getPosition());
-                engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-                engine.ter.renderGamePage(gameState.world);
-
-                 */
             }
         }
         else if (cn.bc == ByowCommandSet.MOVE_WEST) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.WEST);
-                /*
-                gameState.bear.huntHero(gameState.hero.getPosition());
-                engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
-                gameState.hero.MoveOneStep(Directionset.WEST);
-                engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-                engine.ter.renderGamePage(gameState.world);
-
-                 */
             }
         }
         else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.SOUTH);
-                /*
-                gameState.bear.huntHero(gameState.hero.getPosition());
-                engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
-                gameState.hero.MoveOneStep(Directionset.SOUTH);
-                engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-                engine.ter.renderGamePage(gameState.world);
-
-                 */
             }
         }
         else if (cn.bc == ByowCommandSet.MOVE_EAST) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.EAST);
-                /*
-                gameState.bear.huntHero(gameState.hero.getPosition());
-                engine.ter.renderCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-                gameState.hero.MoveOneStep(Directionset.EAST);
-                engine.ter.renderCreature(gameState.bear, Tileset.GANON, gameState.world);
-                engine.ter.renderGamePage(gameState.world);
-
-                 */
             }
         }
+        return false;
     }
 
     boolean isMoveCommand() {
