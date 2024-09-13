@@ -17,7 +17,7 @@ import java.awt.Color;
  */
 
 public class Tileset {
-    public static final TETile AVATAR = new TETile('@', Color.white, Color.black, "you", "/byow/zelda_16/Link-LoZ-Sprite.png");
+    public static final TETile AVATAR = new TETile('@', Color.white, Color.black, "you");
     public static final TETile WALL = new TETile('#', new Color(216, 128, 128), Color.darkGray,
             "wall");
     public static final TETile FLOOR = new TETile('·', new Color(128, 192, 128), Color.black,
@@ -33,10 +33,11 @@ public class Tileset {
     public static final TETile SAND = new TETile('▒', Color.yellow, Color.black, "sand");
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
-    public static final TETile GANON = new TETile('&', Color.green, Color.black, "ganon the demon", "/byow/zelda_16/Ganon.png");
+    public static final TETile GANON = new TETile('&', Color.green, Color.black, "ganon the demon");
     public static final TETile KEY = new TETile('^', Color.green, Color.black, "one key to open them all", "/byow/zelda_16/Key.png");
 
     public static final TETile HEART = new TETile('❤', Color.red, Color.black, "heart");
+    public static final TETile LAMP = new TETile('●', Color.white, Color.GRAY, "lamp");
 
 }
 /*

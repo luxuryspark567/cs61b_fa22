@@ -248,6 +248,8 @@ public class TERenderer implements Serializable {
     }
     public void renderGamePage(TETile[][] world) {
 
+        paintAllLamps();
+
         TETile[][] toRenderWorld= maskOutOutOfLineOfSight(gameState.hero, world);
         //debug, fill empty
         /*
@@ -262,6 +264,7 @@ public class TERenderer implements Serializable {
         // reset fond
         Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
         StdDraw.setFont(font);
+
         this.renderFrame(toRenderWorld);
 
         renderAvatarHearts(gameState.hero, gameState.world);

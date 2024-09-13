@@ -4,8 +4,11 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.awt.*;
+
 import static byow.Core.Direction.getShiftPosition;
 import static byow.Core.Engine.*;
+import static byow.Core.Main.gameState;
 
 public class TileUtils {
 
@@ -180,5 +183,52 @@ public class TileUtils {
     }
 
  */
+    private static int getLineDistance(Position pos1, Position pos2) {
+        return Math.max(Math.abs(pos1.getX() - pos2.getX()), Math.abs(pos1.getY() - pos2.getY()));
+    }
+
+    private static Color getNewColor(Color c, int decrease) {
+        int newR = (c.getRed() - decrease);
+        if (newR < 0) {
+            newR = 0;
+        }
+
+        int newG = (c.getGreen() - decrease);
+        if (newG < 0) {
+            newG = 0;
+        }
+
+        int newB = (c.getBlue() - decrease);
+        if (newB < 0) {
+            newB = 0;
+        }
+
+        return new Color(newR, newG, newB);
+    }
+    public static void paintLampInRoom(Lamp lamp, TETile[][] world) {
+        //calc the distance of a tile from the lamp in a room, and set the lumen according to the distance
+        int testLooper = 0;
+        System.out.println("start to paint lamp");
+        for (Position pos: lamp.room) {
+            System.out.println(testLooper++);
+            int dis = getLineDistance(pos, lamp.getPosition());
+            // 1 distance correspond to 10 points loss in R & G & B
+            TETile tile = world[pos.getX()][pos.getY()];
+            if (tile != null) {
+                world[pos.getX()][pos.getY()] = TETile.TETileBackGround(tile, getNewColor(Color.GRAY, dis * 20));
+            }
+        }
+    }
+
+    public static void paintAllLamps() {
+        for (Room r: gameState.roomLut) {
+            Lamp lamp = r.getLamp();
+            if (lamp != null)
+            {
+                paintTile(lamp.getPosition(), Tileset.LAMP, gameState.world);
+                TileUtils.paintLampInRoom(lamp, gameState.world);// paint the lamp and the room
+            }
+        }
+    }
 
 }

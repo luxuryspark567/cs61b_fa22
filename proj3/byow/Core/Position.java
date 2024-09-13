@@ -105,18 +105,4 @@ public class Position implements Serializable {
         s.append(")");
         return s.toString();
     }
-
-    public static Position getRandomPositionInRandomRoom(GameState gameState) {
-        int roomIndex = RandomUtils.uniform(RANDOM, gameState.roomLut.size());
-        Room r = gameState.roomLut.get(roomIndex);
-
-        // should not take wall into account
-        int offX = RandomUtils.uniform(RANDOM, r.getSize().w - 2);
-        int offY = RandomUtils.uniform(RANDOM, r.getSize().h - 2);
-
-        return new Position(r.getPosition().x + offX + 1,
-                r.getPosition().y + offY + 1,
-                TileUtils.getTileWorldWidth(),
-                TileUtils.getTileWorldHeight());
-    }
 }

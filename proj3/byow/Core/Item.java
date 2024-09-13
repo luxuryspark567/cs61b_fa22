@@ -33,6 +33,14 @@ public class Item implements Serializable {
         this.pos = null;
     }
 
+    public Item (int weight, int value, int dur, Position pos) {
+        this.description = DESCRIPTION_DFT;
+        this.weight = weight;
+        this.value = value;
+        this.durability = dur;
+        this.pos = pos;
+    }
+
     public Item (String descr, Position pos) {
         this.description = descr;
         this.weight = WEIGHT_DFT;

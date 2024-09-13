@@ -20,6 +20,8 @@ import static byow.Core.Main.engine;
         TETile[][] refWorld;
         GameState gameState;
 
+        Room room; // a lamp should always in a room;
+
         public Lamp(GameState gameState) {
             super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
             this.lumen = LUMEN_DFT;
@@ -28,50 +30,65 @@ import static byow.Core.Main.engine;
             this.refWorld = gameState.refWorld;
             this.gameState = gameState;
             this.isOn = true;
+            this.room = null;
             //this.engine = engine;
         }
 
-        public Lamp(int lumen, GameState gameState) {
-            super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
-            this.lumen = lumen;
-            this.ter = engine.ter;
-            this.world = gameState.world;
-            this.refWorld = gameState.refWorld;
-            this.gameState = gameState;
-            this.isOn = true;
-            //this.engine = engine;
-        }
+     public Lamp(Position pos, Room room, GameState gameState) {
+         super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT, pos);
+         this.lumen = LUMEN_DFT;
+         this.ter = engine.ter;
+         this.world = gameState.world;
+         this.refWorld = gameState.refWorld;
+         this.gameState = gameState;
+         this.isOn = true;
+         this.room = room;
+         //this.engine = engine;
+     }
 
-        public Lamp(int weight, int value, int dur, int lumen, GameState gameState) {
-            super(weight, value, dur);
-            this.lumen = lumen;
-            this.ter = engine.ter;
-            this.world = gameState.world;
-            this.refWorld = gameState.refWorld;
-            this.gameState = gameState;
-            this.isOn = true;
-            //this.engine = engine;
-        }
+    public Lamp(int lumen, GameState gameState) {
+        super(WEIGHT_DFT, VALUE_DFT, DURATION_DFT);
+        this.lumen = lumen;
+        this.ter = engine.ter;
+        this.world = gameState.world;
+        this.refWorld = gameState.refWorld;
+        this.gameState = gameState;
+        this.isOn = true;
+        this.room = null;
+        //this.engine = engine;
+    }
 
-        public int getLumen() {
-            return this.lumen;
-        }
+    public Lamp(int weight, int value, int dur, int lumen, GameState gameState) {
+        super(weight, value, dur);
+        this.lumen = lumen;
+        this.ter = engine.ter;
+        this.world = gameState.world;
+        this.refWorld = gameState.refWorld;
+        this.gameState = gameState;
+        this.isOn = true;
+        this.room = null;
+        //this.engine = engine;
+    }
 
-         public void setLumen(int lum) {
-             this.lumen = lum;
-         }
+    public int getLumen() {
+        return this.lumen;
+    }
 
-         public boolean getSwitch() {
-            return this.isOn;
-         }
+    public void setLumen(int lum) {
+         this.lumen = lum;
+     }
 
-         public void switchOn() {
-            this.isOn = true;
-         }
+    public boolean getSwitch() {
+        return this.isOn;
+     }
 
-         public void switchOff() {
-             this.isOn = false;
-         }
+    public void switchOn() {
+        this.isOn = true;
+     }
+
+    public void switchOff() {
+         this.isOn = false;
+     }
 
     }
 

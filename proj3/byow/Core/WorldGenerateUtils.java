@@ -79,6 +79,7 @@ public class WorldGenerateUtils {
             return null;
         }
     }
+
     private Door generateRandomDoor(Position posRoom,  Size sizeRoom, TETile[][] world) {
 
         int looperLimit = LOOP_LIMIT;
@@ -124,6 +125,9 @@ public class WorldGenerateUtils {
         //System.out.println(looperLimit);
         return newDoor;
     }
+
+
+
     public void generateDoors(GameState gameState) {
         for (Room r: gameState.roomLut) {
             // generate a random door
@@ -131,21 +135,49 @@ public class WorldGenerateUtils {
             if (door != null)
             {
                 r.setDoor(door);
+                gameState.tmDB.put(door.getPosition(), door); // add to database
                 //world[door.getPosition().getX()][door.getPosition().getY()] = Tileset.UNLOCKED_DOOR;
 
                 // generate locked or unlocked randomly
                 int index = RandomUtils.uniform(RANDOM, 2);
                 if (index == 0) {
                     paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, gameState.world);
-                    gameState.tmDB.put(door.getPosition(), door); // add to database
-                    //gameState.doorLut.add(door);
                 }
                 else {
                     paintTile(door.getPosition(), Tileset.LOCKED_DOOR, gameState.world);
-                    gameState.tmDB.put(door.getPosition(), door);// add to database
-                    //gameState.doorLut.add(door);
                 }
 
+            }
+        }
+        gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
+    }
+
+    // a new lamp should never overlap any existing objects
+    private Lamp generateOneRandomLamp(Room r, TETile[][] world, GameState gameState) {
+
+        int looperLimit = LOOP_LIMIT;
+        Lamp newLamp = null;
+        while (newLamp == null && looperLimit > 0) {
+            //Check if lamp overlaps any existing objects
+            Position pos = Room.getRandomPositionInARoom(r);
+            if (isTileType(pos, Tileset.NOTHING, world)
+                    || isTileType(pos, Tileset.FLOOR, world)) {
+                newLamp = new Lamp(pos, r, gameState);
+            }
+            looperLimit--;
+        }
+
+        return newLamp;
+    }
+
+    public void generateLamps(GameState gameState) {
+        for (Room r: gameState.roomLut) {
+            // generate a random door
+            Lamp lp = generateOneRandomLamp(r, gameState.world, gameState);
+            if (lp != null)
+            {
+                r.setLamp(lp);
+                gameState.tmDB.put(lp.getPosition(), lp); // add to database
             }
         }
         gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
@@ -260,7 +292,7 @@ public class WorldGenerateUtils {
             }
         }
 
-        return new Room(pos,size);
+        return new Room(pos, size, world);
     }
 
     // don't care about the room distance, room distance is measured by door distance.

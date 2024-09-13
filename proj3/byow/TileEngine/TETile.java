@@ -197,13 +197,13 @@ public class TETile implements Serializable {
             if (tile.filepath == null && this.filepath == null) {
                 return tile.character == this.character
                         && tile.textColor.equals(this.textColor)
-                        && tile.backgroundColor.equals(this.backgroundColor)
+                        //&& tile.backgroundColor.equals(this.backgroundColor)
                         && tile.description.equals(this.description);
             }
             else if (this.filepath != null && tile.filepath != null) {
                 return tile.character == this.character
                         && tile.textColor.equals(this.textColor)
-                        && tile.backgroundColor.equals(this.backgroundColor)
+                        //&& tile.backgroundColor.equals(this.backgroundColor)
                         && tile.description.equals(this.description)
                         && tile.filepath.equals(this.filepath);
             }
@@ -212,5 +212,9 @@ public class TETile implements Serializable {
             }
         }
         return false;
+    }
+
+    public static TETile TETileBackGround(TETile tile, Color backColor) {
+        return new TETile(tile.character, tile.textColor, backColor, tile.description, tile.filepath);
     }
 }

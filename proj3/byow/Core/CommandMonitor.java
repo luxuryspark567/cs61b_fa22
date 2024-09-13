@@ -287,10 +287,11 @@ public class CommandMonitor {
             WorldGenerateUtils wgu = new WorldGenerateUtils();
             wgu.generateRooms(gameState);
             wgu.generateDoors(gameState);
+            wgu.generateLamps(gameState);
             wgu.generateHallways(gameState);
 
-            Avatar hero = new Avatar(Position.getRandomPositionInRandomRoom(gameState), gameState);
-            Bear bear = new Bear(Position.getRandomPositionInRandomRoom(gameState), gameState);
+            Avatar hero = new Avatar(Room.getRandomPositionInRandomRoom(gameState), gameState);
+            Bear bear = new Bear(Room.getRandomPositionInRandomRoom(gameState), gameState);
             Key key1 = new Key(gameState);
             hero.pickUpKey(key1);
 
