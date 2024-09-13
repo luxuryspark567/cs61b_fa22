@@ -1,6 +1,10 @@
 package byow.TileEngine;
 
-import byow.Core.*;
+import byow.Attribute.ByowCommandSet;
+import byow.Attribute.Position;
+import byow.Charactors.Avatar;
+import byow.Charactors.Creature;
+import byow.Utils.TileUtils;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
@@ -8,9 +12,8 @@ import java.awt.Font;
 import java.io.Serializable;
 
 import static byow.Core.Engine.*;
-import static byow.Core.Main.engine;
 import static byow.Core.Main.gameState;
-import static byow.Core.TileUtils.*;
+import static byow.Utils.TileUtils.*;
 
 /**
  * Utility class for rendering tiles. You do not need to modify this file. You're welcome

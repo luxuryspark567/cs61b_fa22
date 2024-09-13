@@ -1,5 +1,6 @@
-package byow.Core;
+package byow.Articles;
 
+import byow.Core.GameState;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
@@ -53,7 +54,7 @@ public class Key extends Item implements Serializable {
         //this.engine = engine;
     }
 
-    int getSignature() {
+    public int getSignature() {
         return this.signature;
     }
     /**

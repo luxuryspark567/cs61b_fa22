@@ -1,5 +1,15 @@
-package byow.Core;
+package byow.Utils;
 
+import byow.Articles.Door;
+import byow.Articles.Hallway;
+import byow.Articles.Lamp;
+import byow.Articles.Room;
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
+import byow.Attribute.Position;
+import byow.Attribute.Size;
+import byow.Charactors.DiggerAvatar;
+import byow.Core.GameState;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.MinPQ;
@@ -8,7 +18,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 import java.util.Comparator;
 //import static byow.Core.Main.gameState;
 import static byow.Core.Engine.*;
-import static byow.Core.TileUtils.*;
+import static byow.Utils.TileUtils.*;
 
 public class WorldGenerateUtils {
 
@@ -28,8 +38,8 @@ public class WorldGenerateUtils {
         Size ret = new Size();
         // random is [a,b), but when we say a room is size w x h, means that height is [1, h]
         // and here size is limit to MIN to MAX, [MIN, MAX] which is [MIN, MAX + 1) for the function.
-        ret.w = RandomUtils.uniform(RANDOM, ROOM_WIDTH_MIN, ROOM_WIDTH_MAX + 1);
-        ret.h = RandomUtils.uniform(RANDOM, ROOM_HEIGHT_MIN, ROOM_HEIGHT_MAX + 1);
+        ret.setW(RandomUtils.uniform(RANDOM, ROOM_WIDTH_MIN, ROOM_WIDTH_MAX + 1));
+        ret.setH(RandomUtils.uniform(RANDOM, ROOM_HEIGHT_MIN, ROOM_HEIGHT_MAX + 1));
         return ret;
     }
 
@@ -89,15 +99,15 @@ public class WorldGenerateUtils {
             Direction side = Direction.getDirectionByIndex(RandomUtils.uniform(RANDOM, 4));
             if (side == Directionset.NORTH) {
                 // pick a random position on the north side
-                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w - 1);
+                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.getW() - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.h - 1,
+                Position doorPos = new Position(posRoom.getX() + index, posRoom.getY() + sizeRoom.getH() - 1,
                         TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.NORTH, world);
             }
             else if (side == Directionset.WEST) {
                 // pick a random position on the west side
-                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
+                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.getH() - 1);
                 //System.out.println(index);
                 Position doorPos = new Position(posRoom.getX(), posRoom.getY() + index,
                         TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
@@ -105,7 +115,7 @@ public class WorldGenerateUtils {
             }
             else if (side == Directionset.SOUTH) {
                 // pick a random position on the south side
-                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.w -1);
+                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.getW() -1);
                 //System.out.println(index);
                 Position doorPos = new Position(posRoom.getX() + index, posRoom.getY(),
                         TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
@@ -113,9 +123,9 @@ public class WorldGenerateUtils {
             }
             else if (side == Directionset.EAST) {
                 // pick a random position on the east side
-                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.h - 1);
+                int index = RandomUtils.uniform(RANDOM, 1, sizeRoom.getH() - 1);
                 //System.out.println(index);
-                Position doorPos = new Position(posRoom.getX() + sizeRoom.w - 1,
+                Position doorPos = new Position(posRoom.getX() + sizeRoom.getW() - 1,
                         posRoom.getY() + index, TileUtils.getTileWorldWidth(), TileUtils.getTileWorldHeight());
                 newDoor = checkAndGetDoor(doorPos, Directionset.EAST, world);
             }
@@ -254,14 +264,14 @@ public class WorldGenerateUtils {
         Size size = getRandomSize();
 
         //check if room location is out of canvas
-        Position posRightCorner = new Position((pos.getX() + size.w - 1), (pos.getY() + size.h - 1));
+        Position posRightCorner = new Position((pos.getX() + size.getW() - 1), (pos.getY() + size.getH() - 1));
         if (!isInTileWorld(posRightCorner)) {
             return null;
         }
 
         //check if overlaps
-        for (int i = 0; i < size.w; i++) {
-            for (int j = 0; j < size.h; j++) {
+        for (int i = 0; i < size.getW(); i++) {
+            for (int j = 0; j < size.getH(); j++) {
                 int localX = pos.getX() + i;
                 int localY = pos.getY() + j;
 
@@ -274,18 +284,18 @@ public class WorldGenerateUtils {
         // reach here means it is a valid room
         // paint the room on the canvas
         // create wall
-        for (int i = 0; i < size.w; i++) {
+        for (int i = 0; i < size.getW(); i++) {
             world[pos.getX() + i][pos.getY()] = Tileset.WALL;
-            world[pos.getX() + i][pos.getY() + size.h - 1] = Tileset.WALL;
+            world[pos.getX() + i][pos.getY() + size.getH() - 1] = Tileset.WALL;
         }
 
-        for (int j = 0; j < size.h; j++) {
+        for (int j = 0; j < size.getH(); j++) {
             world[pos.getX()][pos.getY() + j] = Tileset.WALL;
-            world[pos.getX() + size.w - 1][pos.getY() + j] = Tileset.WALL;
+            world[pos.getX() + size.getW() - 1][pos.getY() + j] = Tileset.WALL;
         }
         //create tile
-        for (int i = 1; i < size.w - 1; i++) {
-            for (int j = 1; j < size.h - 1; j++) {
+        for (int i = 1; i < size.getW() - 1; i++) {
+            for (int j = 1; j < size.getH() - 1; j++) {
                 int localX = pos.getX() + i;
                 int localY = pos.getY() + j;
                 world[localX][localY] = Tileset.FLOOR;

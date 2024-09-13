@@ -1,10 +1,9 @@
-package byow.Core;
+package byow.Charactors;
 
-import byow.TileEngine.TETile;
-
-import java.util.LinkedList;
-
-import static byow.Core.Engine.LOOP_LIMIT;
+import byow.Articles.ChestPlate;
+import byow.Core.GameState;
+import byow.Attribute.Position;
+import byow.Attribute.Size;
 
 public class Bear extends Creature{
     private static final int DAMAGE_DFT = 30;

@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Articles;
 
 public class Arm extends Item {
     private static final int WEIGHT_DFT = 0;

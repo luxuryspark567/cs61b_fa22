@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Utils;
 
 import java.util.Random;
 

@@ -1,16 +1,18 @@
 package byow.Core;
 
+import byow.Attribute.CommandNode;
+import byow.Charactors.Avatar;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.Utils.CommandMonitor;
 //import edu.princeton.cs.introcs.StdDraw;
 
 import java.io.*;
 import java.util.*;
 import java.util.List;
 
-import static byow.Core.CommandNode.getCommandList;
-import static byow.Core.Main.engine;
+import static byow.Attribute.CommandNode.getCommandList;
 import static byow.Core.Main.gameState;
 
 
@@ -38,7 +40,7 @@ public class Engine {
 
     public static final int DIRECTION_NUM = 4; // north, west, south and east
     public static Random RANDOM = new Random(SEED);
-    TERenderer ter = new TERenderer();
+    public TERenderer ter = new TERenderer();
     //RoomGraph rg = new RoomGraph(WIDTH, HEIGHT);
 
     public static boolean saveGameState(String filePath) {

@@ -1,6 +1,11 @@
-package byow.Core;
+package byow.Articles;
 
+import byow.Attribute.Position;
+import byow.Attribute.Size;
+import byow.Core.*;
 import byow.TileEngine.TETile;
+import byow.Utils.RandomUtils;
+import byow.Utils.TileUtils;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -82,8 +87,8 @@ public class Room implements Serializable, Iterable<Position>{
 
     public static Position getRandomPositionInARoom(Room r) {
         // should not take wall into account
-        int offX = RandomUtils.uniform(RANDOM,1, r.getSize().w - 1);
-        int offY = RandomUtils.uniform(RANDOM,1, r.getSize().h - 1);
+        int offX = RandomUtils.uniform(RANDOM,1, r.getSize().getW() - 1);
+        int offY = RandomUtils.uniform(RANDOM,1, r.getSize().getH() - 1);
 
         return getWorldPosFromRoomOffSet(r.getPosition(), offX, offY);
         /*
@@ -117,12 +122,12 @@ public class Room implements Serializable, Iterable<Position>{
 
             //update y
             offY = offY + 1;
-            if (offY >= getSize().h - 1) {
+            if (offY >= getSize().getH() - 1) {
                 offY = 1;
 
                 //update x
                 offX = offX + 1;
-                if (offX >= getSize().w - 1) {
+                if (offX >= getSize().getW() - 1) {
                     return false;
                 }
             }

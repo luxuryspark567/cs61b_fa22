@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Articles;
 
 public class ChestPlate extends Arm{
     private static final int BUF_DFT = 1;

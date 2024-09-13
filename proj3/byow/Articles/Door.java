@@ -1,10 +1,10 @@
-package byow.Core;
+package byow.Articles;
 
+import byow.Attribute.Direction;
+import byow.Attribute.Position;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.Edge;
-
-import java.io.Serializable;
 
 public class Door extends Item {
     private static final String DESCRIPTION_DFT = "Door";

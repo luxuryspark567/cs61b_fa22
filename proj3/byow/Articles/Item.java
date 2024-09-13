@@ -1,4 +1,6 @@
-package byow.Core;
+package byow.Articles;
+
+import byow.Attribute.Position;
 
 import java.io.Serializable;
 

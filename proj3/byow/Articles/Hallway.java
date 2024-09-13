@@ -1,12 +1,4 @@
-package byow.Core;
-
-import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
-import edu.princeton.cs.algs4.Edge;
-import edu.princeton.cs.algs4.MinPQ;
-import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-
-import static byow.Core.Engine.*;
+package byow.Articles;
 
 // used to connect two rooms
 public class Hallway {

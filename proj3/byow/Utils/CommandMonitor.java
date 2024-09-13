@@ -1,21 +1,24 @@
-package byow.Core;
+package byow.Utils;
 
+import byow.Articles.Door;
+import byow.Articles.Key;
+import byow.Articles.Room;
+import byow.Attribute.ByowCommandSet;
+import byow.Attribute.CommandNode;
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
+import byow.Charactors.Avatar;
+import byow.Charactors.Bear;
+import byow.Core.Engine;
+import byow.Core.GameState;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Random;
-import java.util.TreeMap;
 
-import static byow.Core.Engine.ROOM_NUM;
-import static byow.Core.Main.engine;
-import static byow.Core.Main.gameState;
-import static byow.Core.TileUtils.paintTile;
+import static byow.Utils.TileUtils.paintTile;
 
 public class CommandMonitor {
     int parseState;
@@ -91,7 +94,7 @@ public class CommandMonitor {
                 }
 
                 //render
-                if (parseState == 1 && cn.bc == ByowCommandSet.IDLE) {
+                if (parseState == 1 && cn.getByowCommand() == ByowCommandSet.IDLE) {
                     //ter.initialize(40, 40, 0, 0);
                     ter.renderRandomInputPage(randomKey.toString());
                     //ter.renderText();
@@ -101,8 +104,8 @@ public class CommandMonitor {
     }
 
     public void commandClear() {
-        cn.bc = ByowCommandSet.IDLE;
-        cn.rNum = -1;
+        cn.setByowCommand(ByowCommandSet.IDLE);
+        cn.setByowRandomNum(-1);
     }
     // monitor game page on time, return a valid command
     public void monitorGamePage() {
@@ -208,7 +211,7 @@ public class CommandMonitor {
             return false;
         }
 
-        if (cn.bc == ByowCommandSet.LOAD) { // in menu page
+        if (cn.getByowCommand() == ByowCommandSet.LOAD) { // in menu page
             if (Engine.loadGameState("savefile.txt")) {
                 Engine.RANDOM = new Random(gameState.randomSeed);
                 // in menu page, if game is reloaded should jump out of the menu loop
@@ -222,7 +225,7 @@ public class CommandMonitor {
                 return false;
             }
         }
-        if (cn.bc == ByowCommandSet.LOAD2) { // in game page
+        if (cn.getByowCommand() == ByowCommandSet.LOAD2) { // in game page
             //ter.initialize(40, 40, 0, 0);
             //engine.ter.renderText("LOAD GAME");
             // TODO: this is not the most efficient way
@@ -240,7 +243,7 @@ public class CommandMonitor {
                 return false;
             }
         }
-        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME) { // in menu page
+        else if (cn.getByowCommand() == ByowCommandSet.QUIT_AND_SAVE_GAME) { // in menu page
 
             //just quit
             //engine.ter.renderPause(500);
@@ -261,7 +264,7 @@ public class CommandMonitor {
 
  */
         }
-        else if (cn.bc == ByowCommandSet.QUIT_AND_SAVE_GAME2) { // in game page
+        else if (cn.getByowCommand() == ByowCommandSet.QUIT_AND_SAVE_GAME2) { // in game page
 
             //Engine.GameState gState = new Engine.GameState(rg, world, refWorld, hero, bear);
             if (Engine.saveGameState("savefile.txt")) {
@@ -275,14 +278,14 @@ public class CommandMonitor {
                 return false;
             }
         }
-        else if (cn.bc == ByowCommandSet.CREATE_NEW_WORLD) {
+        else if (cn.getByowCommand() == ByowCommandSet.CREATE_NEW_WORLD) {
             //ter.initialize(40, 40, 0, 0);
             engine.ter.renderText("CREATING NEW WORLD...");
             engine.ter.renderPause(500);
             // generate world data base (rooms and tunnels)
             //engine.SEED = cn.rNum;
-            Engine.RANDOM = new Random(cn.rNum);
-            gameState.randomSeed = cn.rNum;
+            Engine.RANDOM = new Random(cn.getByowRandomNum());
+            gameState.randomSeed = cn.getByowRandomNum();
 
             WorldGenerateUtils wgu = new WorldGenerateUtils();
             wgu.generateRooms(gameState);
@@ -300,25 +303,25 @@ public class CommandMonitor {
             gameState.readyToPlay = true;
             return true;
         }
-        else if (cn.bc == ByowCommandSet.MOVE_NORTH) {
+        else if (cn.getByowCommand() == ByowCommandSet.MOVE_NORTH) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.NORTH);
             }
         }
-        else if (cn.bc == ByowCommandSet.MOVE_WEST) {
+        else if (cn.getByowCommand() == ByowCommandSet.MOVE_WEST) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.WEST);
             }
         }
-        else if (cn.bc == ByowCommandSet.MOVE_SOUTH) {
+        else if (cn.getByowCommand() == ByowCommandSet.MOVE_SOUTH) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.SOUTH);
             }
         }
-        else if (cn.bc == ByowCommandSet.MOVE_EAST) {
+        else if (cn.getByowCommand() == ByowCommandSet.MOVE_EAST) {
             if (gameState.hero != null) {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 updateWorldAndRender(engine, gameState, Directionset.EAST);
@@ -328,14 +331,14 @@ public class CommandMonitor {
     }
 
     boolean isMoveCommand() {
-        return this.cn.bc == ByowCommandSet.MOVE_NORTH
-                || this.cn.bc== ByowCommandSet.MOVE_WEST
-                || this.cn.bc == ByowCommandSet.MOVE_SOUTH
-                || this.cn.bc == ByowCommandSet.MOVE_EAST;
+        return this.cn.getByowCommand() == ByowCommandSet.MOVE_NORTH
+                || this.cn.getByowCommand()== ByowCommandSet.MOVE_WEST
+                || this.cn.getByowCommand() == ByowCommandSet.MOVE_SOUTH
+                || this.cn.getByowCommand() == ByowCommandSet.MOVE_EAST;
     }
 
     boolean isIdleCommand() {
-        return this.cn.bc == ByowCommandSet.IDLE;
+        return this.cn.getByowCommand() == ByowCommandSet.IDLE;
     }
 
 
@@ -380,7 +383,7 @@ public class CommandMonitor {
             return;
         }
 
-        if (cn.bc == ByowCommandSet.LOCK) {
+        if (cn.getByowCommand() == ByowCommandSet.LOCK) {
             if (door != null) {
                 // both the ref word and real world need to be checked
                 paintTile(door.getPosition(), Tileset.LOCKED_DOOR, world);
@@ -388,7 +391,7 @@ public class CommandMonitor {
                 ter.renderGamePage(world);
             }
         }
-        else if (cn.bc == ByowCommandSet.UNLOCK){
+        else if (cn.getByowCommand() == ByowCommandSet.UNLOCK){
             if (door != null) {
                 paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, world);
                 paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, refWorld);

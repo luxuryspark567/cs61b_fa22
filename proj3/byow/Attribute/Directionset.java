@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Attribute;
 public class Directionset {
     public static final Direction SOUTH = new Direction("facing south");
     public static final Direction WEST = new Direction("facing west");

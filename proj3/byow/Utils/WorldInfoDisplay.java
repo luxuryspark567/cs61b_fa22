@@ -1,10 +1,10 @@
-package byow.Core;
+package byow.Utils;
 
-import byow.TileEngine.TERenderer;
+import byow.Attribute.Position;
 import byow.TileEngine.TETile;
 
 import static byow.Core.Main.gameState;
-import static byow.Core.TileUtils.getMouseCoord;
+import static byow.Utils.TileUtils.getMouseCoord;
 
 public class WorldInfoDisplay {
 

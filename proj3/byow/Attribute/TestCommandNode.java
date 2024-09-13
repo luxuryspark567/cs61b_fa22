@@ -1,12 +1,12 @@
-package byow.Core;
+package byow.Attribute;
 
-import org.junit.Assert;
+import byow.Attribute.ByowCommandSet;
+import byow.Attribute.CommandNode;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static byow.Core.CommandNode.getCommandList;
+import static byow.Attribute.CommandNode.getCommandList;
 import static org.junit.Assert.*;
 
 public class TestCommandNode {

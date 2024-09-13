@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Articles;
 
 public class Sword extends Weapon{
     private static final int DAMAGE_DFT = 2;

@@ -1,9 +1,7 @@
-package byow.Core;
+package byow.Attribute;
 
 import java.io.Serializable;
 import java.util.Comparator;
-
-import static byow.Core.Engine.*;
 
 // position of an object on canvas
 public class Position implements Serializable {

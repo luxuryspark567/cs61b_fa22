@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Attribute;
 
 import java.io.Serializable;
 
@@ -13,6 +13,22 @@ public class Size implements Serializable {
     }
     public Size (int w, int h) {
         this.w = w;
+        this.h = h;
+    }
+
+    public int getW(){
+        return this.w;
+    }
+
+    public int getH(){
+        return this.h;
+    }
+
+    public void setW(int w){
+        this.w = w;
+    }
+
+    public void setH(int h){
         this.h = h;
     }
     @Override

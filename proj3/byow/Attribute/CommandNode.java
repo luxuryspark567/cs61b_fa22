@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Attribute;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +16,21 @@ public class CommandNode {
         this.rNum = 0;
     }
 
+    public ByowCommand getByowCommand () {
+        return this.bc;
+    }
+
+    public void setByowRandomNum (long rNum) {
+        this.rNum = rNum;
+    }
+
+    public void setByowCommand (ByowCommand bc) {
+        this.bc = bc;
+    }
+
+    public long getByowRandomNum () {
+        return this.rNum;
+    }
     public static List<CommandNode> getCommandList(String input) {
         char[] charArray = input.toCharArray();
         StringBuilder randomKey = new StringBuilder();

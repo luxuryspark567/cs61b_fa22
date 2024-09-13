@@ -1,11 +1,11 @@
 package byow.Core;
 
+import byow.Attribute.Position;
 import byow.TileEngine.TETile;
+import byow.Utils.TileUtils;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
-
-import static byow.Core.Engine.*;
 
 /** This is the main entry point for the program. This class simply parses
  *  the command line inputs, and lets the byow.Core.Engine class take over

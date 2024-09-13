@@ -1,11 +1,17 @@
-package byow.Core;
+package byow.Charactors;
 
+import byow.Articles.*;
+import byow.Attribute.Direction;
+import byow.Attribute.Position;
+import byow.Attribute.Size;
+import byow.Core.*;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.Utils.CommandMonitor;
 
 import java.util.LinkedList;
 
-import static byow.Core.TileUtils.isTileType;
+import static byow.Utils.TileUtils.isTileType;
 import static byow.Core.Main.engine;
 public class Avatar extends Creature{
     private static final int DAMAGE_DFT = 10;

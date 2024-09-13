@@ -1,6 +1,5 @@
-package byow.Core;
+package byow.Attribute;
 
-import java.awt.*;
 import java.io.Serializable;
 
 import static byow.Core.Engine.DIRECTION_NUM;

@@ -1,12 +1,17 @@
-package byow.Core;
+package byow.Utils;
 
+import byow.Articles.Lamp;
+import byow.Articles.Room;
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
+import byow.Attribute.Position;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.*;
 
-import static byow.Core.Direction.getShiftPosition;
+import static byow.Attribute.Direction.getShiftPosition;
 import static byow.Core.Engine.*;
 import static byow.Core.Main.gameState;
 
@@ -209,7 +214,7 @@ public class TileUtils {
         //calc the distance of a tile from the lamp in a room, and set the lumen according to the distance
         int testLooper = 0;
         System.out.println("start to paint lamp");
-        for (Position pos: lamp.room) {
+        for (Position pos: lamp.getRoom()) {
             System.out.println(testLooper++);
             int dis = getLineDistance(pos, lamp.getPosition());
             // 1 distance correspond to 10 points loss in R & G & B

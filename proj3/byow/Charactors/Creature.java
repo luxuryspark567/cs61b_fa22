@@ -1,16 +1,23 @@
-package byow.Core;
+package byow.Charactors;
 
+import byow.Articles.Item;
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
+import byow.Attribute.Position;
+import byow.Attribute.Size;
+import byow.Core.*;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.Utils.RoadSearch;
 
 import java.util.LinkedList;
 
-import static byow.Core.Direction.getRevertDir;
-import static byow.Core.Direction.getShiftPosition;
-import static byow.Core.Directionset.SOUTH;
-import static byow.Core.TileUtils.isTileType;
+import static byow.Attribute.Direction.getRevertDir;
+import static byow.Attribute.Direction.getShiftPosition;
+import static byow.Attribute.Directionset.SOUTH;
+import static byow.Utils.TileUtils.isTileType;
 
-public class Creature extends RoadSearch{
+public class Creature extends RoadSearch {
     private int damage;
     private int health;
     private int age;
@@ -171,9 +178,9 @@ public class Creature extends RoadSearch{
         this.weight = weight;
     }
 
-    public void setSize(Size size) {
-        this.size.w = size.w;
-        this.size.h = size.h;
+    public void setSize(Size s) {
+        this.size.setW(s.getW());
+        this.size.setH(s.getH());
     }
     public void setAffection(int affection) {
         this.affection = affection;

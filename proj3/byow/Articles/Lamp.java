@@ -1,5 +1,7 @@
-package byow.Core;
+package byow.Articles;
 
+import byow.Core.GameState;
+import byow.Attribute.Position;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 
@@ -57,7 +59,9 @@ import static byow.Core.Main.engine;
         this.room = null;
         //this.engine = engine;
     }
-
+    public Room getRoom() {
+            return this.room;
+    }
     public Lamp(int weight, int value, int dur, int lumen, GameState gameState) {
         super(weight, value, dur);
         this.lumen = lumen;

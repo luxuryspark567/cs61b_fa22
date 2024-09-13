@@ -1,11 +1,14 @@
 package byow.Core;
 
+import byow.Articles.Room;
+import byow.Attribute.Position;
+import byow.Charactors.Avatar;
+import byow.Charactors.Bear;
 import byow.TileEngine.TETile;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 
 import java.io.*;
 import java.util.List;
-import java.util.Random;
 import java.util.TreeMap;
 
 //import static byow.Core.Main.gameState;

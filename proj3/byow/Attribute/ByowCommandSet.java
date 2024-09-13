@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Attribute;
 
 public class ByowCommandSet {
 

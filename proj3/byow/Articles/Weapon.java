@@ -1,4 +1,4 @@
-package byow.Core;
+package byow.Articles;
 
 public class Weapon extends Item {
 

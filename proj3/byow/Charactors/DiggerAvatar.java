@@ -1,14 +1,20 @@
-package byow.Core;
+package byow.Charactors;
 
-import byow.TileEngine.TETile;
+import byow.Articles.Door;
+import byow.Articles.Hallway;
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
+import byow.Attribute.Position;
+import byow.Core.*;
 import byow.TileEngine.Tileset;
+import byow.Utils.RoadSearch;
 
-import static byow.Core.Direction.*;
-import static byow.Core.Directionset.SOUTH;
+import static byow.Attribute.Direction.*;
+import static byow.Attribute.Directionset.SOUTH;
 import static byow.Core.Engine.*;
-import static byow.Core.TileUtils.*;
+import static byow.Utils.TileUtils.*;
 
-public class DiggerAvatar extends RoadSearch{
+public class DiggerAvatar extends RoadSearch {
 
     //TETile[][] world;
     //TETile[][] refWorld;

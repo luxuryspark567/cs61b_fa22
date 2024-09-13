@@ -1,15 +1,18 @@
-package byow.Core;
+package byow.Utils;
 
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
+import byow.Attribute.Position;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import java.io.Serializable;
 
-import static byow.Core.Direction.*;
-import static byow.Core.Direction.setTrueBoolArrayByDirection;
-//import static byow.Core.Directionset.SOUTH;
+import static byow.Attribute.Direction.*;
+import static byow.Attribute.Direction.setTrueBoolArrayByDirection;
+//import static byow.Attribute.Directionset.SOUTH;
 import static byow.Core.Engine.*;
-import static byow.Core.TileUtils.*;
+import static byow.Utils.TileUtils.*;
 //import static byow.Core.Engine.WIDTH;
 
 
@@ -87,7 +90,7 @@ public class RoadSearch implements Serializable {
     public Position getPosPre() {
         return posPre;
     }
-    Direction getLastMoveDir() {
+    public Direction getLastMoveDir() {
         return this.lastMoveDir;
     }
     public Position getPosDst() {
