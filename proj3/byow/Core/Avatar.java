@@ -1,15 +1,16 @@
 package byow.Core;
 
+import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import java.util.LinkedList;
 
 import static byow.Core.TileUtils.isTileType;
-
+import static byow.Core.Main.engine;
 public class Avatar extends Creature{
     private static final int DAMAGE_DFT = 10;
 
-    private static final int HEALTH_DFT = 100;
+    private static final int HEALTH_DFT = 10;
     private static final int AGE_DFT = 20;
     private static final int WEIGHT_DFT = 90;
     private static final Size SIZE = new Size(1, 1);
@@ -81,6 +82,20 @@ public class Avatar extends Creature{
         return true;
     }
 
+
+    private void checkObject(Position pos, TETile tileType) {
+        if (isTileType(pos, tileType, this.world)) {
+            // get the object at "pos" from database;
+            Object o = this.mgs.tmDB.get(pos);
+            if (o != null) {
+                this.handle(o);
+            }
+            else {
+                System.out.println("there is no valid object at" + pos);
+            }
+        }
+    }
+
     @Override
     public boolean MoveOneStep(Direction dir) {
 
@@ -95,24 +110,18 @@ public class Avatar extends Creature{
 
         Direction.shiftPosition(pos, dir);
 
+        checkObject(pos, Tileset.LOCKED_DOOR);
 
+        return (super.MoveOneStep(dir));
+        /*
         // action 1: if come to a locked door
         if (isTileType(pos, Tileset.LOCKED_DOOR, this.world)) {
             //get the door instance, corresponds to this locked door
 
             // 2, get the object at "pos" from database;
             Object o = this.mgs.tmDB.get(pos);
-            if (o instanceof Door d) {
-
-                // search the inventory for a matched key
-                for (Key key :keyInventory) {
-                    if (key.getSignature() == d.getSiginature()) {
-                        System.out.println("found a matched key!");
-                        key.handle(d);// let the key handle the door
-                        return true;
-                    }
-                }
-                return false;
+            if (o != null) {
+                return this.handle(o);
             }
             else {
                 System.out.println("there is no valid object at" + pos);
@@ -123,5 +132,47 @@ public class Avatar extends Creature{
             // call the general move
             return (super.MoveOneStep(dir));
         }
+        d
+         */
+    }
+
+    @Override
+    public boolean handle(Object o) {
+        if (o instanceof Door d){
+            // search the inventory for a matched key
+            for (Key key :keyInventory) {
+                if (key.getSignature() == d.getSiginature()) {
+                    System.out.println("found a matched key!");
+
+                    // add monitor, which will listen commands typed by user;
+                    CommandMonitor cMonitor = new CommandMonitor(engine, mgs);
+                    cMonitor.initiate();
+
+                    // 1, pops up action selection menu
+                    //engine.ter.renderInitialize(); //re init the menu
+                    engine.ter.renderKeyMenu();
+
+                    // 2, listening user's option, for user to choose an action;
+                    cMonitor.monitorKeyMenu(engine.ter);
+
+                    // 3, perform the action, and render the result
+                    cMonitor.executeKeyCommands(d, world, refWorld, engine.ter);
+
+                    // 4, return result
+                    // if a new menu is popped ,should re-initiate the canvas
+                    //engine.ter.renderInitialize();
+                    return true;
+                }
+            }
+            System.out.println("unmatched key!");
+            return false;
+        }
+
+        else if (o instanceof Lamp l) {
+            // TODO
+            l.switchOn();
+        }
+
+        return false;
     }
 }

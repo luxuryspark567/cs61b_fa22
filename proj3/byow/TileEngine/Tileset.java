@@ -35,6 +35,9 @@ public class Tileset {
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
     public static final TETile GANON = new TETile('&', Color.green, Color.black, "ganon the demon", "/byow/zelda_16/Ganon.png");
     public static final TETile KEY = new TETile('^', Color.green, Color.black, "one key to open them all", "/byow/zelda_16/Key.png");
+
+    public static final TETile HEART = new TETile('❤', Color.red, Color.black, "heart");
+
 }
 /*
 public class Tileset {

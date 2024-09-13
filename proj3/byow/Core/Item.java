@@ -81,10 +81,4 @@ public class Item implements Serializable {
         this.pos = Position.copyOf(pos);
     }
 
-    /**
-     * how this item handle other objects, such as a key to a door.
-     * */
-    boolean handle(Object o) {
-        return true;
-    }
 }

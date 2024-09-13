@@ -27,6 +27,8 @@ public class GameState implements Serializable {
     public Bear bear;
     public long randomSeed;
     public boolean readyToPlay;
+
+    public boolean seeOutOfSightSwitch;
     public GameState(TETile[][] world, List<Room> roomLut, TreeMap<Position, Object> tmDB) {
         this.world = world;
         this.refWorld = null;
@@ -34,6 +36,7 @@ public class GameState implements Serializable {
         //this.doorLut = doorLut;
         this.tmDB = tmDB;
         this.readyToPlay = true;
+        this.seeOutOfSightSwitch = true;
     }
     /*
     public GameState(TETile[][] world, List<Room> roomLut, EdgeWeightedGraph ewg, TreeMap<Position, Object> tmDB) {

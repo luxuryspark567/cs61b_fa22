@@ -11,4 +11,7 @@ public class ByowCommand {
     public String toString() {
         return this.description;
     }
+    public String description() {
+        return description;
+    }
 }

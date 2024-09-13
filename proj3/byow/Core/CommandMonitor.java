@@ -23,12 +23,15 @@ public class CommandMonitor {
     CommandNode cn;
     Engine engine;
     GameState gameState;
+
+    WorldInfoDisplay wid;
     public CommandMonitor(Engine engine, GameState gameState) {
         this.parseState = 0;
         this.randomKey = new StringBuilder();
         this.cn = new CommandNode(ByowCommandSet.IDLE);
         this.gameState = gameState;
         this.engine = engine;
+        this.wid = new WorldInfoDisplay();
     }
     public void initiate() {
         this.parseState = 0;
@@ -113,7 +116,10 @@ public class CommandMonitor {
 
                 switch (parseState) {
                     case 0: // idle state
-                        if (c == 'l' || c == 'L') {
+                        if ((c == 'k' || c == 'K')) {
+                            gameState.seeOutOfSightSwitch = !gameState.seeOutOfSightSwitch;
+                        }
+                        else if (c == 'l' || c == 'L') {
                             cn = new CommandNode(ByowCommandSet.LOAD2);
                             looperFlag = false;
                         }
@@ -152,9 +158,25 @@ public class CommandMonitor {
                 }
             }
 
+
+            wid.updateMouseHoverTile();
+
+            if (wid.isTileInfoChanged()) {
+                wid.backUpMouseHoverTileInfo();
+                engine.ter.renderGamePage(gameState.world);
+                //wid.displayMouseTileInfo(engine.ter);
+                engine.ter.renderAvatarHearts(gameState.hero, gameState.world);
+                if (wid.tileMouse != null)
+                    engine.ter.renderTileInfo(wid.tileMouse.description());
+            }
+            /*
             engine.ter.renderGamePage(gameState.world);
-            engine.ter.renderTileInfo();
+            wid.displayMouseTileInfo(engine.ter);
+            engine.ter.renderAvatarHearts(gameState.hero, gameState.world);
+            //wid.displayMouseAvatarHealth(engine.ter);
             engine.ter.renderPause(50);
+
+             */
 
         }
     }
@@ -167,6 +189,9 @@ public class CommandMonitor {
             engine.ter.paintCreature(gameState.bear, Tileset.GANON, gameState.world);
         }
         engine.ter.renderGamePage(gameState.world);
+        engine.ter.renderAvatarHearts(gameState.hero, gameState.world);
+        if (wid.tileMouse != null)
+            engine.ter.renderTileInfo(wid.tileMouse.description());
     }
 
     /**
@@ -346,7 +371,7 @@ public class CommandMonitor {
         }
     }
 
-    public void executeKeyCommands(Key key, Door door, TETile[][] world, TETile[][] refWorld, TERenderer ter) {
+    public void executeKeyCommands(Door door, TETile[][] world, TETile[][] refWorld, TERenderer ter) {
         // return true means not a command to break out
         // return false means a command to break outer while loop, and no need to monitor anymore.
 

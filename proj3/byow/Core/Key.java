@@ -61,7 +61,7 @@ public class Key extends Item implements Serializable {
      * @true:  could open the door
      * @false: cannot open the door
      */
-
+/*
     @Override
     boolean handle(Object o) {
         if (o instanceof Door d){
@@ -94,5 +94,7 @@ public class Key extends Item implements Serializable {
 
         return false;
     }
+
+ */
 }
 

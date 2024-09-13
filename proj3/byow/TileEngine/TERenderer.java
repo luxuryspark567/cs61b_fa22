@@ -113,8 +113,8 @@ public class TERenderer implements Serializable {
     public void renderText(String str) {
         StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(fontBig);
         StdDraw.text((double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2, str);
         StdDraw.show();
     }
@@ -122,8 +122,8 @@ public class TERenderer implements Serializable {
     public void renderTextWithoutClear(String str, int size, TileUtils.CanvasCoordinate  cc) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, size);
+        StdDraw.setFont(fontBig);
         StdDraw.text(cc.getX(), cc.getY(), str);
         StdDraw.show();
     }
@@ -131,8 +131,8 @@ public class TERenderer implements Serializable {
     public void renderTextWithoutClearRightAligned(String str, int size, TileUtils.CanvasCoordinate cc) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, size);
+        StdDraw.setFont(fontBig);
         StdDraw.textRight(cc.getX(), cc.getY(), str);
         StdDraw.show();
     }
@@ -140,8 +140,8 @@ public class TERenderer implements Serializable {
     public void renderTextWithoutClearLeftAligned(String str, int size, TileUtils.CanvasCoordinate cc) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, size);
+        StdDraw.setFont(fontBig);
         StdDraw.textLeft(cc.getX(), cc.getY(), str);
         StdDraw.show();
     }
@@ -149,8 +149,8 @@ public class TERenderer implements Serializable {
     public void renderTextRightAligned(String str, int size, Position pos) {
         StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, size);
+        StdDraw.setFont(fontBig);
         StdDraw.textRight(pos.getX(), pos.getY(), str);
         StdDraw.show();
     }
@@ -162,8 +162,8 @@ public class TERenderer implements Serializable {
     public void renderAddTextToCanvas(String str, int size, Position pos) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, 30);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, 30);
+        StdDraw.setFont(fontBig);
         StdDraw.text(pos.getX(), pos.getY(), str);
         StdDraw.show();
     }
@@ -171,8 +171,8 @@ public class TERenderer implements Serializable {
     public void renderAddTextToCanvas(String str, int size, double x, double y) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
-        //Font fontBig = new Font("Monaco", Font.BOLD, size);
-        //StdDraw.setFont(fontBig);
+        Font fontBig = new Font("Monaco", Font.BOLD, size);
+        StdDraw.setFont(fontBig);
         StdDraw.text(x, y, str);
         StdDraw.show();
     }
@@ -197,8 +197,60 @@ public class TERenderer implements Serializable {
         }
     }
 */
-    public void renderGamePage(TETile[][] world) {
+
+    public void renderAvatarHearts(Avatar hero, TETile[][] world) {
         //debug, fill empty
+
+        // reset fond
+        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
+        StdDraw.setFont(font);
+        int x = 1;
+        int y = getCanvasHeight() - 5;
+        for (int i = 0; i < hero.getHealth(); i++) {
+            Tileset.HEART.draw(x + i, y);
+        }
+
+        StdDraw.show();
+    }
+
+    private int getTileManhattanDistance (Position pos1, Position pos2) {
+        return Math.abs(pos1.getX() - pos2.getX()) + Math.abs(pos1.getY() - pos2.getY());
+    }
+    public TETile[][] maskOutOutOfLineOfSight(Avatar hero, TETile[][] world){
+
+        TETile[][] retWorld = TETile.copyOf(world);
+
+        // based on the distance from the hero
+        int distance = 8;
+
+        for (int i = 0; i < getTileWorldWidth(); i++) {
+            for (int j = 0; j < getTileWorldHeight(); j++) {
+                    if (gameState.seeOutOfSightSwitch) {
+                        if (retWorld[i][j] == null) {
+                            retWorld[i][j] = Tileset.NOTHING;
+                        }
+                    }
+                    else {
+                        if (getTileManhattanDistance(new Position(i, j), hero.getPosition()) > distance) {
+                            retWorld[i][j] = Tileset.NOTHING;
+                        }
+                        else {
+                            if (retWorld[i][j] == null) {
+                                retWorld[i][j] = Tileset.NOTHING;
+                            }
+                        }
+                    }
+
+            }
+
+        }
+        return retWorld;
+    }
+    public void renderGamePage(TETile[][] world) {
+
+        TETile[][] toRenderWorld= maskOutOutOfLineOfSight(gameState.hero, world);
+        //debug, fill empty
+        /*
         for (int i = 0; i < getTileWorldWidth(); i++) {
             for (int j = 0; j < getTileWorldHeight(); j++) {
                 if (world[i][j] == null) {
@@ -206,8 +258,13 @@ public class TERenderer implements Serializable {
                 }
             }
         }
+         */
+        // reset fond
+        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
+        StdDraw.setFont(font);
+        this.renderFrame(toRenderWorld);
 
-        this.renderFrame(world);
+        renderAvatarHearts(gameState.hero, gameState.world);
     }
 
     public void renderMenuPage() {
@@ -228,10 +285,10 @@ public class TERenderer implements Serializable {
 
     public void renderKeyMenu() {
         //this.renderTextWithoutClear("Actions:", 16, new Position(width/2, height/2));
-        this.renderTextWithoutClear("1: " + ByowCommandSet.LOCK.toString(), 16,
-                new TileUtils.CanvasCoordinate((double)getCanvasWidth()/2, (double)getCanvasHeight()/2));
-        this.renderTextWithoutClear("2: " + ByowCommandSet.UNLOCK.toString(), 16,
-                new TileUtils.CanvasCoordinate((double)getCanvasWidth()/2, (double)getCanvasHeight()/2 - 2));
+        this.renderTextWithoutClearLeftAligned("1: " + ByowCommandSet.LOCK, 16,
+                new TileUtils.CanvasCoordinate((double)(2), 1));
+        this.renderTextWithoutClearLeftAligned("2: " + ByowCommandSet.UNLOCK, 16,
+                new TileUtils.CanvasCoordinate((double)(ByowCommandSet.LOCK.description().length() + 2), 1));
     }
 
     // pause count ms
@@ -263,11 +320,7 @@ public class TERenderer implements Serializable {
         renderPause(500);
     }
 
-    public void renderTileInfo() {
-
-        CanvasCoordinate cc = getMouseCoord();
-        Position posMouse = TileUtils.getTilePosFromCanvasCoord(cc);
-        String str = TileUtils.getTileDescription(posMouse, gameState.world);
+    public void renderTileInfo(String str) {
         if (str != null) {
             renderTextWithoutClearLeftAligned(str, 30, new CanvasCoordinate(0, getCanvasHeight() - 2));
         }

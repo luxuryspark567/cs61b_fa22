@@ -167,13 +167,18 @@ public class TileUtils {
 
         return new CanvasCoordinate(StdDraw.mouseX(), StdDraw.mouseY());
     }
-
+/*
     public static String getTileDescription(Position pos, TETile[][] world) {
 
         if (isInTileWorld(pos)) {
+            if (world[pos.getX()][pos.getY()] == null) {
+                return null;
+            }
             return world[pos.getX()][pos.getY()].description();
         }
         return null;
     }
+
+ */
 
 }

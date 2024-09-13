@@ -209,4 +209,11 @@ public class Creature extends RoadSearch{
     public void setBackedTile(TETile tile) {
         this.bakTile = tile;
     }
+
+    /**
+     * how this item handle other objects, such as a key to a door.
+     * */
+    boolean handle(Object o) {
+        return true;
+    }
 }
