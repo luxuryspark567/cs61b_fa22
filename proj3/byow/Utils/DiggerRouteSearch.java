@@ -17,13 +17,22 @@ import static byow.Utils.TileUtils.*;
 import static byow.Utils.TileUtils.isTileType;
 
 public class DiggerRouteSearch implements RouteSearch{
+    private final List<TETile> forbidTile;
+    private int forbidEdgeDis;
 
-    private Direction srcDir; // last move direction, 0-north, 1-west, 2-south, 3-east
-    private Direction dstDir;
+    Direction srcDir;
 
-    public DiggerRouteSearch(Door doorSrc, Door doorDst) {
-        srcDir = doorSrc.getDir();
-        dstDir = doorDst.getDir();
+    public DiggerRouteSearch(Direction srcDir, List<TETile> forbidTile, int forbidEdgeDis) {
+        this.srcDir = srcDir;
+        this.forbidTile = forbidTile;
+
+        if (forbidEdgeDis >= 0) {
+            this.forbidEdgeDis = forbidEdgeDis;
+        }
+        else {
+            throw new IllegalArgumentException("forbidEdgeDis should always be positive");
+        }
+
     }
     private boolean[] checkSurroundings(Position curPos, Position dstPos, Direction lastDir, TETile[][] mWorld) {
 
@@ -59,65 +68,50 @@ public class DiggerRouteSearch implements RouteSearch{
         Direction MoveBackDir = getRevertDir(lastDir);
         Direction.setFalseBoolArrayByDirection(dirBool, MoveBackDir);
 
-        // 3.2 you should not run into a wall;
-        if (isTileType(posCurNorth, Tileset.WALL, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-        }
-        if (isTileType(posCurWest, Tileset.WALL, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-        }
-        if (isTileType(posCurSouth, Tileset.WALL, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
-        }
-        if (isTileType(posCurEast, Tileset.WALL, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
-        }
-
-        // 3.3 you should not run into a door;
-        if (isTileType(posCurNorth, Tileset.UNLOCKED_DOOR, mWorld)
-                || isTileType(posCurNorth, Tileset.LOCKED_DOOR, mWorld) ) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-        }
-        if (isTileType(posCurWest, Tileset.UNLOCKED_DOOR, mWorld)
-                || isTileType(posCurWest, Tileset.LOCKED_DOOR, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-        }
-        if (isTileType(posCurSouth, Tileset.UNLOCKED_DOOR, mWorld)
-                || isTileType(posCurSouth, Tileset.LOCKED_DOOR, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
-        }
-        if (isTileType(posCurEast, Tileset.UNLOCKED_DOOR, mWorld)
-                || isTileType(posCurEast, Tileset.LOCKED_DOOR, mWorld)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        // 3.2 some tiles you should never step on
+        for (TETile tile: forbidTile) {
+            if (isTileType(posCurNorth, tile, mWorld)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
+            }
+            if (isTileType(posCurWest, tile, mWorld)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
+            }
+            if (isTileType(posCurSouth, tile, mWorld)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+            }
+            if (isTileType(posCurEast, tile, mWorld)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+            }
         }
 
         // 3.4 you should not run out of the canvas ;
-        if (isOutOffWorldNorth(posCurNorth)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-        }
-        if (isOutOffWorldWest(posCurWest)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-        }
-        if (isOutOffWorldSouth(posCurSouth)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
-        }
-        if (isOutOffWorldEast(posCurEast)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        int looper = this.forbidEdgeDis;
+        while (looper > 0) {
+
+            if (isOutOffWorldNorth(posCurNorth)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
+            }
+            if (isOutOffWorldWest(posCurWest)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
+            }
+            if (isOutOffWorldSouth(posCurSouth)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
+            }
+            if (isOutOffWorldEast(posCurEast)) {
+                Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+            }
+
+            // shift by one
+            Direction.shiftPosition(posCurNorth, Directionset.NORTH);
+            Direction.shiftPosition(posCurWest, Directionset.WEST);
+            Direction.shiftPosition(posCurSouth, Directionset.SOUTH);
+            Direction.shiftPosition(posCurEast, Directionset.EAST);
+
+            looper--;
         }
 
-        // 3.5 you should not run to last line of the canvas, because there is no space to build walls;
-        if (isOutOffWorldNorth(Direction.getShiftPosition(posCurNorth, Directionset.NORTH))) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-        }
-        if (isOutOffWorldWest(Direction.getShiftPosition(posCurWest, Directionset.WEST))) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-        }
-        if (isOutOffWorldSouth(Direction.getShiftPosition(posCurSouth, Directionset.SOUTH))) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
-        }
-        if (isOutOffWorldEast(Direction.getShiftPosition(posCurEast, Directionset.EAST))) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
-        }
+
+
 
         // last step, if there is no place to go, move back
         if (!(dirBool[0] || dirBool[1] || dirBool [2] || dirBool[3])) {
@@ -325,13 +319,14 @@ public class DiggerRouteSearch implements RouteSearch{
     public List<Position> getRoute(Position posSrc, Position posDst, TETile[][] mWorld) {
 
         List<Position> route = new LinkedList<>();
+        route.add(posSrc);
 
         Position curPos = posSrc;
         Position lastPos = posSrc;
         Position dstPos = posDst;
 
-        Direction lastDir = this.srcDir;
-        Direction curDir = this.srcDir;
+        Direction lastDir = srcDir;
+        Direction curDir = srcDir;
 
         // 1, back up world
         //refWorld = TETile.copyOf(mWorld);
@@ -357,8 +352,8 @@ public class DiggerRouteSearch implements RouteSearch{
             route.add(curPos);
 
             looperLimit--;
-            System.out.println(curDir);
-            System.out.println(route);
+            //System.out.println(curDir);
+            //System.out.println(route);
         }
 
         if (looperLimit == 0) {

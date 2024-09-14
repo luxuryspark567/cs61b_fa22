@@ -8,7 +8,6 @@ import byow.Attribute.Direction;
 import byow.Attribute.Directionset;
 import byow.Attribute.Position;
 import byow.Attribute.Size;
-import byow.Charactors.DiggerAvatar;
 import byow.Core.GameState;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
@@ -17,6 +16,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 import java.awt.*;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 //import static byow.Core.Main.gameState;
 import static byow.Attribute.Direction.getShiftPosition;
@@ -27,7 +27,6 @@ import static byow.Utils.TileUtils.*;
 
 public class WorldGenerateUtils {
 
-    private DiggerAvatar digger;
 
     public WorldGenerateUtils() {
     }
@@ -237,12 +236,18 @@ public class WorldGenerateUtils {
 
         MinPQ<distanceNode> mpq = getRoomDistanceMPQ(gameState);
 
-        // create a digger to dig tunnels
-        this.digger = new DiggerAvatar(gameState);
-
         WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(gameState.roomLut.size());
 
         TETile[][] cpyWorld = TETile.copyOf(gameState.world);
+        // 3.2 you should not run into a wall;
+        // 3.3 you should not run into a unclosed door or locked door;
+        List<TETile> forbidTile = new LinkedList<>();
+        forbidTile.add(Tileset. WALL);
+        forbidTile.add(Tileset. UNLOCKED_DOOR);
+        forbidTile.add(Tileset. LOCKED_DOOR);
+
+        int forbidEdgeDis = 2;
+        //{Tileset. WALL, Tileset.UNLOCKED_DOOR, Tileset.LOCKED_DOOR};
 
         int safeProofLooper = LOOP_LIMIT;
         //int safeProofLooper = 2;
@@ -258,16 +263,11 @@ public class WorldGenerateUtils {
             {
                 // 2, are they already connected?
                 if (!wqu.connected(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2))) {
-                    //if (dsNode.value.r1.getDoor().getPosition().y == 38
-                    //    || dsNode.value.r2.getDoor().getPosition().y == 38) {
-                    //    System.out.println("Gocha!!!");
-                    //}
-                    // 3, connect them
 
                     Door srcDoor = dsNode.value.r1.getDoor();
                     Door dstDoor = dsNode.value.r2.getDoor();
 
-                    RouteSearch rs = new DiggerRouteSearch(srcDoor, dstDoor);
+                    RouteSearch rs = new DiggerRouteSearch(srcDoor.getDir(), forbidTile, forbidEdgeDis);
                     List<Position> route = rs.getRoute(srcDoor.getPosition(), dstDoor.getPosition(), cpyWorld);
 
                     if (route != null) {
@@ -284,20 +284,6 @@ public class WorldGenerateUtils {
 
 
         //gameState.refWorld = TETile.copyOf(gameState.world);
-    }
-
-    // generate a hallway between two doors
-    private Hallway connectRoomsWithHallway(Room srcRoom, Room dstRoom) {
-        //src to dst
-        Door srcDoor = srcRoom.getDoor();
-        Door dstDoor = dstRoom.getDoor();
-
-        RouteSearch rs = new DiggerRouteSearch(srcDoor, dstDoor);
-        rs.getRoute(srcDoor.getPosition(), dstDoor.getPosition(), gameState.world);
-        return null;
-        // arrange a digging job to the digger
-        //this.digger.arrangeDiggingJob(srcDoor, dstDoor);
-        //return this.digger.digATunnel();
     }
 
     // generate a room:

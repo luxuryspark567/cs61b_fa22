@@ -44,7 +44,7 @@ public class GameState implements Serializable {
         //this.doorLut = doorLut;
         this.tmDB = tmDB;
         this.readyToPlay = true;
-        this.enableMist = true;
+        this.enableMist = false;
         this.refreshWorld = 1;
         this.wid = new WorldInfoDisplay();
     }

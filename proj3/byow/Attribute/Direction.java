@@ -189,4 +189,26 @@ public class Direction implements Serializable {
         }
         return counter;
     }
+
+    public static Direction getDirFromPosition (Position srcPos, Position dstPos) {
+
+        boolean[] dirBool = new boolean[] {false, false, false, false};
+
+        // if the destination is at reach, go that direction
+        if (dstPos.equals(getShiftPosition(srcPos, Directionset.NORTH))) {
+            return Directionset.NORTH;
+        }
+        else if (dstPos.equals(getShiftPosition(srcPos, Directionset.WEST))) {
+            return Directionset.WEST;
+        }
+        else if (dstPos.equals(getShiftPosition(srcPos, Directionset.SOUTH))) {
+            return Directionset.SOUTH;
+        }
+        else if (dstPos.equals(getShiftPosition(srcPos, Directionset.EAST))) {
+            return Directionset.EAST;
+        }
+        else {
+            return null;
+        }
+    }
 }

@@ -2,22 +2,17 @@ package byow.Charactors;
 
 import byow.Articles.Item;
 import byow.Attribute.Direction;
-import byow.Attribute.Directionset;
 import byow.Attribute.Position;
 import byow.Attribute.Size;
 import byow.Core.*;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.Utils.RoadSearch;
 
 import java.util.LinkedList;
 
-import static byow.Attribute.Direction.getRevertDir;
-import static byow.Attribute.Direction.getShiftPosition;
-import static byow.Attribute.Directionset.SOUTH;
 import static byow.Utils.TileUtils.isTileType;
 
-public class Creature extends RoadSearch {
+public class Creature {
     private int damage;
     private int health;
     private int age;
@@ -31,7 +26,6 @@ public class Creature extends RoadSearch {
     private GameState mgs;
 
     public Creature() {
-        super(null, null, null, null);
         this.damage = 0;
         this.health = 0;
         this.age = 0;
@@ -40,14 +34,12 @@ public class Creature extends RoadSearch {
         this.affection = 0;
         this.position = new Position(0, 0);
         this.inventory = new LinkedList<>();
-        this.world = null;
         //this.refWorld = null;
         //this.bakPos = null;
         //this.bakTile = null;
     }
 
     public Creature(GameState gameState) {
-        super(null, null, null, gameState.world);
         this.damage = 0;
         this.health = 0;
         this.age = 0;
@@ -63,7 +55,6 @@ public class Creature extends RoadSearch {
     }
 
     public Creature(Position posSrc, Position posDst, Direction dir, GameState gameState) {
-        super(posSrc, posDst, dir, gameState.world);
         this.damage = 0;
         this.health = 0;
         this.age = 0;
@@ -79,7 +70,6 @@ public class Creature extends RoadSearch {
     }
 
     public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, GameState gameState) {
-        super(null, null, null, gameState.world);
         this.damage = damage;
         this.health = health;
         this.age = age;
@@ -92,10 +82,6 @@ public class Creature extends RoadSearch {
         //this.bakPos = Position.copyOf(pos);
         //this.bakTile = Tileset.NOTHING;
         this.mgs = gameState;
-    }
-
-    public void arrangeSearchJob(Position posSrc, Position posDst) {
-        initRoadSearch(posSrc, posDst, null);
     }
 
     public boolean MoveOneStep(Direction dir, TETile[][] mWorld) {
@@ -132,39 +118,31 @@ public class Creature extends RoadSearch {
         }
     }
 
-    @Override
-    public boolean[] checkSurroundings() {
+    public void MoveTo(Position posDst, TETile[][] mWorld) {
 
-        boolean[] dirBool = new boolean[] {true, true, true, true};
-
-        Direction MoveBackDir = getRevertDir(this.getLastMoveDir());
-        // 1, check every direction except the one you come from
-        // to start with, you should not take the back direction where you just come from;
-        Direction.setFalseBoolArrayByDirection(dirBool, MoveBackDir);
-
-        Position posCurNorth = getShiftPosition(this.getPosCur(), Directionset.NORTH);
-        Position posCurWest = getShiftPosition(this.getPosCur(), Directionset.WEST);
-        Position posCurSouth = getShiftPosition(this.getPosCur(), SOUTH);
-        Position posCurEast = getShiftPosition(this.getPosCur(), Directionset.EAST);
-
-        // new rule 1: creature should not run into a locked door
-        // check Door
-
-        if (isTileType(posCurNorth, Tileset.LOCKED_DOOR, this.world)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
-        }
-        if (isTileType(posCurWest, Tileset.LOCKED_DOOR, this.world)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
-        }
-        if (isTileType(posCurSouth, Tileset.LOCKED_DOOR, this.world)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, SOUTH);
-        }
-        if (isTileType(posCurEast, Tileset.LOCKED_DOOR, this.world)) {
-            Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
+        if (posDst == null) {
+            return;
         }
 
-        return Direction.mergeDirection(dirBool, super.checkSurroundings());
-
+        // check if the new position is OK
+        if (isTileType(posDst, Tileset.WALL, mWorld)) {
+            System.out.println("you a running into a wall, it is not allowed!");
+        }
+        else if (isTileType(posDst, Tileset.FLOOR, mWorld)) {
+            //this.mgs.tmDB.remove(this.getBackedPosition(), this);
+            this.setPosition(posDst);
+            //this.mgs.tmDB.put(this.getPosition(), this);
+        }
+        else if (isTileType(posDst, Tileset.UNLOCKED_DOOR, mWorld)) {
+            //this.mgs.tmDB.remove(this.getBackedPosition(), this);
+            this.setPosition(posDst);
+            //this.mgs.tmDB.put(this.getPosition(), this);
+        }
+        else {
+            // rule 1: can not run into a wall
+            // rule 2: can only run onto a floor
+            System.out.println("undefined!");
+        }
     }
 
     public int getDamage() {
@@ -231,24 +209,6 @@ public class Creature extends RoadSearch {
         this.inventory.remove(item);
     }
 
-
-    //public Position getBackedPosition() {
-    //    return this.bakPos;
-    //}
-/*
-    public void setBackedPosition(Position pos) {
-        this.bakPos.setX(pos.getX());
-        this.bakPos.setY(pos.getY());
-    }
-
-    public TETile getBackedTile() {
-        return this.bakTile;
-    }
-
-    public void setBackedTile(TETile tile) {
-        this.bakTile = tile;
-    }
-*/
     /**
      * how this item handle other objects, such as a key to a door.
      * */

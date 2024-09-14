@@ -11,9 +11,11 @@ import edu.princeton.cs.algs4.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.Serializable;
+import java.util.List;
 
 import static byow.Core.Engine.*;
 import static byow.Utils.TileUtils.*;
+import static byow.Utils.TileUtils.paintTile;
 
 /**
  * Utility class for rendering tiles. You do not need to modify this file. You're welcome
@@ -300,7 +302,13 @@ public class TERenderer implements Serializable {
             // 2. paint creatures
             engine.ter.paintCreature(gameState.hero, Tileset.AVATAR, toRenderWorld);
             engine.ter.paintCreature(gameState.bear, Tileset.GANON, toRenderWorld);
-
+            List<Position> tmp = gameState.bear.getHuntRoute();
+            if (tmp != null) {
+                for (Position pos: tmp) {
+                    if (isTileType(pos, Tileset.FLOOR, toRenderWorld))
+                        paintTile(pos, new TETile(Tileset.FLOOR, Color.RED), toRenderWorld);
+                }
+            }
             // 3. paint mist
             paintMist(gameState.hero, toRenderWorld);
 

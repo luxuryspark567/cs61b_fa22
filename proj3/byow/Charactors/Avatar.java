@@ -11,6 +11,7 @@ import byow.Core.CommandMonitor;
 
 import java.util.LinkedList;
 
+import static byow.Core.Main.gameState;
 import static byow.Utils.TileUtils.isTileType;
 import static byow.Core.Main.engine;
 public class Avatar extends Creature{
@@ -90,7 +91,7 @@ public class Avatar extends Creature{
 
 
     private void checkObject(Position pos, TETile tileType) {
-        if (isTileType(pos, tileType, this.world)) {
+        if (isTileType(pos, tileType, gameState.world)) {
             // get the object at "pos" from database;
             Object o = this.mgs.tmDB.get(pos);
             if (o != null) {
@@ -119,7 +120,7 @@ public class Avatar extends Creature{
         checkObject(pos, Tileset.LOCKED_DOOR);
         checkObject(pos, Tileset.LAMP);
 
-        return (super.MoveOneStep(dir, this.world));
+        return (super.MoveOneStep(dir, gameState.world));
         /*
         // action 1: if come to a locked door
         if (isTileType(pos, Tileset.LOCKED_DOOR, this.world)) {
@@ -163,7 +164,7 @@ public class Avatar extends Creature{
                     cMonitor.monitorSubMenu(engine.ter);
 
                     // 3, perform the action, and render the result
-                    cMonitor.executeKeyCommands(d, world, engine.ter);
+                    cMonitor.executeKeyCommands(d, gameState.world, engine.ter);
 
                     // 4, return result
                     // if a new menu is popped ,should re-initiate the canvas
@@ -189,7 +190,7 @@ public class Avatar extends Creature{
             cMonitor.monitorSubMenu(engine.ter);
 
             // 3, perform the action, and render the result
-            cMonitor.executeLampCommands(lamp, world, engine.ter);
+            cMonitor.executeLampCommands(lamp, gameState.world, engine.ter);
 
             // 4, return result
             return true;
