@@ -3,10 +3,12 @@ package byow.Utils;
 import byow.Attribute.Position;
 import byow.TileEngine.TETile;
 
+import java.io.Serializable;
+
 import static byow.Core.Main.gameState;
 import static byow.Utils.TileUtils.getMouseCoord;
 
-public class WorldInfoDisplay {
+public class WorldInfoDisplay implements Serializable {
 
     TETile tileMouse; //get the current hovering tile
     TETile tileMouseBack;

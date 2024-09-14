@@ -39,7 +39,7 @@ public class Avatar extends Creature{
     private LinkedList<Weapon> weaponInventory;
 
     private LinkedList<Key> keyInventory;
-    private GameState mgs;
+    //private GameState mgs;
 
     public Avatar(Position pos, GameState gameState) {
 
@@ -59,7 +59,7 @@ public class Avatar extends Creature{
         this.bootsInventory = new LinkedList<>();
         this.weaponInventory = new LinkedList<>();
         this.keyInventory = new LinkedList<>();
-        this.mgs = gameState;
+        //this.mgs = gameState;
     }
 
     public Avatar(int damage, int health, int age, int weight, Size size, int affection, Position pos, GameState gameState) {
@@ -78,7 +78,7 @@ public class Avatar extends Creature{
         this.bootsInventory = new LinkedList<>();
         this.weaponInventory = new LinkedList<>();
         this.keyInventory = new LinkedList<>();
-        this.mgs = gameState;
+        //this.mgs = gameState;
     }
 
     public boolean pickUpKey(Key key) {
@@ -93,7 +93,7 @@ public class Avatar extends Creature{
     private void checkObject(Position pos, TETile tileType) {
         if (isTileType(pos, tileType, gameState.world)) {
             // get the object at "pos" from database;
-            Object o = this.mgs.tmDB.get(pos);
+            Object o = gameState.tmDB.get(pos);
             if (o != null) {
                 this.handle(o);
             }
@@ -153,7 +153,7 @@ public class Avatar extends Creature{
                     System.out.println("found a matched key!");
 
                     // add monitor, which will listen commands typed by user;
-                    CommandMonitor cMonitor = new CommandMonitor(engine, mgs);
+                    CommandMonitor cMonitor = new CommandMonitor();
                     cMonitor.initiate();
 
                     // 1, pops up action selection menu
@@ -179,7 +179,7 @@ public class Avatar extends Creature{
         else if (o instanceof Lamp lamp) {
             // TODO
             // add monitor, which will listen commands typed by user;
-            CommandMonitor cMonitor = new CommandMonitor(engine, mgs);
+            CommandMonitor cMonitor = new CommandMonitor();
             cMonitor.initiate();
 
             // 1, pops up action selection menu

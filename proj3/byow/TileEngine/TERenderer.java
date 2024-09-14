@@ -302,15 +302,22 @@ public class TERenderer implements Serializable {
             // 2. paint creatures
             engine.ter.paintCreature(gameState.hero, Tileset.AVATAR, toRenderWorld);
             engine.ter.paintCreature(gameState.bear, Tileset.GANON, toRenderWorld);
-            List<Position> tmp = gameState.bear.getHuntRoute();
-            if (tmp != null) {
-                for (Position pos: tmp) {
-                    if (isTileType(pos, Tileset.FLOOR, toRenderWorld))
-                        paintTile(pos, new TETile(Tileset.FLOOR, Color.RED), toRenderWorld);
+
+            if (gameState.bear != null)
+            {
+                List<Position> tmp = gameState.bear.getHuntRoute();
+                if (tmp != null) {
+                    for (Position pos: tmp) {
+                        if (isTileType(pos, Tileset.FLOOR, toRenderWorld))
+                            paintTile(pos, new TETile(Tileset.FLOOR, Color.RED), toRenderWorld);
+                    }
                 }
             }
+
             // 3. paint mist
-            paintMist(gameState.hero, toRenderWorld);
+            if (gameState.hero != null) {
+                paintMist(gameState.hero, toRenderWorld);
+            }
 
             // 4. render the world
             resetFond();

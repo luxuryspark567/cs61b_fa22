@@ -9,8 +9,6 @@ import byow.Attribute.CommandNode;
 import byow.Attribute.Directionset;
 import byow.Charactors.Avatar;
 import byow.Charactors.Bear;
-import byow.Core.Engine;
-import byow.Core.GameState;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
@@ -19,6 +17,9 @@ import edu.princeton.cs.algs4.StdDraw;
 
 import java.util.Random;
 
+import static byow.Core.Main.engine;
+import static byow.Core.Main.gameState;
+
 //import static byow.TileEngine.TERenderer.TILE_SIZE;
 
 
@@ -26,15 +27,15 @@ public class CommandMonitor {
     int parseState;
     StringBuilder randomKey;
     CommandNode cn;
-    Engine engine;
-    GameState gameState;
+    //Engine engine;
+    //GameState gameState;
 
-    public CommandMonitor(Engine engine, GameState gameState) {
+    public CommandMonitor() {
         this.parseState = 0;
         this.randomKey = new StringBuilder();
         this.cn = new CommandNode(ByowCommandSet.IDLE);
-        this.gameState = gameState;
-        this.engine = engine;
+        //this.gameState = gameState;
+        //this.engine = engine;
     }
     public void initiate() {
         this.parseState = 0;
@@ -181,7 +182,7 @@ public class CommandMonitor {
      */
 
     // the boolean indicates if the command executed is a killer command: to terminate the program
-    public boolean executeCommands(Engine engine, GameState gameState) {
+    public boolean executeCommands(Engine engine) {
         // return true means not a command to break out
         // return false means a command to break outer while loop, and no need to monitor anymore.
 
@@ -197,6 +198,7 @@ public class CommandMonitor {
                 Engine.RANDOM = new Random(gameState.randomSeed);
                 // in menu page, if game is reloaded should jump out of the menu loop
                 gameState.readyToPlay = true;
+                gameState.increaseRefreshWorldFlag();
                 return true;
             }
             else {
@@ -214,6 +216,7 @@ public class CommandMonitor {
                 Engine.RANDOM = new Random(gameState.randomSeed);
                 // in game page, if game is reloaded should NOT jump out of the game loop
                 gameState.readyToPlay = true;
+                gameState.increaseRefreshWorldFlag();
                 return false;
             }
             else {

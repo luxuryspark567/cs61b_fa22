@@ -46,11 +46,17 @@ public class Engine {
              ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
             out.writeObject(gameState);
             return true;
-        } catch (IOException i) {
+        }  catch (IOException i) {
+            i.printStackTrace();
+            return false;
+        }
+        /*
+        catch (IOException i) {
             //i.printStackTrace();
             //throw new IllegalArgumentException();
             return false;
         }
+         */
     }
 
     public static boolean loadGameState(String filePath) {
@@ -59,11 +65,17 @@ public class Engine {
              ObjectInputStream in = new ObjectInputStream(fileIn)) {
             gameState = (GameState) in.readObject();
             return true;
-        } catch (IOException | ClassNotFoundException i) {
+        }  catch (IOException | ClassNotFoundException i) {
+            i.printStackTrace();
+            return false;
+        }
+        /*catch (IOException | ClassNotFoundException i) {
             //throw new IllegalArgumentException();
             //i.printStackTrace();
             return false;
         }
+
+         */
         //return gameState;
     }
 
@@ -73,7 +85,7 @@ public class Engine {
      */
     public void interactWithKeyboard() {
         // add monitor, which will listen commands typed by user;
-        CommandMonitor cMonitor = new CommandMonitor(this, gameState);
+        CommandMonitor cMonitor = new CommandMonitor();
 
         // render menu page
         ter.renderInitialize();
@@ -88,7 +100,7 @@ public class Engine {
         while (!isKillerCommand) {
             cMonitor.monitorMenuPage(ter);
             // the start menu should never execute any command that uses a "refWorld"
-            isKillerCommand = cMonitor.executeCommands(this, gameState);
+            isKillerCommand = cMonitor.executeCommands(this);
             cMonitor.commandClear();
         }
 
@@ -105,7 +117,7 @@ public class Engine {
             while (!isKillerCommand) {
                 cMonitor.initiate();
                 cMonitor.monitorGamePage();
-                isKillerCommand = cMonitor.executeCommands(this, gameState);
+                isKillerCommand = cMonitor.executeCommands(this);
                 cMonitor.commandClear();
                 //System.out.println(gameState.tmDB);
             }

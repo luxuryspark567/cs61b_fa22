@@ -8,11 +8,12 @@ import byow.Core.*;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 import static byow.Utils.TileUtils.isTileType;
 
-public class Creature {
+public class Creature implements Serializable {
     private int damage;
     private int health;
     private int age;
