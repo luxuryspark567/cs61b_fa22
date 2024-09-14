@@ -9,11 +9,8 @@ import byow.TileEngine.Tileset;
 import java.io.Serializable;
 
 import static byow.Attribute.Direction.*;
-import static byow.Attribute.Direction.setTrueBoolArrayByDirection;
-//import static byow.Attribute.Directionset.SOUTH;
 import static byow.Core.Engine.*;
 import static byow.Utils.TileUtils.*;
-//import static byow.Core.Engine.WIDTH;
 
 
 public class RoadSearch implements Serializable {
@@ -27,7 +24,7 @@ public class RoadSearch implements Serializable {
     private Direction curMoveDir;
 
     public TETile[][] world;
-    public TETile[][] refWorld;
+    //public TETile[][] refWorld;
 /*
     public RoadSearch() {
         this.posSrc = null;
@@ -40,14 +37,14 @@ public class RoadSearch implements Serializable {
     // 1, if lastMoveDir is specified, then the initial moveDir in checkSurroundings() could not be inverse(lastMoveDir)
     //    because we may not want to go backwards;
     // 2, if lastMoveDir is null, it means that all direction is OK to run.
-    public RoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world,TETile[][] refWorld) {
+    public RoadSearch(Position posSrc, Position posDst, Direction dirCur, TETile[][] world) {
         this.posSrc = Position.copyOf(posSrc);
         this.posCur = Position.copyOf(posSrc);
         this.posPre = Position.copyOf(posSrc);
         this.posDst = Position.copyOf(posDst);
         this.curMoveDir = dirCur;
         this.world = world;
-        this.refWorld = refWorld;
+        //this.refWorld = refWorld;
         this.lastMoveDir = dirCur;
     }
 
@@ -278,16 +275,16 @@ public class RoadSearch implements Serializable {
 
         // 3.1 you should not run into a wall;
         // check Wall
-        if (isTileType(posCurNorth, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurNorth, Tileset.WALL, this.world)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.NORTH);
         }
-        if (isTileType(posCurWest, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurWest, Tileset.WALL, this.world)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.WEST);
         }
-        if (isTileType(posCurSouth, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurSouth, Tileset.WALL, this.world)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.SOUTH);
         }
-        if (isTileType(posCurEast, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posCurEast, Tileset.WALL, this.world)) {
             Direction.setFalseBoolArrayByDirection(dirBool, Directionset.EAST);
         }
 
@@ -357,7 +354,7 @@ public class RoadSearch implements Serializable {
         int counter = 0;
         Position pos = Position.copyOf(posFake);
         // 1, check 90
-        while(isInTileWorld(pos) && isTileType(pos, Tileset.WALL, this.refWorld)) {
+        while(isInTileWorld(pos) && isTileType(pos, Tileset.WALL, this.world)) {
             counter++;
             shiftPosition(pos, dir);
         }
@@ -387,7 +384,7 @@ public class RoadSearch implements Serializable {
         // experience 3: when walk into a wall, check the wall distance of each side,
         // and add the shorter side direction to the result.
         Position posFake = getShiftPosition(posCur, lastMoveDir);
-        if (isTileType(posFake, Tileset.WALL, this.refWorld)) {
+        if (isTileType(posFake, Tileset.WALL, this.world)) {
             // check the position on ether side of the fake position,
             // and make the shorter one's direction as a candidate.
             int dirIndex = getIndexFromDir(lastMoveDir);

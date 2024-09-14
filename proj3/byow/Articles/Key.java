@@ -19,7 +19,7 @@ public class Key extends Item implements Serializable {
 
     TERenderer ter;
     TETile[][] world;
-    TETile[][] refWorld;
+    //TETile[][] refWorld;
 
     //Engine engine;
     GameState gameState;
@@ -29,7 +29,7 @@ public class Key extends Item implements Serializable {
         this.signature = SIGNATURE_DFT;
         this.ter = engine.ter;
         this.world = gameState.world;
-        this.refWorld = gameState.refWorld;
+        //this.refWorld = gameState.refWorld;
         this.gameState = gameState;
         //this.engine = engine;
     }
@@ -39,7 +39,7 @@ public class Key extends Item implements Serializable {
         this.signature = signature;
         this.ter = engine.ter;
         this.world = gameState.world;
-        this.refWorld = gameState.refWorld;
+        //this.refWorld = gameState.refWorld;
         this.gameState = gameState;
         //this.engine = engine;
     }
@@ -49,7 +49,7 @@ public class Key extends Item implements Serializable {
         this.signature = signature;
         this.ter = engine.ter;
         this.world = gameState.world;
-        this.refWorld = gameState.refWorld;
+        //this.refWorld = gameState.refWorld;
         this.gameState = gameState;
         //this.engine = engine;
     }

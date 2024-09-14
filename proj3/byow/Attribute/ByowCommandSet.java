@@ -10,13 +10,18 @@ public class ByowCommandSet {
     public static final ByowCommand LOAD = new ByowCommand("load game on the start menu");
     public static final ByowCommand LOAD2 = new ByowCommand("load game while playing");
 
+    public static final ByowCommand MIST_SWITCH = new ByowCommand("switch mist on or off");
     // move command
     public static final ByowCommand MOVE_NORTH = new ByowCommand("move north");
     public static final ByowCommand MOVE_WEST = new ByowCommand("move west");
     public static final ByowCommand MOVE_SOUTH = new ByowCommand("move south");
     public static final ByowCommand MOVE_EAST = new ByowCommand("move east");
 
-    // door command
-    public static final ByowCommand LOCK = new ByowCommand("lock the door");
-    public static final ByowCommand UNLOCK = new ByowCommand("unlock the door");
+
+
+    // Object operation command
+    public static final ByowCommand OPTION_ONE = new ByowCommand("option 1");
+    public static final ByowCommand OPTION_TWO = new ByowCommand("option 2");
+    public static final ByowCommand OPTION_THREE = new ByowCommand("option 3");
+    public static final ByowCommand OPTION_FOUR = new ByowCommand("option 4");
 }

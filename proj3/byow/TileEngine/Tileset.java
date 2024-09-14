@@ -33,11 +33,14 @@ public class Tileset {
     public static final TETile SAND = new TETile('▒', Color.yellow, Color.black, "sand");
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
+
+    public static final TETile HALL_BRICK = new TETile('▩', Color.green, Color.black, "hall brick to mark road");
     public static final TETile GANON = new TETile('&', Color.green, Color.black, "ganon the demon");
     public static final TETile KEY = new TETile('^', Color.green, Color.black, "one key to open them all", "/byow/zelda_16/Key.png");
 
     public static final TETile HEART = new TETile('❤', Color.red, Color.black, "heart");
-    public static final TETile LAMP = new TETile('●', Color.white, Color.GRAY, "lamp");
+    public static final TETile LAMP = new TETile('●', Color.WHITE, Color.blue, "lamp");
+    //public static final TETile LAMP_OFF = new TETile('●', Color.black, Color.black, "off lamp");
 
 }
 /*

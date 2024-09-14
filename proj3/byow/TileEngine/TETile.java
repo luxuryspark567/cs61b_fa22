@@ -71,6 +71,14 @@ public class TETile implements Serializable {
         this(t.character, textColor, t.backgroundColor, t.description, t.filepath);
     }
 
+    /**
+     * Creates a copy of TETile t, except with given textColor.
+     * @param t tile to copy
+     * @param textColor foreground color for tile copy
+     */
+    public TETile(TETile t, Color textColor, Color backGroundColor) {
+        this(t.character, textColor, backGroundColor, t.description, t.filepath);
+    }
 
     /**
      * Draws the tile to the screen at location x, y. If a valid filepath is provided,
@@ -195,13 +203,13 @@ public class TETile implements Serializable {
         if (o instanceof TETile tile){
             if (tile.filepath == null && this.filepath == null) {
                 return tile.character == this.character
-                        && tile.textColor.equals(this.textColor)
+                        //&& tile.textColor.equals(this.textColor)
                         //&& tile.backgroundColor.equals(this.backgroundColor)
                         && tile.description.equals(this.description);
             }
             else if (this.filepath != null && tile.filepath != null) {
                 return tile.character == this.character
-                        && tile.textColor.equals(this.textColor)
+                        //&& tile.textColor.equals(this.textColor)
                         //&& tile.backgroundColor.equals(this.backgroundColor)
                         && tile.description.equals(this.description)
                         && tile.filepath.equals(this.filepath);

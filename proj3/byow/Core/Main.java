@@ -26,7 +26,7 @@ public class Main {
             // initial default size render and print the world on that canvas (renderer)
             engine.ter.renderInitialize();
             engine.ter.renderFrame(frame);
-            System.out.println(engine.toString());
+            //System.out.println(engine.toString());
         } else {
             engine = new Engine();
 

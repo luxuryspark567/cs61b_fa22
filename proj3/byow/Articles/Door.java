@@ -111,6 +111,14 @@ public class Door extends Item {
     public int getSiginature() {
         return this.siginature;
     }
+
+    public TETile getType() {
+        return this.type;
+    }
+
+    public void setType(TETile tile) {
+        this.type = tile;
+    }
 /*
     public void setDirection(boolean[] dir) {
         this.expandable[0] = dir[0];

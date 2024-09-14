@@ -5,6 +5,7 @@ import byow.Attribute.Position;
 import byow.Charactors.Avatar;
 import byow.Charactors.Bear;
 import byow.TileEngine.TETile;
+import byow.Utils.WorldInfoDisplay;
 import edu.princeton.cs.algs4.EdgeWeightedGraph;
 
 import java.io.*;
@@ -17,7 +18,7 @@ public class GameState implements Serializable {
 
     // 1, Environment Status
     public TETile[][] world; // pixel world
-    public TETile[][] refWorld;
+    //public TETile[][] refWorld;
     public List<Room> roomLut;// 1.1 all rooms
 
     // 1.1 all door, have to save doors in a persistent structure, because door is structure, if not saved in a persistent
@@ -31,15 +32,32 @@ public class GameState implements Serializable {
     public long randomSeed;
     public boolean readyToPlay;
 
-    public boolean seeOutOfSightSwitch;
+    public boolean enableMist;
+
+    public int refreshWorld;
+
+    WorldInfoDisplay wid;
+
     public GameState(TETile[][] world, List<Room> roomLut, TreeMap<Position, Object> tmDB) {
         this.world = world;
-        this.refWorld = null;
         this.roomLut = roomLut;
         //this.doorLut = doorLut;
         this.tmDB = tmDB;
         this.readyToPlay = true;
-        this.seeOutOfSightSwitch = true;
+        this.enableMist = true;
+        this.refreshWorld = 1;
+        this.wid = new WorldInfoDisplay();
+    }
+
+    public WorldInfoDisplay getWid() {
+        return this.wid;
+    }
+    public void increaseRefreshWorldFlag(){
+        this.refreshWorld++;
+    }
+
+    public void toggleMistSwitch() {
+        this.enableMist = !this.enableMist;
     }
     /*
     public GameState(TETile[][] world, List<Room> roomLut, EdgeWeightedGraph ewg, TreeMap<Position, Object> tmDB) {

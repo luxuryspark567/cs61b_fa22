@@ -15,9 +15,14 @@ import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+import java.awt.*;
 import java.util.Comparator;
+import java.util.List;
 //import static byow.Core.Main.gameState;
+import static byow.Attribute.Direction.getShiftPosition;
+import static byow.Attribute.Directionset.SOUTH;
 import static byow.Core.Engine.*;
+import static byow.Core.Main.gameState;
 import static byow.Utils.TileUtils.*;
 
 public class WorldGenerateUtils {
@@ -66,7 +71,7 @@ public class WorldGenerateUtils {
         //    gameState.ewg.adj(gameState.roomLut.indexOf(r));
         //}
 
-        gameState.refWorld = TETile.copyOf(gameState.world);
+        //gameState.refWorld = TETile.copyOf(gameState.world);
     }
 
     private Door checkAndGetDoor(Position pos, Direction dir, TETile[][] world) {
@@ -151,15 +156,19 @@ public class WorldGenerateUtils {
                 // generate locked or unlocked randomly
                 int index = RandomUtils.uniform(RANDOM, 2);
                 if (index == 0) {
+                    door.setType(Tileset.UNLOCKED_DOOR);
+                    // environment objects should be paint on the world.
                     paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, gameState.world);
                 }
                 else {
+                    door.setType(Tileset.LOCKED_DOOR);
+                    // environment objects should be paint on the world.
                     paintTile(door.getPosition(), Tileset.LOCKED_DOOR, gameState.world);
                 }
 
             }
         }
-        gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
+        //gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
     }
 
     // a new lamp should never overlap any existing objects
@@ -183,16 +192,47 @@ public class WorldGenerateUtils {
     public void generateLamps(GameState gameState) {
         for (Room r: gameState.roomLut) {
             // generate a random door
-            Lamp lp = generateOneRandomLamp(r, gameState.world, gameState);
-            if (lp != null)
+            Lamp lamp = generateOneRandomLamp(r, gameState.world, gameState);
+            if (lamp != null)
             {
-                r.setLamp(lp);
-                gameState.tmDB.put(lp.getPosition(), lp); // add to database
+                r.setLamp(lamp);
+                gameState.tmDB.put(lamp.getPosition(), lamp); // add to database
+                if (lamp.isSwitchOn()) {
+                    paintTile(lamp.getPosition(), Tileset.LAMP, gameState.world);
+                }
+                else {
+                    paintTile(lamp.getPosition(), new TETile(Tileset.LAMP, Color.black), gameState.world);
+                }
             }
         }
-        gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
+        //gameState.refWorld = TETile.copyOf(gameState.world); // always remember when to initiate refWorld
     }
 
+    public void paintRoad(List<Position> route, TETile[][] mWorld){
+        for (Position pos: route) {
+            paintTile(pos, Tileset.FLOOR, mWorld);
+
+            Position posCurNorth = getShiftPosition(pos, Directionset.NORTH);
+            Position posCurWest = getShiftPosition(pos, Directionset.WEST);
+            Position posCurSouth = getShiftPosition(pos, SOUTH);
+            Position posCurEast = getShiftPosition(pos, Directionset.EAST);
+
+            if (isInTileWorld(posCurNorth) && isTileType(posCurNorth, null, mWorld)) {
+                paintTile(posCurNorth, Tileset.WALL, mWorld);
+            }
+            if (isInTileWorld(posCurWest) && isTileType(posCurWest, null, mWorld)) {
+                paintTile(posCurWest, Tileset.WALL, mWorld);
+            }
+            if (isInTileWorld(posCurSouth) && isTileType(posCurSouth, null, mWorld)) {
+                paintTile(posCurSouth, Tileset.WALL,mWorld);
+            }
+            if (isInTileWorld(posCurEast) && isTileType(posCurEast, null, mWorld)) {
+                paintTile(posCurEast, Tileset.WALL, mWorld);
+            }
+        }
+
+
+    }
     public void generateHallways(GameState gameState) {
 
         MinPQ<distanceNode> mpq = getRoomDistanceMPQ(gameState);
@@ -202,6 +242,8 @@ public class WorldGenerateUtils {
 
         WeightedQuickUnionUF wqu = new WeightedQuickUnionUF(gameState.roomLut.size());
 
+        TETile[][] cpyWorld = TETile.copyOf(gameState.world);
+
         int safeProofLooper = LOOP_LIMIT;
         //int safeProofLooper = 2;
         // 2, generate hallways
@@ -209,6 +251,7 @@ public class WorldGenerateUtils {
 
             // 1, pick the closest two rooms to make a hallway
             distanceNode dsNode = mpq.delMin();
+
 
             // 2. do them all have door?
             if (dsNode.value.r1.getDoor() != null && dsNode.value.r2.getDoor() != null )
@@ -220,29 +263,27 @@ public class WorldGenerateUtils {
                     //    System.out.println("Gocha!!!");
                     //}
                     // 3, connect them
-                    Hallway hw = connectRoomsWithHallway(dsNode.value.r1, dsNode.value.r2);
-                    //if (hw == null) {
-                    //    hw = connectRoomsWithHallway(dsNode.value.r2, dsNode.value.r1);
-                    //}
-                    if (hw != null) {
+
+                    Door srcDoor = dsNode.value.r1.getDoor();
+                    Door dstDoor = dsNode.value.r2.getDoor();
+
+                    RouteSearch rs = new DiggerRouteSearch(srcDoor, dstDoor);
+                    List<Position> route = rs.getRoute(srcDoor.getPosition(), dstDoor.getPosition(), cpyWorld);
+
+                    if (route != null) {
                         //union them
                         wqu.union(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2));
-                        //Edge e = new Edge(gameState.roomLut.indexOf(dsNode.value.r1), gameState.roomLut.indexOf(dsNode.value.r2), hw.getWeight());
-
-                        // update edge to door.
-                        //hw.getSrc().setEdge(e);
-                        //hw.getDst().setEdge(e);
-                        ///hw.getSrc().setHallway(hw);
-                        //hw.getDst().setHallway(hw);
-
-                        //gameState.ewg.addEdge(e);
+                        // paintRoad
+                        paintRoad(route, gameState.world);
                     }
                 }
             }
             safeProofLooper--;
         }
 
-        gameState.refWorld = TETile.copyOf(gameState.world);
+
+
+        //gameState.refWorld = TETile.copyOf(gameState.world);
     }
 
     // generate a hallway between two doors
@@ -251,9 +292,12 @@ public class WorldGenerateUtils {
         Door srcDoor = srcRoom.getDoor();
         Door dstDoor = dstRoom.getDoor();
 
+        RouteSearch rs = new DiggerRouteSearch(srcDoor, dstDoor);
+        rs.getRoute(srcDoor.getPosition(), dstDoor.getPosition(), gameState.world);
+        return null;
         // arrange a digging job to the digger
-        this.digger.arrangeDiggingJob(srcDoor, dstDoor);
-        return this.digger.digATunnel();
+        //this.digger.arrangeDiggingJob(srcDoor, dstDoor);
+        //return this.digger.digATunnel();
     }
 
     // generate a room:

@@ -19,7 +19,7 @@ import static byow.Core.Main.engine;
 
         TERenderer ter;
         TETile[][] world;
-        TETile[][] refWorld;
+        //TETile[][] refWorld;
         GameState gameState;
 
         Room room; // a lamp should always in a room;
@@ -29,7 +29,7 @@ import static byow.Core.Main.engine;
             this.lumen = LUMEN_DFT;
             this.ter = engine.ter;
             this.world = gameState.world;
-            this.refWorld = gameState.refWorld;
+            //this.refWorld = gameState.refWorld;
             this.gameState = gameState;
             this.isOn = true;
             this.room = null;
@@ -41,7 +41,7 @@ import static byow.Core.Main.engine;
          this.lumen = LUMEN_DFT;
          this.ter = engine.ter;
          this.world = gameState.world;
-         this.refWorld = gameState.refWorld;
+         //this.refWorld = gameState.refWorld;
          this.gameState = gameState;
          this.isOn = true;
          this.room = room;
@@ -53,12 +53,13 @@ import static byow.Core.Main.engine;
         this.lumen = lumen;
         this.ter = engine.ter;
         this.world = gameState.world;
-        this.refWorld = gameState.refWorld;
+        //this.refWorld = gameState.refWorld;
         this.gameState = gameState;
         this.isOn = true;
         this.room = null;
         //this.engine = engine;
     }
+
     public Room getRoom() {
             return this.room;
     }
@@ -67,7 +68,7 @@ import static byow.Core.Main.engine;
         this.lumen = lumen;
         this.ter = engine.ter;
         this.world = gameState.world;
-        this.refWorld = gameState.refWorld;
+        //this.refWorld = gameState.refWorld;
         this.gameState = gameState;
         this.isOn = true;
         this.room = null;
@@ -82,7 +83,7 @@ import static byow.Core.Main.engine;
          this.lumen = lum;
      }
 
-    public boolean getSwitch() {
+    public boolean isSwitchOn() {
         return this.isOn;
      }
 

@@ -4,8 +4,6 @@ import byow.Attribute.CommandNode;
 import byow.Charactors.Avatar;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
-import byow.Utils.CommandMonitor;
 //import edu.princeton.cs.introcs.StdDraw;
 
 import java.io.*;
@@ -24,7 +22,7 @@ public class Engine {
     public static final int CANVAS_HEIGHT = 44;
     public static final int X_OFF = 4;
     public static final int Y_OFF = 4;
-    public static final int ROOM_NUM = 7;
+    public static final int ROOM_NUM = 10;
     public static final int ROOM_WIDTH_MAX = 30;
     public static final int ROOM_HEIGHT_MAX = 10;
     public static final int ROOM_WIDTH_MIN = 5;
@@ -73,7 +71,7 @@ public class Engine {
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
-    public void interactWithKeyboard() throws Exception {
+    public void interactWithKeyboard() {
         // add monitor, which will listen commands typed by user;
         CommandMonitor cMonitor = new CommandMonitor(this, gameState);
 
@@ -98,9 +96,9 @@ public class Engine {
         {
             // render game page
             ter.renderInitialize();
-            ter.paintCreature(gameState.hero, Tileset.AVATAR, gameState.world);
-            ter.paintCreature(gameState.bear, Tileset.GANON, gameState.world);
-            ter.renderGamePage(gameState.world);
+            //ter.paintCreature(gameState.hero, Tileset.AVATAR, gameState.world);
+            //ter.paintCreature(gameState.bear, Tileset.GANON, gameState.world);
+            //ter.renderGamePage(gameState.world);
 
             // listening game page;
             isKillerCommand = false;

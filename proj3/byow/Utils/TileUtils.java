@@ -1,10 +1,13 @@
 package byow.Utils;
 
+import byow.Articles.Door;
 import byow.Articles.Lamp;
 import byow.Articles.Room;
 import byow.Attribute.Direction;
 import byow.Attribute.Directionset;
 import byow.Attribute.Position;
+import byow.Charactors.Avatar;
+import byow.Core.GameState;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
@@ -147,8 +150,8 @@ public class TileUtils {
 
     public static void paintWallTile(Position pos, TETile[][] world) {
 
-        if (isTileType(pos, null, world))
-            paintTile(pos, Tileset.WALL, world);
+        //if (isTileType(pos, null, world))
+        //    paintTile(pos, Tileset.WALL, world);
     }
 
     public static void paintSideWall(Position pos, Direction dir, TETile[][] world){
@@ -210,30 +213,87 @@ public class TileUtils {
 
         return new Color(newR, newG, newB);
     }
-    public static void paintLampInRoom(Lamp lamp, TETile[][] world) {
+    public static void paintLampLightingInRoom(Lamp lamp, TETile[][] world) {
         //calc the distance of a tile from the lamp in a room, and set the lumen according to the distance
-        int testLooper = 0;
-        System.out.println("start to paint lamp");
+        //int testLooper = 0;
+        //System.out.println("start to paint lamp");
         for (Position pos: lamp.getRoom()) {
-            System.out.println(testLooper++);
+            //System.out.println(testLooper++);
             int dis = getLineDistance(pos, lamp.getPosition());
             // 1 distance correspond to 10 points loss in R & G & B
             TETile tile = world[pos.getX()][pos.getY()];
             if (tile != null) {
-                world[pos.getX()][pos.getY()] = TETile.TETileBackGround(tile, getNewColor(Color.GRAY, dis * 20));
+                if (lamp.isSwitchOn()) {
+                    world[pos.getX()][pos.getY()] = TETile.TETileBackGround(tile, getNewColor(Color.BLUE, dis * 30));
+                }
             }
         }
     }
 
-    public static void paintAllLamps() {
+    public static void paintAllLamps(TETile[][] toRenderWorld, GameState gameState) {
         for (Room r: gameState.roomLut) {
             Lamp lamp = r.getLamp();
-            if (lamp != null)
-            {
-                paintTile(lamp.getPosition(), Tileset.LAMP, gameState.world);
-                TileUtils.paintLampInRoom(lamp, gameState.world);// paint the lamp and the room
+            if (lamp != null){
+                if (lamp.isSwitchOn()) {
+                    // toRenderWorld is to show
+                    // gameState.world is for interactive for hero
+                    paintTile(lamp.getPosition(), Tileset.LAMP, gameState.world);
+                    //paintTile(lamp.getPosition(), Tileset.LAMP, gameState.refWorld);
+                    paintTile(lamp.getPosition(), Tileset.LAMP, toRenderWorld);
+                }
+                else {
+                    paintTile(lamp.getPosition(), new TETile(Tileset.LAMP, Color.DARK_GRAY, Color.black), gameState.world);
+                    //paintTile(lamp.getPosition(), new TETile(Tileset.LAMP, Color.DARK_GRAY, Color.black), gameState.refWorld);
+                    paintTile(lamp.getPosition(), new TETile(Tileset.LAMP, Color.DARK_GRAY, Color.black), toRenderWorld);
+                }
+                TileUtils.paintLampLightingInRoom(lamp, toRenderWorld);// paint the lamp and the room
             }
         }
     }
 
+    public static void paintAllDoors(TETile[][] toRenderWorld, GameState gameState) {
+        for (Room r: gameState.roomLut) {
+            Door door = r.getDoor();
+            if (door != null){
+                if (Tileset.LOCKED_DOOR.equals(door.getType())) {
+                    paintTile(door.getPosition(), Tileset.LOCKED_DOOR, toRenderWorld);
+                    paintTile(door.getPosition(), Tileset.LOCKED_DOOR, gameState.world);
+                    //paintTile(door.getPosition(), Tileset.LOCKED_DOOR, gameState.refWorld);
+                }
+                else {
+                    paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, toRenderWorld);
+                    paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, gameState.world);
+                    //paintTile(door.getPosition(), Tileset.UNLOCKED_DOOR, gameState.refWorld);
+                }
+            }
+        }
+    }
+
+    private static int getTileManhattanDistance (Position pos1, Position pos2) {
+        return Math.abs(pos1.getX() - pos2.getX()) + Math.abs(pos1.getY() - pos2.getY());
+    }
+    public static void paintMist(Avatar hero, TETile[][] world){
+        // based on the distance from the hero
+        int distance = 8;
+
+        for (int i = 0; i < getTileWorldWidth(); i++) {
+            for (int j = 0; j < getTileWorldHeight(); j++) {
+                if (gameState.enableMist) {
+                    if (getTileManhattanDistance(new Position(i, j), hero.getPosition()) > distance) {
+                        world[i][j] = Tileset.NOTHING;
+                    }
+                    else {
+                        if (world[i][j] == null) {
+                            world[i][j] = Tileset.NOTHING;
+                        }
+                    }
+                }
+                else {
+                    if (world[i][j] == null) {
+                        world[i][j] = Tileset.NOTHING;
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,9 +1,10 @@
 package byow.TileEngine;
 
-import byow.Attribute.ByowCommandSet;
 import byow.Attribute.Position;
 import byow.Charactors.Avatar;
 import byow.Charactors.Creature;
+import byow.Core.Engine;
+import byow.Core.GameState;
 import byow.Utils.TileUtils;
 import edu.princeton.cs.algs4.StdDraw;
 
@@ -12,7 +13,6 @@ import java.awt.Font;
 import java.io.Serializable;
 
 import static byow.Core.Engine.*;
-import static byow.Core.Main.gameState;
 import static byow.Utils.TileUtils.*;
 
 /**
@@ -121,7 +121,7 @@ public class TERenderer implements Serializable {
         StdDraw.text((double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2, str);
         StdDraw.show();
     }
-
+/*
     public void renderTextWithoutClear(String str, int size, TileUtils.CanvasCoordinate  cc) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
@@ -139,7 +139,7 @@ public class TERenderer implements Serializable {
         StdDraw.textRight(cc.getX(), cc.getY(), str);
         StdDraw.show();
     }
-
+*/
     public void renderTextWithoutClearLeftAligned(String str, int size, TileUtils.CanvasCoordinate cc) {
         //StdDraw.clear(new Color(0, 0, 0));
         StdDraw.setPenColor(Color.WHITE);
@@ -187,9 +187,9 @@ public class TERenderer implements Serializable {
             return;
         }
         //this.world = TETile.copyOf(this.refWorld);
-        if (c.getBackedPosition() != null) {
-            paintTile(c.getBackedPosition(), c.getBackedTile(), world);
-        }
+        //if (c.getBackedPosition() != null) {
+        //    paintTile(c.getBackedPosition(), c.getBackedTile(), world);
+        //}
         paintTile(c.getPosition(), type, world);
     }
 /*
@@ -216,62 +216,6 @@ public class TERenderer implements Serializable {
         StdDraw.show();
     }
 
-    private int getTileManhattanDistance (Position pos1, Position pos2) {
-        return Math.abs(pos1.getX() - pos2.getX()) + Math.abs(pos1.getY() - pos2.getY());
-    }
-    public TETile[][] maskOutOutOfLineOfSight(Avatar hero, TETile[][] world){
-
-        TETile[][] retWorld = TETile.copyOf(world);
-
-        // based on the distance from the hero
-        int distance = 8;
-
-        for (int i = 0; i < getTileWorldWidth(); i++) {
-            for (int j = 0; j < getTileWorldHeight(); j++) {
-                    if (gameState.seeOutOfSightSwitch) {
-                        if (retWorld[i][j] == null) {
-                            retWorld[i][j] = Tileset.NOTHING;
-                        }
-                    }
-                    else {
-                        if (getTileManhattanDistance(new Position(i, j), hero.getPosition()) > distance) {
-                            retWorld[i][j] = Tileset.NOTHING;
-                        }
-                        else {
-                            if (retWorld[i][j] == null) {
-                                retWorld[i][j] = Tileset.NOTHING;
-                            }
-                        }
-                    }
-
-            }
-
-        }
-        return retWorld;
-    }
-    public void renderGamePage(TETile[][] world) {
-
-        paintAllLamps();
-
-        TETile[][] toRenderWorld= maskOutOutOfLineOfSight(gameState.hero, world);
-        //debug, fill empty
-        /*
-        for (int i = 0; i < getTileWorldWidth(); i++) {
-            for (int j = 0; j < getTileWorldHeight(); j++) {
-                if (world[i][j] == null) {
-                    world[i][j] = Tileset.NOTHING;
-                }
-            }
-        }
-         */
-        // reset fond
-        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);
-        StdDraw.setFont(font);
-
-        this.renderFrame(toRenderWorld);
-
-        renderAvatarHearts(gameState.hero, gameState.world);
-    }
 
     public void renderMenuPage() {
         renderClear();
@@ -290,13 +234,25 @@ public class TERenderer implements Serializable {
     }
 
     public void renderKeyMenu() {
+        String str1 = "Lock the door";
+        String str2 = "Unlock the door";
         //this.renderTextWithoutClear("Actions:", 16, new Position(width/2, height/2));
-        this.renderTextWithoutClearLeftAligned("1: " + ByowCommandSet.LOCK, 16,
+        this.renderTextWithoutClearLeftAligned("1: " + str1, 16,
                 new TileUtils.CanvasCoordinate((double)(2), 1));
-        this.renderTextWithoutClearLeftAligned("2: " + ByowCommandSet.UNLOCK, 16,
-                new TileUtils.CanvasCoordinate((double)(ByowCommandSet.LOCK.description().length() + 2), 1));
+        this.renderTextWithoutClearLeftAligned("2: " + str2, 16,
+                new TileUtils.CanvasCoordinate((double)(str1.length() + 2), 1));
     }
 
+    public void renderLampMenu() {
+
+        String str1 = "Switch Off";
+        String str2 = "Switch On";
+        //this.renderTextWithoutClear("Actions:", 16, new Position(width/2, height/2));
+        this.renderTextWithoutClearLeftAligned("1: " + str1, 16,
+                new TileUtils.CanvasCoordinate((double)(2), 1));
+        this.renderTextWithoutClearLeftAligned("2: " + str2, 16,
+                new TileUtils.CanvasCoordinate((double)(str1.length() + 2), 1));
+    }
     // pause count ms
     public void renderPause(int count) {
         StdDraw.pause(count);
@@ -309,15 +265,7 @@ public class TERenderer implements Serializable {
 
         renderPause(500);
     }
-/*
-    public void renderQuitelPage() {
-        renderClear();
-        renderAddTextToCanvas("Quite", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
-        renderShow();
 
-        renderPause(500);
-    }
-*/
     public void renderSaveFailPage() {
         renderClear();
         renderAddTextToCanvas("Save Fail", 30, (double)getCanvasWidth() / 2, (double)getCanvasHeight() / 2);
@@ -329,6 +277,44 @@ public class TERenderer implements Serializable {
     public void renderTileInfo(String str) {
         if (str != null) {
             renderTextWithoutClearLeftAligned(str, 30, new CanvasCoordinate(0, getCanvasHeight() - 2));
+        }
+    }
+
+    public void resetFond(){
+        // reset fond
+        // TODO: the size 16 should be universal
+        Font font = new Font("Monaco", Font.BOLD, 16 - 2);
+        StdDraw.setFont(font);
+    }
+    public void updateWorldAndRender(Engine engine, GameState gameState) {
+
+        if (gameState.refreshWorld > 0) {
+            gameState.refreshWorld--;
+
+            TETile[][] toRenderWorld = TETile.copyOf(gameState.world);
+
+            // 1. paint environment
+            paintAllLamps(toRenderWorld, gameState);
+            paintAllDoors(toRenderWorld, gameState);
+
+            // 2. paint creatures
+            engine.ter.paintCreature(gameState.hero, Tileset.AVATAR, toRenderWorld);
+            engine.ter.paintCreature(gameState.bear, Tileset.GANON, toRenderWorld);
+
+            // 3. paint mist
+            paintMist(gameState.hero, toRenderWorld);
+
+            // 4. render the world
+            resetFond();
+            engine.ter.renderFrame(toRenderWorld);
+
+            // 5. render HUD
+            // 5.1 update avatar health
+            engine.ter.renderAvatarHearts(gameState.hero, toRenderWorld);
+            // 5.2 update mouse hover info
+            if (gameState.getWid().getTileMouse() != null) {
+                engine.ter.renderTileInfo(gameState.getWid().getTileMouse().description());
+            }
         }
     }
 }

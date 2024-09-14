@@ -18,7 +18,13 @@ public class WorldInfoDisplay {
         //this.avatarHealthBak = -1;
     }
 
+    public TETile getTileMouse() {
+        return this.tileMouse;
+    }
 
+    public TETile getTileMouseBack() {
+        return this.tileMouseBack;
+    }
     public void updateMouseHoverTile() {
         TileUtils.CanvasCoordinate cc = getMouseCoord();
         Position posMouse = TileUtils.getTilePosFromCanvasCoord(cc);

@@ -6,6 +6,7 @@ import byow.Attribute.Direction;
 import byow.Attribute.Directionset;
 import byow.Attribute.Position;
 import byow.Core.*;
+import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.Utils.RoadSearch;
 
@@ -14,24 +15,27 @@ import static byow.Attribute.Directionset.SOUTH;
 import static byow.Core.Engine.*;
 import static byow.Utils.TileUtils.*;
 
-public class DiggerAvatar extends RoadSearch {
+public class DiggerAvatar extends Creature {
 
     //TETile[][] world;
     //TETile[][] refWorld;
     Door srcDoor;
     Door dstDoor;
 
+    TETile[][] refWorld;
     int len;// how many tiles are dug for this tunnel
 
     public DiggerAvatar(GameState gameState) {
-        super(null, null, null, gameState.world, gameState.refWorld);
+        super(gameState);
+        this.refWorld = TETile.copyOf(gameState.world);
     }
 
     public DiggerAvatar(Door srcDoor, Door dstDoor, GameState gameState) {
-        super(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), gameState.world, gameState.refWorld);
+        super(srcDoor.getPosition(), dstDoor.getPosition(), srcDoor.getDir(), gameState);
         this.srcDoor = srcDoor;
         this.dstDoor = dstDoor;
         this.len = 0;
+        this.refWorld = TETile.copyOf(gameState.world);
         // back up the world, and use the backup to search for routes.
     }
     public void arrangeDiggingJob(Door srcDoor, Door dstDoor) {
@@ -95,7 +99,15 @@ public class DiggerAvatar extends RoadSearch {
             paintSideWall(posFake, this.getLastMoveDir(), this.world);
         }
     }
+    @Override
+    public boolean MoveOneStep(Direction dir, TETile[][] mWorld) {
 
+        if (dir == null) {
+            return false;
+        }
+
+        return (super.MoveOneStep(dir, this.refWorld));
+    }
 
     @Override
     public boolean[] checkSurroundings() {
@@ -116,7 +128,7 @@ public class DiggerAvatar extends RoadSearch {
         // check Door
         if (isTileType(posCurNorth, Tileset.UNLOCKED_DOOR, this.refWorld)
                 || isTileType(posCurNorth, Tileset.LOCKED_DOOR, this.refWorld)) {
-            // if a unlocked door is the destination door, is OK to enter
+            // if an unlocked door is the destination door, is OK to enter
             if (this.getPosDst().equals(posCurNorth)) {
 
             }
@@ -159,6 +171,5 @@ public class DiggerAvatar extends RoadSearch {
         }
 
         return Direction.mergeDirection(dirBool, super.checkSurroundings());
-
     }
 }

@@ -28,7 +28,7 @@ public class Bear extends Creature{
         backUpCurrentStatus();// back status before update everything
         //curMoveDir = decideTheNextMove();// decide should move to which direction;
         setCurMoveDir(getNextMoveDirection());// decide should move to which direction;
-        MoveOneStep(getCurMoveDir());
+        MoveOneStep(getCurMoveDir(), this.world);
         /*
         // digger got a campus, he walks towards the dst door, until reaching it.
         int looperLimit = LOOP_LIMIT;

@@ -7,7 +7,7 @@ import byow.Attribute.Size;
 import byow.Core.*;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import byow.Utils.CommandMonitor;
+import byow.Core.CommandMonitor;
 
 import java.util.LinkedList;
 
@@ -103,7 +103,7 @@ public class Avatar extends Creature{
     }
 
     @Override
-    public boolean MoveOneStep(Direction dir) {
+    public boolean MoveOneStep(Direction dir, TETile[][] mWorld) {
 
         if (dir == null) {
             return false;
@@ -111,14 +111,15 @@ public class Avatar extends Creature{
         // Add some extended abilities for Avtar
         // shift one sep
         Position pos = this.getPosition();
-        this.setBackedPosition(Position.copyOf(pos));
-        this.setBackedTile(refWorld[pos.getX()][pos.getY()]);
+        //this.setBackedPosition(Position.copyOf(pos));
+        //this.setBackedTile(refWorld[pos.getX()][pos.getY()]);
 
         Direction.shiftPosition(pos, dir);
 
         checkObject(pos, Tileset.LOCKED_DOOR);
+        checkObject(pos, Tileset.LAMP);
 
-        return (super.MoveOneStep(dir));
+        return (super.MoveOneStep(dir, this.world));
         /*
         // action 1: if come to a locked door
         if (isTileType(pos, Tileset.LOCKED_DOOR, this.world)) {
@@ -159,10 +160,10 @@ public class Avatar extends Creature{
                     engine.ter.renderKeyMenu();
 
                     // 2, listening user's option, for user to choose an action;
-                    cMonitor.monitorKeyMenu(engine.ter);
+                    cMonitor.monitorSubMenu(engine.ter);
 
                     // 3, perform the action, and render the result
-                    cMonitor.executeKeyCommands(d, world, refWorld, engine.ter);
+                    cMonitor.executeKeyCommands(d, world, engine.ter);
 
                     // 4, return result
                     // if a new menu is popped ,should re-initiate the canvas
@@ -174,9 +175,24 @@ public class Avatar extends Creature{
             return false;
         }
 
-        else if (o instanceof Lamp l) {
+        else if (o instanceof Lamp lamp) {
             // TODO
-            l.switchOn();
+            // add monitor, which will listen commands typed by user;
+            CommandMonitor cMonitor = new CommandMonitor(engine, mgs);
+            cMonitor.initiate();
+
+            // 1, pops up action selection menu
+            //engine.ter.renderInitialize(); //re init the menu
+            engine.ter.renderLampMenu();
+
+            // 2, listening user's option, for user to choose an action;
+            cMonitor.monitorSubMenu(engine.ter);
+
+            // 3, perform the action, and render the result
+            cMonitor.executeLampCommands(lamp, world, engine.ter);
+
+            // 4, return result
+            return true;
         }
 
         return false;
