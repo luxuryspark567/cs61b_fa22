@@ -211,4 +211,12 @@ public class Direction implements Serializable {
             return null;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Direction dir){
+            return this.description.equals(dir.description);
+        }
+        return false;
+    }
 }

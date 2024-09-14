@@ -7,10 +7,15 @@ import byow.Attribute.Size;
 import byow.Core.*;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.Utils.DiggerRouteSearch;
+import byow.Utils.RouteSearch;
 
 import java.io.Serializable;
 import java.util.LinkedList;
+import java.util.List;
 
+import static byow.Attribute.Direction.getDirFromPosition;
+import static byow.Core.Main.gameState;
 import static byow.Utils.TileUtils.isTileType;
 
 public class Creature implements Serializable {
@@ -21,10 +26,25 @@ public class Creature implements Serializable {
     private Size size;
     private int affection;
     private Position position;
-    LinkedList<Item> inventory;
-    //private Position bakPos;
-    //private TETile bakTile;
-    private GameState mgs;
+    List<Item> inventory;
+    private List<Position> huntRoute = null;
+
+    private Direction srcDir;
+
+    public void setSrcDir( Direction dir) {
+        this.srcDir = dir;
+    }
+
+    public Direction getSrcDir() {
+        return this.srcDir;
+    }
+    public List<Position> getHuntRoute() {
+        return huntRoute;
+    }
+
+    public void setHuntRoute(List<Position> route) {
+        this.huntRoute = route;
+    }
 
     public Creature() {
         this.damage = 0;
@@ -35,6 +55,7 @@ public class Creature implements Serializable {
         this.affection = 0;
         this.position = new Position(0, 0);
         this.inventory = new LinkedList<>();
+        this.srcDir = null;
         //this.refWorld = null;
         //this.bakPos = null;
         //this.bakTile = null;
@@ -49,10 +70,11 @@ public class Creature implements Serializable {
         this.affection = 0;
         this.position = null;
         this.inventory = new LinkedList<>();
+        this.srcDir = null;
         //gameState.tmDB.put(this.getPosition(), this);
         //this.bakPos = Position.copyOf(pos);
         //this.bakTile = Tileset.NOTHING;
-        this.mgs = gameState;
+        //this.mgs = gameState;
     }
 
     public Creature(Position posSrc, Position posDst, Direction dir, GameState gameState) {
@@ -64,10 +86,11 @@ public class Creature implements Serializable {
         this.affection = 0;
         this.position = null;
         this.inventory = new LinkedList<>();
+        this.srcDir = null;
         //gameState.tmDB.put(this.getPosition(), this);
         //this.bakPos = Position.copyOf(pos);
         //this.bakTile = Tileset.NOTHING;
-        this.mgs = gameState;
+        //this.mgs = gameState;
     }
 
     public Creature(int damage, int health, int age, int weight, Size size, int affection, Position pos, GameState gameState) {
@@ -80,9 +103,10 @@ public class Creature implements Serializable {
         this.position = Position.copyOf(pos);
         this.inventory = new LinkedList<>();
         gameState.tmDB.put(this.getPosition(), this);
+        this.srcDir = null;
         //this.bakPos = Position.copyOf(pos);
         //this.bakTile = Tileset.NOTHING;
-        this.mgs = gameState;
+        //this.mgs = gameState;
     }
 
     public boolean MoveOneStep(Direction dir, TETile[][] mWorld) {
@@ -98,20 +122,17 @@ public class Creature implements Serializable {
         if (isTileType(pos, Tileset.WALL, mWorld)) {
             System.out.println("you a running into a wall, it is not allowed!");
             return false;
-        }
-        else if (isTileType(pos, Tileset.FLOOR, mWorld)) {
+        } else if (isTileType(pos, Tileset.FLOOR, mWorld)) {
             //this.mgs.tmDB.remove(this.getBackedPosition(), this);
             this.setPosition(pos);
             //this.mgs.tmDB.put(this.getPosition(), this);
             return true;
-        }
-        else if (isTileType(pos, Tileset.UNLOCKED_DOOR, mWorld)) {
+        } else if (isTileType(pos, Tileset.UNLOCKED_DOOR, mWorld)) {
             //this.mgs.tmDB.remove(this.getBackedPosition(), this);
             this.setPosition(pos);
             //this.mgs.tmDB.put(this.getPosition(), this);
             return true;
-        }
-        else {
+        } else {
             // rule 1: can not run into a wall
             // rule 2: can only run onto a floor
             System.out.println("undefined!");
@@ -128,18 +149,15 @@ public class Creature implements Serializable {
         // check if the new position is OK
         if (isTileType(posDst, Tileset.WALL, mWorld)) {
             System.out.println("you a running into a wall, it is not allowed!");
-        }
-        else if (isTileType(posDst, Tileset.FLOOR, mWorld)) {
+        } else if (isTileType(posDst, Tileset.FLOOR, mWorld)) {
             //this.mgs.tmDB.remove(this.getBackedPosition(), this);
             this.setPosition(posDst);
             //this.mgs.tmDB.put(this.getPosition(), this);
-        }
-        else if (isTileType(posDst, Tileset.UNLOCKED_DOOR, mWorld)) {
+        } else if (isTileType(posDst, Tileset.UNLOCKED_DOOR, mWorld)) {
             //this.mgs.tmDB.remove(this.getBackedPosition(), this);
             this.setPosition(posDst);
             //this.mgs.tmDB.put(this.getPosition(), this);
-        }
-        else {
+        } else {
             // rule 1: can not run into a wall
             // rule 2: can only run onto a floor
             System.out.println("undefined!");
@@ -149,12 +167,15 @@ public class Creature implements Serializable {
     public int getDamage() {
         return this.damage;
     }
+
     public int getHealth() {
         return this.health;
     }
+
     public int getAge() {
         return this.age;
     }
+
     public int getWeight() {
         return this.weight;
     }
@@ -162,6 +183,7 @@ public class Creature implements Serializable {
     public Size getSize() {
         return Size.copyOf(this.size);
     }
+
     public int getAffection() {
         return this.affection;
     }
@@ -170,21 +192,23 @@ public class Creature implements Serializable {
         return Position.copyOf(this.position);
     }
 
-    public LinkedList<Item> getInventory() {
+    public List<Item> getInventory() {
         return this.inventory;
     }
-
 
 
     public void setDamage(int damage) {
         this.damage = damage;
     }
+
     public void setHealth(int health) {
         this.health = health;
     }
+
     public void setAge(int age) {
         this.age = age;
     }
+
     public void setWeight(int weight) {
         this.weight = weight;
     }
@@ -193,6 +217,7 @@ public class Creature implements Serializable {
         this.size.setW(s.getW());
         this.size.setH(s.getH());
     }
+
     public void setAffection(int affection) {
         this.affection = affection;
     }
@@ -212,8 +237,29 @@ public class Creature implements Serializable {
 
     /**
      * how this item handle other objects, such as a key to a door.
-     * */
+     */
     boolean handle(Object o) {
         return true;
+    }
+
+    /**
+     * generalized route function to find the path from this creature's position to target position
+     */
+    public List<Position> getPathTo(Direction srcDir, Position posDst) {
+
+        if (posDst == null) {
+            return null;
+        }
+
+        // get the route to hunt the hero down in given world
+        List<TETile> forbidTile = new LinkedList<>();
+        forbidTile.add(Tileset.WALL);
+        forbidTile.add(Tileset.LOCKED_DOOR);
+        forbidTile.add(Tileset.LAMP);
+        RouteSearch rs = new DiggerRouteSearch(srcDir, forbidTile, 1);
+        return rs.getRoute(this.getPosition(), posDst, gameState.world);
+    }
+
+    public void hunt(Position posAvatar) {
     }
 }

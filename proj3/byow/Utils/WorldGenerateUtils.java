@@ -175,13 +175,34 @@ public class WorldGenerateUtils {
 
         int looperLimit = LOOP_LIMIT;
         Lamp newLamp = null;
-        while (newLamp == null && looperLimit > 0) {
-            //Check if lamp overlaps any existing objects
+        Object o;
+        while (looperLimit > 0) {
+            // Check if lamp overlaps any existing objects
             Position pos = Room.getRandomPositionInARoom(r);
+
+            // Check the position is beside the door
+            // get the door position, and shift the position one step reversed the door direction,
+            // this is the position not allowed, because avatar won't be able to get out if a lamp
+            // blocks the door;
+            Position posBesideDoor = Direction.getShiftPosition(r.getDoor().getPosition(),
+                    Direction.getRevertDir(r.getDoor().getDir()));
+
+            // is it an empty spot?
+            if (!posBesideDoor.equals(pos)) { // could not locate besides the door
+                o = gameState.tmDB.get(pos);
+                if (o == null) { // found an empty sport
+                    newLamp = new Lamp(pos, r, gameState);
+                    break;
+                }
+            }
+
+/*
             if (isTileType(pos, Tileset.NOTHING, world)
                     || isTileType(pos, Tileset.FLOOR, world)) {
                 newLamp = new Lamp(pos, r, gameState);
             }
+
+ */
             looperLimit--;
         }
 

@@ -110,9 +110,6 @@ public class DiggerRouteSearch implements RouteSearch{
             looper--;
         }
 
-
-
-
         // last step, if there is no place to go, move back
         if (!(dirBool[0] || dirBool[1] || dirBool [2] || dirBool[3])) {
             Direction.setTrueBoolArrayByDirection(dirBool,MoveBackDir);
@@ -301,6 +298,7 @@ public class DiggerRouteSearch implements RouteSearch{
         }
         else {
             // toll the dice.
+            /*
             int randomIndex = RandomUtils.uniform(RANDOM, dirNum);
             int looper;
             for (looper = 0; looper < DIRECTION_NUM; looper++) {
@@ -309,6 +307,15 @@ public class DiggerRouteSearch implements RouteSearch{
                     if (randomIndex == -1) {
                         break;
                     }
+                }
+            }
+            return Direction.getDirectionByIndex(looper);
+
+             */
+            int looper;
+            for (looper = 0; looper < DIRECTION_NUM; looper++) {
+                if (dirMerge3[looper]) {
+                    break;
                 }
             }
             return Direction.getDirectionByIndex(looper);

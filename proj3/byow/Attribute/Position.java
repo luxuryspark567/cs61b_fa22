@@ -1,7 +1,12 @@
 package byow.Attribute;
 
+import byow.TileEngine.TETile;
+import byow.Utils.TileUtils;
+
 import java.io.Serializable;
 import java.util.Comparator;
+
+import static byow.Attribute.Direction.getShiftPosition;
 
 // position of an object on canvas
 public class Position implements Serializable {
@@ -90,6 +95,30 @@ public class Position implements Serializable {
     public int getIndex() {
         return (this.getX() * this.tileHeight + this.getY());
     }
+    public static boolean isWithinReach(Position pos1, Position pos2) {
+        Position posCurNorth = getShiftPosition(pos2, Directionset.NORTH);
+        Position posCurWest = getShiftPosition(pos2, Directionset.WEST);
+        Position posCurSouth = getShiftPosition(pos2, Directionset.SOUTH);
+        Position posCurEast = getShiftPosition(pos2, Directionset.EAST);
+
+        if (TileUtils.isInTileWorld(posCurNorth)) {
+            return posCurNorth.equals(pos1);
+        }
+        else if (TileUtils.isInTileWorld(posCurWest)) {
+            return posCurWest.equals(pos1);
+        }
+        else if (TileUtils.isInTileWorld(posCurSouth)) {
+            return posCurSouth.equals(pos1);
+        }
+        else if (TileUtils.isInTileWorld(posCurEast)) {
+            return posCurEast.equals(pos1);
+        }
+
+        return false;
+    }
+
+
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder("Position(");

@@ -288,6 +288,56 @@ public class TERenderer implements Serializable {
         Font font = new Font("Monaco", Font.BOLD, 16 - 2);
         StdDraw.setFont(font);
     }
+
+    /**
+     * to paint the trace of the bear hunting the hero.
+     * */
+    public void renderChaseTrace(TETile[][] toRenderWorld, GameState gameState) {
+
+        if (!gameState.enableChaseTrace) {
+            return;
+        }
+
+        //Font font;
+        if (gameState.bear != null)
+        {
+            List<Position> tmp = gameState.bear.getHuntRoute();
+            if (tmp != null) {
+                for (Position pos: tmp) {
+                    if (isTileType(pos, Tileset.FLOOR, toRenderWorld)) {
+                        Font font = new Font("Monaco", Font.BOLD, 30);
+                        StdDraw.setFont(font);
+                        paintTile(pos, new TETile(Tileset.FLOOR, Color.RED), toRenderWorld);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * to paint the trace of the bear hunting the hero.
+     * */
+    public void renderMouseTrace(TETile[][] toRenderWorld, GameState gameState) {
+
+        if (!gameState.enableMouseTrace) {
+            return;
+        }
+
+        if (gameState.hero != null)
+        {
+            List<Position> tmp = gameState.hero.getHuntRoute();
+            if (tmp != null) {
+                for (Position pos: tmp) {
+                    if (isTileType(pos, Tileset.FLOOR, toRenderWorld))
+                    {
+                        Font font = new Font("Monaco", Font.BOLD, 30);
+                        StdDraw.setFont(font);
+                        paintTile(pos, new TETile(Tileset.FLOOR, new Color(128, 192, 128), Color.GRAY), toRenderWorld);
+                    }
+                }
+            }
+        }
+    }
     public void updateWorldAndRender(Engine engine, GameState gameState) {
 
         if (gameState.refreshWorld > 0) {
@@ -300,19 +350,12 @@ public class TERenderer implements Serializable {
             paintAllDoors(toRenderWorld, gameState);
 
             // 2. paint creatures
-            engine.ter.paintCreature(gameState.hero, Tileset.AVATAR, toRenderWorld);
-            engine.ter.paintCreature(gameState.bear, Tileset.GANON, toRenderWorld);
+            paintCreature(gameState.hero, Tileset.AVATAR, toRenderWorld);
+            paintCreature(gameState.bear, Tileset.GANON, toRenderWorld);
 
-            if (gameState.bear != null)
-            {
-                List<Position> tmp = gameState.bear.getHuntRoute();
-                if (tmp != null) {
-                    for (Position pos: tmp) {
-                        if (isTileType(pos, Tileset.FLOOR, toRenderWorld))
-                            paintTile(pos, new TETile(Tileset.FLOOR, Color.RED), toRenderWorld);
-                    }
-                }
-            }
+            // paint the chase trace
+            renderChaseTrace(toRenderWorld, gameState);
+            renderMouseTrace(toRenderWorld, gameState);
 
             // 3. paint mist
             if (gameState.hero != null) {

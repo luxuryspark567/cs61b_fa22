@@ -10,7 +10,9 @@ import byow.TileEngine.Tileset;
 import byow.Core.CommandMonitor;
 
 import java.util.LinkedList;
+import java.util.List;
 
+import static byow.Attribute.Direction.getDirFromPosition;
 import static byow.Core.Main.gameState;
 import static byow.Utils.TileUtils.isTileType;
 import static byow.Core.Main.engine;
@@ -41,6 +43,20 @@ public class Avatar extends Creature{
     private LinkedList<Key> keyInventory;
     //private GameState mgs;
 
+    private List<Position> huntRouteBak = null;
+    public List<Position> getBakedHuntRoute() {
+        return huntRouteBak;
+    }
+
+    public void setBakedHuntRoute() {
+        if (this.getHuntRoute() != null) {
+            this.huntRouteBak = List.copyOf(this.getHuntRoute());
+        }
+        else {
+            this.huntRouteBak = null;
+        }
+
+    }
     public Avatar(Position pos, GameState gameState) {
 
         super(DAMAGE_DFT, HEALTH_DFT, AGE_DFT, WEIGHT_DFT, SIZE, AFFECTION_DFT, pos, gameState);
@@ -197,5 +213,47 @@ public class Avatar extends Creature{
         }
 
         return false;
+    }
+
+    public boolean isHuntRouteChanged() {
+        if (this.getHuntRoute() == null) {
+            return this.getBakedHuntRoute() != null;
+        }
+        else {
+            if (this.getBakedHuntRoute() == null) {
+                return true;
+            }
+            // TODO NEED TO MODIFY
+            return !this.getHuntRoute().equals(this.getBakedHuntRoute());
+        }
+    }
+    //public void backHuntRoute() {
+    //    this.setBakedHuntRoute(this.getHuntRoute());
+    //}
+
+
+    @Override
+    public void hunt(Position pos) {
+        // get the route to hunt the hero down in given world
+        List<Position> route = getPathTo(this.getSrcDir(), pos);
+
+        if (route != null) {
+            this.setHuntRoute(route);
+            /*
+            if (route.size() > 1) {
+
+                Position newPos = route.get(1);
+                // a successive hunt, update the hunt direction
+                this.setSrcDir(getDirFromPosition(this.getPosition(), newPos));
+                MoveTo(newPos, gameState.world);
+
+                // because bear has taken a leap, should remove the first step.
+                route.removeFirst();
+            }
+            */
+        } else {
+            this.setSrcDir(null);// if there is a miss hunt, set to null
+            this.setHuntRoute(null);
+        }
     }
 }

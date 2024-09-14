@@ -10,6 +10,9 @@ import byow.Utils.TileUtils;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import static byow.Core.Engine.LOOP_LIMIT;
+import static byow.Core.Main.engine;
+import static byow.Core.Main.gameState;
 import static byow.Core.Engine.RANDOM;
 
 public class Room implements Serializable, Iterable<Position>{
@@ -89,8 +92,9 @@ public class Room implements Serializable, Iterable<Position>{
         // should not take wall into account
         int offX = RandomUtils.uniform(RANDOM,1, r.getSize().getW() - 1);
         int offY = RandomUtils.uniform(RANDOM,1, r.getSize().getH() - 1);
-
         return getWorldPosFromRoomOffSet(r.getPosition(), offX, offY);
+        // if there is a valid object at the position, should not overlap
+
         /*
         return new Position(r.getPosition().getX() + offX + 1,
                 r.getPosition().getY() + offY + 1,
@@ -103,7 +107,26 @@ public class Room implements Serializable, Iterable<Position>{
     public static Position getRandomPositionInRandomRoom(GameState gameState) {
         int roomIndex = RandomUtils.uniform(RANDOM, gameState.roomLut.size());
         Room r = gameState.roomLut.get(roomIndex);
-        return getRandomPositionInARoom(r);
+
+        Position pos = null;
+        int looperLimit = LOOP_LIMIT;
+        Object o = null;
+
+        while (looperLimit > 0) {
+
+            pos = getRandomPositionInARoom(r);
+
+            // find a empty spot
+            o = gameState.tmDB.get(pos);
+
+            if (o == null) {
+                break;
+            }
+
+            looperLimit--;
+        }
+
+        return pos;
     }
 
     @Override

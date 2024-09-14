@@ -2,6 +2,7 @@ package byow.Utils;
 
 import byow.Attribute.Position;
 import byow.TileEngine.TETile;
+import edu.princeton.cs.algs4.StdDraw;
 
 import java.io.Serializable;
 
@@ -13,10 +14,13 @@ public class WorldInfoDisplay implements Serializable {
     TETile tileMouse; //get the current hovering tile
     TETile tileMouseBack;
 
+    int mouseClickState;
+
     //int avatarHealthBak;
     public WorldInfoDisplay(){
         this.tileMouse = null;
         this.tileMouseBack = null;
+        this.mouseClickState = 0;
         //this.avatarHealthBak = -1;
     }
 
@@ -24,13 +28,17 @@ public class WorldInfoDisplay implements Serializable {
         return this.tileMouse;
     }
 
+
     public TETile getTileMouseBack() {
         return this.tileMouseBack;
     }
-    public void updateMouseHoverTile() {
+    public Position getMouseHoveredTilePosition() {
         TileUtils.CanvasCoordinate cc = getMouseCoord();
-        Position posMouse = TileUtils.getTilePosFromCanvasCoord(cc);
-
+        return TileUtils.getTilePosFromCanvasCoord(cc);
+    }
+    public void updateMouseHoverTile() {
+        Position posMouse = getMouseHoveredTilePosition();
+        gameState.setHoverMousePosition(posMouse);
         if (posMouse == null) {
             this.tileMouse = null;
         }
@@ -56,42 +64,32 @@ public class WorldInfoDisplay implements Serializable {
     public void backUpMouseHoverTileInfo() {
         this.tileMouseBack = this.tileMouse;
     }
-/*
-    public void getMouseHoverTileInfo() {
-        TileUtils.CanvasCoordinate cc = getMouseCoord();
-        Position posMouse = TileUtils.getTilePosFromCanvasCoord(cc);
 
-        if (posMouse == null) {
-            this.tileMouse = null;
+    public boolean isMouseReleased() {
+        boolean retBool = false;
+        switch (mouseClickState) {
+            case 0: // mouse not pressed state
+
+                if (StdDraw.isMousePressed()) {
+                    // mouse clicked
+                    mouseClickState = 1;
+                }
+                break;
+
+            case 1:
+
+                if (!StdDraw.isMousePressed()) {
+                    mouseClickState = 0;
+                    // mouse released
+                    retBool = true;
+                }
+                break;
+            default:
+                mouseClickState = 0;
+                break;
         }
-        else {
-            this.tileMouse = gameState.world[posMouse.getX()][posMouse.getY()];
-            if (tileMouse != null)
-                System.out.println(tileMouse.description());
-        }
+
+        return retBool;
     }
 
- */
-/*
-    public void displayMouseTileInfo(TERenderer tr) {
-        this.getTileInfo();
-        this.backTileInfo();
-        if (isTileInfoChanged()) {
-            tr.renderTileInfo(this.tileDescr);
-        }
-    }
-
- */
-
-/*
-    private boolean isAvatarHealthChanged() {
-        return this.tileDescrBack.equals(this.tileDescr);
-    }
-    private void backTileInfo() {
-        this.tileDescrBack = this.tileDescr;
-    }
-    public void displayMouseAvatarHealth(TERenderer tr) {
-
-    }
- */
 }

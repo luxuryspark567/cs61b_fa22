@@ -11,6 +11,8 @@ public class ByowCommandSet {
     public static final ByowCommand LOAD2 = new ByowCommand("load game while playing");
 
     public static final ByowCommand MIST_SWITCH = new ByowCommand("switch mist on or off");
+    public static final ByowCommand CHASE_TRACE_SWITCH = new ByowCommand("switch chase trace on or off");
+    public static final ByowCommand MOUSE_TRACE_SWITCH = new ByowCommand("switch mouse trace on or off");
     // move command
     public static final ByowCommand MOVE_NORTH = new ByowCommand("move north");
     public static final ByowCommand MOVE_WEST = new ByowCommand("move west");

@@ -4,9 +4,7 @@ import byow.Articles.Door;
 import byow.Articles.Key;
 import byow.Articles.Lamp;
 import byow.Articles.Room;
-import byow.Attribute.ByowCommandSet;
-import byow.Attribute.CommandNode;
-import byow.Attribute.Directionset;
+import byow.Attribute.*;
 import byow.Charactors.Avatar;
 import byow.Charactors.Bear;
 import byow.TileEngine.TERenderer;
@@ -15,6 +13,8 @@ import byow.TileEngine.Tileset;
 import byow.Utils.WorldGenerateUtils;
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import static byow.Core.Main.engine;
@@ -27,6 +27,9 @@ public class CommandMonitor {
     int parseState;
     StringBuilder randomKey;
     CommandNode cn;
+
+    boolean haveSequentialCommands; // could not be cleared in initiate()
+    List<ByowCommand> commands;
     //Engine engine;
     //GameState gameState;
 
@@ -34,6 +37,8 @@ public class CommandMonitor {
         this.parseState = 0;
         this.randomKey = new StringBuilder();
         this.cn = new CommandNode(ByowCommandSet.IDLE);
+        this.haveSequentialCommands = false;
+        this.commands = null;
         //this.gameState = gameState;
         //this.engine = engine;
     }
@@ -108,70 +113,156 @@ public class CommandMonitor {
         cn.setByowCommand(ByowCommandSet.IDLE);
         cn.setByowRandomNum(-1);
     }
+
+    public List<ByowCommand> getCommandsFromRoute(List<Position> route) {
+        if (route == null) {
+            return null;
+        }
+        List<ByowCommand> cmds = new LinkedList<>();
+        // get start point
+        Position posSrc = route.removeFirst();
+
+        for (Position posDst:route) {
+            Direction dir = Direction.getDirFromPosition(posSrc, posDst);
+            cmds.add(ByowCommand.getCommandFromDir(dir));
+            // update posSrc
+            posSrc = posDst;
+        }
+
+        return cmds;
+    }
+
     // monitor game page on time, return a valid command
     public void monitorGamePage() {
 
         boolean looperFlag = true;
 
         while (looperFlag) {
-            if (StdDraw.hasNextKeyTyped()) {
-                char c = StdDraw.nextKeyTyped();
-                System.out.println(c);
 
-                switch (parseState) {
-                    case 0: // idle state
-                        if ((c == 'k' || c == 'K')) {
-                            cn = new CommandNode(ByowCommandSet.MIST_SWITCH);
-                            looperFlag = false;
+            // 1, mouse clicked process
+            // if there is a valid route and user clicked on the tile
+            if (gameState.getWid().isMouseReleased()) {
+                // 1.1 get mouse clicked coordinate
+                Position posMouse = gameState.getWid().getMouseHoveredTilePosition();
+                gameState.setHoverMousePosition(posMouse);
+
+                // 1.2 decide mouse clicked respond
+                // a) if clicked on a tile and the tile is in the route of hero
+                List<Position> route = gameState.hero.getHuntRoute();
+                if (route != null && route.getLast().equals(posMouse)) {
+                    // clicked on the end of the route
+                    // should enter a state to go to move step by step to the end.
+
+                    // transfer route to sequence of command;
+                    this.commands = getCommandsFromRoute(route);
+                    gameState.hero.setHuntRoute(null);
+                    this.haveSequentialCommands = true;
+                } else {
+                    // b) if clicked on an object, and the object is within the reach if the hero
+
+                    // is the object is within the reach if the hero ?
+                    if (Position.isWithinReach(gameState.hero.getPosition(), posMouse)) {
+
+                        // is it an operational object
+                        Object o = gameState.tmDB.get(posMouse);
+                        if (o != null) {
+                            gameState.hero.handle(o);
                         }
-                        else if (c == 'l' || c == 'L') {
-                            cn = new CommandNode(ByowCommandSet.LOAD2);
-                            looperFlag = false;
-                        }
-                        else if (c == 'w' || c == 'W') {
-                            cn = new CommandNode(ByowCommandSet.MOVE_NORTH);
-                            looperFlag = false;
-                        }
-                        else if (c == 'a' || c == 'A') {
-                            cn = new CommandNode(ByowCommandSet.MOVE_WEST);
-                            looperFlag = false;
-                        }
-                        else if (c == 's' || c == 'S') {
-                            cn = new CommandNode(ByowCommandSet.MOVE_SOUTH);
-                            looperFlag = false;
-                        }
-                        else if (c == 'd' || c == 'D') {
-                            cn = new CommandNode(ByowCommandSet.MOVE_EAST);
-                            looperFlag = false;
-                        }
-                        else if (c == ':') {
-                            parseState = 2;
-                        }
-                        break;
-                    case 2:
-                        if (c == 'q' || c == 'Q') {
-                            cn = new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME2);
-                            looperFlag = false;
-                        } else {
-                            System.out.println("invalid quit & save command!");
-                        }
-                        parseState = 0;
-                        break;
-                    default:
-                        parseState = 0;
-                        break;
+                    }
                 }
             }
 
+            if (haveSequentialCommands) {
+                if (this.commands != null && !this.commands.isEmpty()) {
+                    cn = new CommandNode(this.commands.removeFirst());
+                    looperFlag = false;
 
-            gameState.getWid().updateMouseHoverTile();
-
-            if (gameState.getWid().isTileInfoChanged()) {
-                gameState.getWid().backUpMouseHoverTileInfo();
-                gameState.increaseRefreshWorldFlag();
+                    // update world
+                    engine.ter.renderPause(100);
+                    engine.ter.updateWorldAndRender(engine, gameState);
+                }
+                else {
+                    this.haveSequentialCommands = false;
+                }
             }
-            engine.ter.updateWorldAndRender(engine, gameState);
-            //engine.ter.renderGamePage(gameState.world);
+            else {
+                // 2, key pressed process
+                if (StdDraw.hasNextKeyTyped()) {
+                    char c = StdDraw.nextKeyTyped();
+                    System.out.println(c);
+
+                    switch (parseState) {
+                        case 0: // idle state
+                            if (c == 'k' || c == 'K') {
+                                cn = new CommandNode(ByowCommandSet.MIST_SWITCH);
+                                looperFlag = false;
+                            }
+                            else if (c == 'j' || c == 'J') {
+                                cn = new CommandNode(ByowCommandSet.CHASE_TRACE_SWITCH);
+                                looperFlag = false;
+                            }
+                            else if (c == 'm' || c == 'M') {
+                                cn = new CommandNode(ByowCommandSet.MOUSE_TRACE_SWITCH);
+                                looperFlag = false;
+                            }
+                            else if (c == 'l' || c == 'L') {
+                                cn = new CommandNode(ByowCommandSet.LOAD2);
+                                looperFlag = false;
+                            }
+                            else if (c == 'w' || c == 'W') {
+                                cn = new CommandNode(ByowCommandSet.MOVE_NORTH);
+                                looperFlag = false;
+                            }
+                            else if (c == 'a' || c == 'A') {
+                                cn = new CommandNode(ByowCommandSet.MOVE_WEST);
+                                looperFlag = false;
+                            }
+                            else if (c == 's' || c == 'S') {
+                                cn = new CommandNode(ByowCommandSet.MOVE_SOUTH);
+                                looperFlag = false;
+                            }
+                            else if (c == 'd' || c == 'D') {
+                                cn = new CommandNode(ByowCommandSet.MOVE_EAST);
+                                looperFlag = false;
+                            }
+                            else if (c == ':') {
+                                parseState = 2;
+                            }
+                            break;
+                        case 2:
+                            if (c == 'q' || c == 'Q') {
+                                cn = new CommandNode(ByowCommandSet.QUIT_AND_SAVE_GAME2);
+                                looperFlag = false;
+                            } else {
+                                System.out.println("invalid quit & save command!");
+                            }
+                            parseState = 0;
+                            break;
+                        default:
+                            parseState = 0;
+                            break;
+                    }
+                }
+
+
+                gameState.getWid().updateMouseHoverTile();
+
+                if (gameState.getWid().isTileInfoChanged()) {
+                    gameState.getWid().backUpMouseHoverTileInfo();
+                    gameState.increaseRefreshWorldFlag();
+                }
+
+                gameState.hero.hunt(gameState.getMouseHoverHoveredPosition());
+
+                if (gameState.hero.isHuntRouteChanged()) {
+                    gameState.hero.setBakedHuntRoute();
+                    gameState.increaseRefreshWorldFlag();
+                }
+
+                engine.ter.updateWorldAndRender(engine, gameState);
+                //engine.ter.renderGamePage(gameState.world);
+            }
+
         }
     }
 
@@ -189,8 +280,17 @@ public class CommandMonitor {
         if (cn == null) {
             return false;
         }
+
         if (cn.getByowCommand() == ByowCommandSet.MIST_SWITCH) {
             gameState.toggleMistSwitch();
+            gameState.increaseRefreshWorldFlag();
+        }
+        else if (cn.getByowCommand() == ByowCommandSet.CHASE_TRACE_SWITCH) {
+            gameState.toggleTraceChaseSwitch();
+            gameState.increaseRefreshWorldFlag();
+        }
+        else if (cn.getByowCommand() == ByowCommandSet.MOUSE_TRACE_SWITCH) {
+            gameState.toggleMouseTraceSwitch();
             gameState.increaseRefreshWorldFlag();
         }
         else if (cn.getByowCommand() == ByowCommandSet.LOAD) { // in menu page
@@ -294,7 +394,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.NORTH);
                 gameState.hero.MoveOneStep(Directionset.NORTH, gameState.world);
-                gameState.bear.huntHero(gameState.hero.getPosition());
+                gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
         }
@@ -303,7 +403,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.WEST);
                 gameState.hero.MoveOneStep(Directionset.WEST, gameState.world);
-                gameState.bear.huntHero(gameState.hero.getPosition());
+                gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
         }
@@ -312,7 +412,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.SOUTH);
                 gameState.hero.MoveOneStep(Directionset.SOUTH, gameState.world);
-                gameState.bear.huntHero(gameState.hero.getPosition());
+                gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
         }
@@ -321,7 +421,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.EAST);
                 gameState.hero.MoveOneStep(Directionset.EAST, gameState.world);
-                gameState.bear.huntHero(gameState.hero.getPosition());
+                gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
         }

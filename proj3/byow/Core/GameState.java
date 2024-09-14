@@ -31,13 +31,21 @@ public class GameState implements Serializable {
     public Bear bear;
     public long randomSeed;
     public boolean readyToPlay;
-
     public boolean enableMist;
-
+    public boolean enableChaseTrace;
+    public boolean enableMouseTrace;
     public int refreshWorld;
+
+    Position posHoverMouse;
 
     WorldInfoDisplay wid;
 
+    public void setHoverMousePosition(Position pos) {
+        this.posHoverMouse = Position.copyOf(pos);
+    }
+    public Position getMouseHoverHoveredPosition() {
+        return this.posHoverMouse;
+    }
     public GameState(TETile[][] world, List<Room> roomLut, TreeMap<Position, Object> tmDB) {
         this.world = world;
         this.roomLut = roomLut;
@@ -45,6 +53,8 @@ public class GameState implements Serializable {
         this.tmDB = tmDB;
         this.readyToPlay = true;
         this.enableMist = false;
+        this.enableChaseTrace = true;
+        this.enableMouseTrace = true;
         this.refreshWorld = 1;
         this.wid = new WorldInfoDisplay();
     }
@@ -59,13 +69,10 @@ public class GameState implements Serializable {
     public void toggleMistSwitch() {
         this.enableMist = !this.enableMist;
     }
-    /*
-    public GameState(TETile[][] world, List<Room> roomLut, EdgeWeightedGraph ewg, TreeMap<Position, Object> tmDB) {
-        this.world = world;
-        this.refWorld = null;
-        this.roomLut = roomLut;
-        this.ewg = ewg;
-        this.tmDB = tmDB;
+    public void toggleTraceChaseSwitch() {
+        this.enableChaseTrace = !this.enableChaseTrace;
     }
-     */
+    public void toggleMouseTraceSwitch() {
+        this.enableMouseTrace = !this.enableMouseTrace;
+    }
 }
