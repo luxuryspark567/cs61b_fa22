@@ -10,7 +10,7 @@ import byow.Charactors.Avatar;
 import byow.Core.GameState;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
 
@@ -39,10 +39,10 @@ public class TileUtils {
     }
 
 
-    public static boolean isInCanvas(int x, int y) {
+    public static boolean isInCanvas(double x, double y) {
         return x >= 0 && y >= 0 && x < CANVAS_WIDTH && y < CANVAS_HEIGHT;
     }
-
+/*
     // switch a tile world position to a canvas coordinate
     public static CanvasCoordinate getCanvasCoordFromTilePos(Position pos) {
         int x = pos.getX() + X_OFF;
@@ -54,7 +54,7 @@ public class TileUtils {
             return null;
         }
     }
-
+*/
     // switch a canvas coordinate to a tile world position
     public static Position getTilePosFromCanvasCoord(CanvasCoordinate cc) {
 

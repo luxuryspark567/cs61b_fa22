@@ -1,18 +1,22 @@
 package byow.TileEngine;
 
+import byow.Attribute.Coordinate;
+import byow.Attribute.Direction;
+import byow.Attribute.Directionset;
 import byow.Attribute.Position;
 import byow.Charactors.Avatar;
 import byow.Charactors.Creature;
 import byow.Core.Engine;
 import byow.Core.GameState;
 import byow.Utils.TileUtils;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.io.Serializable;
 import java.util.List;
 
+import static byow.Attribute.Coordinate.getCanvasCoordFromTilePos;
 import static byow.Core.Engine.*;
 import static byow.Utils.TileUtils.*;
 import static byow.Utils.TileUtils.paintTile;
@@ -338,6 +342,135 @@ public class TERenderer implements Serializable {
             }
         }
     }
+
+    public void drawLine(Coordinate coord0, Coordinate coord1) {
+        StdDraw.line(coord0.getX(), coord0.getY(), coord1.getX(), coord1.getY());
+    }
+
+    public Coordinate getCenter(Coordinate coord) {
+        return new Coordinate((double)coord.getX() + 0.5, (double)coord.getY() + 0.5);
+    }
+
+    public Coordinate getTail(Coordinate coord, Direction dir) {
+
+        if (coord == null || dir == null) {
+            return null;
+        }
+
+        if (Directionset.NORTH.equals(dir)) {
+            return new Coordinate(coord.getX(), coord.getY() - 0.5);
+        }
+        else if (Directionset.WEST.equals(dir)) {
+            return new Coordinate(coord.getX() + 0.5, coord.getY());
+        }
+        else if (Directionset.SOUTH.equals(dir)) {
+            return new Coordinate(coord.getX(), coord.getY() + 0.5);
+        }
+        else if (Directionset.EAST.equals(dir)) {
+            return new Coordinate(coord.getX() - 0.5, coord.getY());
+        }
+
+        return null;
+    }
+
+    public Coordinate getHead(Coordinate coord, Direction dir) {
+
+        if (coord == null || dir == null) {
+            return null;
+        }
+
+        if (Directionset.NORTH.equals(dir)) {
+            return new Coordinate(coord.getX(), coord.getY() + 0.5);
+        }
+        else if (Directionset.WEST.equals(dir)) {
+            return new Coordinate(coord.getX() - 0.5, coord.getY());
+        }
+        else if (Directionset.SOUTH.equals(dir)) {
+            return new Coordinate(coord.getX(), coord.getY() - 0.5);
+        }
+        else if (Directionset.EAST.equals(dir)) {
+            return new Coordinate(coord.getX() + 0.5, coord.getY());
+        }
+
+        return null;
+    }
+
+    public Coordinate getLeftSide(Coordinate coord, Direction dir) {
+
+        if (coord == null || dir == null) {
+            return null;
+        }
+
+        if (Directionset.NORTH.equals(dir)) {
+            return new Coordinate(coord.getX() - 0.25, coord.getY() + 0.25);
+        }
+        else if (Directionset.WEST.equals(dir)) {
+            return new Coordinate(coord.getX() - 0.25, coord.getY() - 0.25);
+        }
+        else if (Directionset.SOUTH.equals(dir)) {
+            return new Coordinate(coord.getX() + 0.25, coord.getY() - 0.25);
+        }
+        else if (Directionset.EAST.equals(dir)) {
+            return new Coordinate(coord.getX() + 0.25, coord.getY() + 0.25);
+        }
+
+        return null;
+    }
+
+    public Coordinate getRightSide(Coordinate coord, Direction dir) {
+
+        if (coord == null || dir == null) {
+            return null;
+        }
+
+        if (Directionset.NORTH.equals(dir)) {
+            return new Coordinate(coord.getX() + 0.25, coord.getY() + 0.25);
+        }
+        else if (Directionset.WEST.equals(dir)) {
+            return new Coordinate(coord.getX() - 0.25, coord.getY() + 0.25);
+        }
+        else if (Directionset.SOUTH.equals(dir)) {
+            return new Coordinate(coord.getX() - 0.25, coord.getY() - 0.25);
+        }
+        else if (Directionset.EAST.equals(dir)) {
+            return new Coordinate(coord.getX() + 0.25, coord.getY() - 0.25);
+        }
+
+        return null;
+    }
+
+    // get view, and paint first person vision in 2D
+    public void renderVisionView (Avatar hero){
+
+        Direction viewDir = hero.getViewDir();
+        Coordinate coord = getCanvasCoordFromTilePos(hero.getPosition());
+
+        if (viewDir == null || coord == null) {
+            return;
+        }
+
+        // render an arrow to represent the view direction of an avatar
+        // 1. Draw an arrow
+        // 2.1 get center
+        Coordinate centerCoord = getCenter(coord);
+        // 2.1 get tail
+        Coordinate tailCoord = getTail(centerCoord, viewDir);
+        // 2.2 get head
+        Coordinate headCoord = getHead(centerCoord, viewDir);
+        // 2.3 get side1 && side2
+        Coordinate leftSideCoord = getLeftSide(centerCoord, viewDir);
+        Coordinate rightSideCoord = getRightSide(centerCoord, viewDir);
+
+        // Draw arrow
+        //StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.RED);
+        drawLine(tailCoord, headCoord);
+        drawLine(leftSideCoord, headCoord);
+        drawLine(rightSideCoord, headCoord);
+
+        StdDraw.show();
+    }
+
     public void updateWorldAndRender(Engine engine, GameState gameState) {
 
         if (gameState.refreshWorld > 0) {
@@ -373,6 +506,8 @@ public class TERenderer implements Serializable {
             if (gameState.getWid().getTileMouse() != null) {
                 engine.ter.renderTileInfo(gameState.getWid().getTileMouse().description());
             }
+
+            renderVisionView(gameState.hero);
         }
     }
 }

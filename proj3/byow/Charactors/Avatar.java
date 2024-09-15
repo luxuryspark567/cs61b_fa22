@@ -44,6 +44,14 @@ public class Avatar extends Creature{
     //private GameState mgs;
 
     private List<Position> huntRouteBak = null;
+    private Direction viewDir;
+
+
+    public Direction getViewDir() {
+        return this.viewDir;
+    }
+
+
     public List<Position> getBakedHuntRoute() {
         return huntRouteBak;
     }
@@ -75,6 +83,8 @@ public class Avatar extends Creature{
         this.bootsInventory = new LinkedList<>();
         this.weaponInventory = new LinkedList<>();
         this.keyInventory = new LinkedList<>();
+
+        this.viewDir = null;
         //this.mgs = gameState;
     }
 
@@ -94,6 +104,8 @@ public class Avatar extends Creature{
         this.bootsInventory = new LinkedList<>();
         this.weaponInventory = new LinkedList<>();
         this.keyInventory = new LinkedList<>();
+
+        this.viewDir = null;
         //this.mgs = gameState;
     }
 
@@ -125,6 +137,8 @@ public class Avatar extends Creature{
         if (dir == null) {
             return false;
         }
+
+        this.viewDir = dir;
         // Add some extended abilities for Avtar
         // shift one sep
         Position pos = this.getPosition();

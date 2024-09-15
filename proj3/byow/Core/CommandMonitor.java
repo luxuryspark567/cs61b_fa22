@@ -11,7 +11,7 @@ import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import byow.Utils.WorldGenerateUtils;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -244,7 +244,7 @@ public class CommandMonitor {
                     }
                 }
 
-
+                /*
                 gameState.getWid().updateMouseHoverTile();
 
                 if (gameState.getWid().isTileInfoChanged()) {
@@ -258,7 +258,7 @@ public class CommandMonitor {
                     gameState.hero.setBakedHuntRoute();
                     gameState.increaseRefreshWorldFlag();
                 }
-
+*/
                 engine.ter.updateWorldAndRender(engine, gameState);
                 //engine.ter.renderGamePage(gameState.world);
             }

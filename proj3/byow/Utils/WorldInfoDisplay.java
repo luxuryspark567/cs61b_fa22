@@ -2,7 +2,7 @@ package byow.Utils;
 
 import byow.Attribute.Position;
 import byow.TileEngine.TETile;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.io.Serializable;
 

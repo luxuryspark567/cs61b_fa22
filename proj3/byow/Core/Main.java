@@ -36,5 +36,6 @@ public class Main {
 
             engine.interactWithKeyboard();
         }
+        System.exit(0);
     }
 }
