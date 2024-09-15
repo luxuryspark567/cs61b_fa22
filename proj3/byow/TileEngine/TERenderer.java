@@ -14,6 +14,7 @@ import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import static byow.Attribute.Coordinate.getCanvasCoordFromTilePos;
@@ -439,11 +440,42 @@ public class TERenderer implements Serializable {
         return null;
     }
 
-    // get view, and paint first person vision in 2D
-    public void renderVisionView (Avatar hero){
+    public class ViewEnd {
+        Position pos; // position in a tile
+        Direction dir; // which side is sawed by the viewer
+        Coordinate coord; // the coordinate of the viewer's eyesight terminates
 
-        Direction viewDir = hero.getViewDir();
-        Coordinate coord = getCanvasCoordFromTilePos(hero.getPosition());
+        public ViewEnd (Position pos, Direction dir, Coordinate coord) {
+            this.pos = pos;
+            this.dir = dir;
+            this.coord = coord;
+        }
+    }
+
+    double[] getKSeral(Coordinate c1, List<Coordinate> c2List) {
+        double[] retDouble = new double[c2List.size()];
+        int index = 0;
+        for (Coordinate c2: c2List) {
+            retDouble[index] = (c1.getY() - c2.getY()) / (c1.getX() - c2.getX());
+            index++;
+        }
+        return retDouble;
+    }
+
+    double[] getBSeral(Coordinate c1, List<Coordinate> c2List) {
+        double[] retDouble = new double[c2List.size()];
+        int index = 0;
+        for (Coordinate c2: c2List) {
+            retDouble[index] = (c1.getX()*c2.getY() - c2.getX()*c1.getY()) / (c1.getX() - c2.getX());
+            index++;
+        }
+        return retDouble;
+    }
+    // get view, and paint first person vision in 2D
+    public void renderVisionView (GameState gameState){
+
+        Direction viewDir = gameState.hero.getViewDir();
+        Coordinate coord = getCanvasCoordFromTilePos(gameState.hero.getPosition());
 
         if (viewDir == null || coord == null) {
             return;
@@ -460,17 +492,150 @@ public class TERenderer implements Serializable {
         // 2.3 get side1 && side2
         Coordinate leftSideCoord = getLeftSide(centerCoord, viewDir);
         Coordinate rightSideCoord = getRightSide(centerCoord, viewDir);
-
+/*
         // Draw arrow
         //StdDraw.clear(Color.BLACK);
         StdDraw.setPenColor(Color.RED);
         drawLine(tailCoord, headCoord);
         drawLine(leftSideCoord, headCoord);
         drawLine(rightSideCoord, headCoord);
+        StdDraw.show();
+*/
 
+        // Second part: draw vision lines in 2d;
+
+        // get the window and cut it in resolution pieces of slices
+        int resolution = 800;
+        List<Coordinate> windowPixelCoords = getWindowPixelCoords(gameState.hero, resolution);
+        double[] kSeral = getKSeral(centerCoord, windowPixelCoords);
+        double[] bSeral = getBSeral(centerCoord, windowPixelCoords);
+        List<ViewEnd> windowPixelEnds = new ArrayList<>();
+
+
+        for (int i = 0; i < windowPixelCoords.size(); i++) {
+
+            Position nextPos = null;
+            Direction curDir = viewDir;
+
+            if (Directionset.NORTH.equals(curDir)) {
+                nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.NORTH);
+            }
+            else if (Directionset.WEST.equals(curDir)) {
+                nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.WEST);
+            }
+            else if (Directionset.SOUTH.equals(curDir)) {
+                nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.SOUTH);
+            }
+            else {//if (Directionset.EAST.equals(curDir)) {
+                nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.EAST);
+            }
+
+            Coordinate coordTmp = null;
+
+            while (isInTileWorld(nextPos)
+                && isTileType(nextPos, Tileset.FLOOR, gameState.world)) { // nextPos is not out of canvas or nextPos is a FLOOR
+
+                System.out.println(nextPos);
+                System.out.println(gameState.world[nextPos.getX()][nextPos.getY()].description());
+
+                Coordinate coordToCalc = getCanvasCoordFromTilePos(nextPos);
+                // 1, find the other side which intersects view line;
+                double x1, x2;
+                double y1, y2;
+
+                x1 = getXByKB(kSeral[i], bSeral[i], coordToCalc.getY() + 1); // north
+                y1 = getYByKB(kSeral[i], bSeral[i], coordToCalc.getX()); // west
+                x2 = getXByKB(kSeral[i], bSeral[i], coordToCalc.getY()); // south
+                y2 = getYByKB(kSeral[i], bSeral[i], coordToCalc.getX() + 1); //east
+
+                if (x1 >= coordToCalc.getX() && x1 <= coordToCalc.getX() + 1
+                    && !Directionset.SOUTH.equals(curDir)) { // pre south out put, means north input, then the first line is surely met
+                    curDir = Directionset.NORTH;
+                    coordTmp = new Coordinate(x1, coordToCalc.getY() + 1);
+                }
+                else if (y1 >= coordToCalc.getY() && y1 <= coordToCalc.getY() + 1
+                        && !Directionset.EAST.equals(curDir)) {
+                    curDir = Directionset.WEST;
+                    coordTmp = new Coordinate(coordToCalc.getX(), y1);
+                }
+                else if (x2 >= coordToCalc.getX() && x2 <= coordToCalc.getX() + 1
+                        && !Directionset.NORTH.equals(curDir)) {
+                    curDir = Directionset.SOUTH;
+                    coordTmp = new Coordinate(x2, coordToCalc.getY());
+                }
+                else if (y2 >= coordToCalc.getY() && y2 <= coordToCalc.getY() + 1
+                        && !Directionset.WEST.equals(curDir)) {
+                    curDir = Directionset.EAST;
+                    coordTmp = new Coordinate(coordToCalc.getX() + 1, y2);
+                }
+
+                // 2, get the next position
+                if (Directionset.NORTH.equals(curDir)) {
+                    nextPos = Direction.getShiftPosition(nextPos, Directionset.NORTH);
+                }
+                else if (Directionset.WEST.equals(curDir)) {
+                    nextPos = Direction.getShiftPosition(nextPos, Directionset.WEST);
+                }
+                else if (Directionset.SOUTH.equals(curDir)) {
+                    nextPos = Direction.getShiftPosition(nextPos, Directionset.SOUTH);
+                }
+                else if (Directionset.EAST.equals(curDir)) {
+                    nextPos = Direction.getShiftPosition(nextPos, Directionset.EAST);
+                }
+            }
+            windowPixelEnds.add(new ViewEnd(nextPos, curDir, coordTmp));
+        }
+
+        for (ViewEnd ve: windowPixelEnds) {
+            if (ve.coord != null) {
+                StdDraw.setPenColor(Color.RED);
+                drawLine(centerCoord, ve.coord);
+            }
+
+        }
         StdDraw.show();
     }
 
+    double getXByKB(double k, double b, double y) {
+        return (y - b) / k;
+    }
+    double getYByKB(double k, double b, double x) {
+        return k * x + b;
+    }
+    public List<Coordinate> getWindowPixelCoords(Avatar hero, int resolution) {
+        if (hero == null) {
+            return null;
+        }
+        Direction viewDir = hero.getViewDir();
+
+        if (viewDir == null) {
+            return null;
+        }
+
+        Coordinate coord = getCanvasCoordFromTilePos(hero.getPosition());
+
+        if (coord == null) {
+            return null;
+        }
+        List<Coordinate> retList = new ArrayList<>();
+
+        for (int i = 0; i < resolution; i++) {
+            if (Directionset.NORTH.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX() + ((float) i +  0.5) / resolution, coord.getY() + 1));
+            }
+            else if (Directionset.WEST.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX(), coord.getY() + ((float) i +  0.5) / resolution));
+            }
+            else if (Directionset.SOUTH.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX() + 1 - ((float) i +  0.5) / resolution, coord.getY()));
+            }
+            else if (Directionset.EAST.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX() + 1, coord.getY() + 1 - ((float) i +  0.5) / resolution));
+            }
+        }
+
+        return retList;
+    }
     public void updateWorldAndRender(Engine engine, GameState gameState) {
 
         if (gameState.refreshWorld > 0) {
@@ -507,7 +672,7 @@ public class TERenderer implements Serializable {
                 engine.ter.renderTileInfo(gameState.getWid().getTileMouse().description());
             }
 
-            renderVisionView(gameState.hero);
+            renderVisionView(gameState);
         }
     }
 }
