@@ -471,6 +471,49 @@ public class TERenderer implements Serializable {
         }
         return retDouble;
     }
+
+
+    double getXByKB(double k, double b, double y) {
+        return (y - b) / k;
+    }
+    double getYByKB(double k, double b, double x) {
+        return k * x + b;
+    }
+    public List<Coordinate> getWindowPixelCoords(Avatar hero, int resolution) {
+        if (hero == null) {
+            return null;
+        }
+        Direction viewDir = hero.getViewDir();
+
+        if (viewDir == null) {
+            return null;
+        }
+
+        Coordinate coord = getCanvasCoordFromTilePos(hero.getPosition());
+
+        if (coord == null) {
+            return null;
+        }
+        List<Coordinate> retList = new ArrayList<>();
+
+        for (int i = 0; i < resolution; i++) {
+            if (Directionset.NORTH.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX() + ((float) i +  0.5) / resolution, coord.getY() + 1));
+            }
+            else if (Directionset.WEST.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX(), coord.getY() + ((float) i +  0.5) / resolution));
+            }
+            else if (Directionset.SOUTH.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX() + 1 - ((float) i +  0.5) / resolution, coord.getY()));
+            }
+            else if (Directionset.EAST.equals(viewDir)) {
+                retList.add(new Coordinate(coord.getX() + 1, coord.getY() + 1 - ((float) i +  0.5) / resolution));
+            }
+        }
+
+        return retList;
+    }
+
     // get view, and paint first person vision in 2D
     public void renderVisionView (GameState gameState){
 
@@ -482,7 +525,7 @@ public class TERenderer implements Serializable {
         }
 
         // render an arrow to represent the view direction of an avatar
-        // 1. Draw an arrow
+        // TODO: First part: Draw an arrow
         // 2.1 get center
         Coordinate centerCoord = getCenter(coord);
         // 2.1 get tail
@@ -502,10 +545,10 @@ public class TERenderer implements Serializable {
         StdDraw.show();
 */
 
-        // Second part: draw vision lines in 2d;
+        // TODO: Second part: draw vision lines in 2d;
 
         // get the window and cut it in resolution pieces of slices
-        int resolution = 800;
+        int resolution = 80;
         List<Coordinate> windowPixelCoords = getWindowPixelCoords(gameState.hero, resolution);
         double[] kSeral = getKSeral(centerCoord, windowPixelCoords);
         double[] bSeral = getBSeral(centerCoord, windowPixelCoords);
@@ -591,51 +634,97 @@ public class TERenderer implements Serializable {
                 StdDraw.setPenColor(Color.RED);
                 drawLine(centerCoord, ve.coord);
             }
-
         }
         StdDraw.show();
+
+        // TODO: ThirdPart: get a full vision view of the world
+        // resolution
+
+        Coordinate baseCoord = new Coordinate(0.5, 0.5);// text
+        // 1, looper over each line
+        for (ViewEnd ve: windowPixelEnds) {
+
+            if (ve != null && ve.coord != null) {
+
+                // 1.1 expand the line end abased on the line distance
+                // get window pixels
+                List<Coordinate> windowPixelCoordsHorizontal = getWindowPixelCoordsHorizontal(new Coordinate(0, 0), resolution);
+
+                // get target
+                /*
+                List<Coordinate> windowPixelCoordsTarget = new ArrayList<>();
+                for (int i = 0; i < resolution; i++) {
+                    double distance = Math.sqrt(Math.pow(ve.coord.getX() - centerCoord.getX(), 2) + Math.pow(ve.coord.getY() - centerCoord.getY(), 2))
+                    Coordinate coordTmp = new Coordinate(windowPixelCoordsBase.get(i).getX(), centerCoord.getY() + distance);
+                    windowPixelCoordsTarget.add(coordTmp);
+                }
+                */
+                // get K B
+                Coordinate centerCoordHorizontal = new Coordinate(0.5, 0.5);
+
+                kSeral = getKSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
+                bSeral = getBSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
+
+                List<ViewEnd> windowPixelEndsHorizontal = new ArrayList<>();
+
+
+                double distance = Math.sqrt(Math.pow(ve.coord.getX() - centerCoord.getX(), 2) + Math.pow(ve.coord.getY() - centerCoord.getY(), 2));
+
+                // get line view;
+                for (int i = 0; i < windowPixelCoordsHorizontal.size(); i++) {
+                    Coordinate coordTmp = null;
+
+                    // 1, find the other side which intersects view line;
+                    double x; // target
+                    double y1, y2; // ceil and floor
+
+                    x = getXByKB(kSeral[i], bSeral[i], centerCoord.getY() + distance); // north, calc target
+                    y1 = getYByKB(kSeral[i], bSeral[i], 0); // west, calc ceil
+                    y2 = getYByKB(kSeral[i], bSeral[i], 1); //east, calc floor
+
+                    if (x >= 0 && x <= 1) { // line is surely met at the target
+                        coordTmp = new Coordinate(x, 0.5 + distance);
+                    }
+                    else if (y1 >= 1 && y1 <= centerCoord.getY() + distance) {
+                        coordTmp = new Coordinate(0, y1);
+                    }
+                    else if (y2 >= 1 && y2 <= centerCoord.getY() + distance) {
+                        coordTmp = new Coordinate(1, y2);
+                    }
+
+                    windowPixelEndsHorizontal.add(new ViewEnd(null, null, coordTmp));
+                }
+
+                // test
+                Coordinate shiftInc = new Coordinate(1, 0);
+                for (ViewEnd ve1: windowPixelEndsHorizontal) {
+                    if (ve1.coord != null) {
+                        StdDraw.setPenColor(Color.RED);
+                        double targetX = ve1.coord.getX() + baseCoord.getX() - 0.5;
+                        double targetY = ve1.coord.getY();
+                        drawLine(baseCoord, new Coordinate(targetX, targetY));
+                        System.out.println(baseCoord);
+                        System.out.println(new Coordinate(targetX, targetY));
+                    }
+
+                }
+                baseCoord.setX(baseCoord.getCoordinateFromShiftedBase(shiftInc).getX());
+                baseCoord.setY(baseCoord.getCoordinateFromShiftedBase(shiftInc).getY());
+                StdDraw.show();
+            }
+        }
+
     }
 
-    double getXByKB(double k, double b, double y) {
-        return (y - b) / k;
-    }
-    double getYByKB(double k, double b, double x) {
-        return k * x + b;
-    }
-    public List<Coordinate> getWindowPixelCoords(Avatar hero, int resolution) {
-        if (hero == null) {
-            return null;
-        }
-        Direction viewDir = hero.getViewDir();
-
-        if (viewDir == null) {
-            return null;
-        }
-
-        Coordinate coord = getCanvasCoordFromTilePos(hero.getPosition());
-
-        if (coord == null) {
-            return null;
-        }
+    public List<Coordinate> getWindowPixelCoordsHorizontal(Coordinate baseCoord, int resolution) {
         List<Coordinate> retList = new ArrayList<>();
-
         for (int i = 0; i < resolution; i++) {
-            if (Directionset.NORTH.equals(viewDir)) {
-                retList.add(new Coordinate(coord.getX() + ((float) i +  0.5) / resolution, coord.getY() + 1));
-            }
-            else if (Directionset.WEST.equals(viewDir)) {
-                retList.add(new Coordinate(coord.getX(), coord.getY() + ((float) i +  0.5) / resolution));
-            }
-            else if (Directionset.SOUTH.equals(viewDir)) {
-                retList.add(new Coordinate(coord.getX() + 1 - ((float) i +  0.5) / resolution, coord.getY()));
-            }
-            else if (Directionset.EAST.equals(viewDir)) {
-                retList.add(new Coordinate(coord.getX() + 1, coord.getY() + 1 - ((float) i +  0.5) / resolution));
-            }
+                retList.add(new Coordinate(baseCoord.getX() + ((float) i +  0.5) / resolution, baseCoord.getY() + 1));
         }
-
         return retList;
     }
+
+
     public void updateWorldAndRender(Engine engine, GameState gameState) {
 
         if (gameState.refreshWorld > 0) {

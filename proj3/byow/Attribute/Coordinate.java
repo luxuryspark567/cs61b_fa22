@@ -110,6 +110,18 @@ public class Coordinate implements Serializable {
             return null;
         }
     }
+
+    public Coordinate getCoordinateFromShiftedBase(Coordinate base) {
+        double x = base.getX() + this.getX();
+        double y = base.getY() + this.getY();
+        if (isInCanvas(x, y)) {
+            return new Coordinate(x, y);
+        }
+        else {
+            return null;
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder("Coordinate(");
