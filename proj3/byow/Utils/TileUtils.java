@@ -195,7 +195,7 @@ public class TileUtils {
         return Math.max(Math.abs(pos1.getX() - pos2.getX()), Math.abs(pos1.getY() - pos2.getY()));
     }
 
-    private static Color getNewColor(Color c, int decrease) {
+    public static Color getNewColor(Color c, int decrease) {
         int newR = (c.getRed() - decrease);
         if (newR < 0) {
             newR = 0;

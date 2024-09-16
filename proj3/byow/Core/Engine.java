@@ -17,9 +17,9 @@ import static byow.Core.Main.gameState;
 public class Engine {
 
     public static final int WIDTH = 80;
-    public static final int HEIGHT = 40;
+    public static final int HEIGHT = 64;
     public static final int CANVAS_WIDTH = 84;
-    public static final int CANVAS_HEIGHT = 44;
+    public static final int CANVAS_HEIGHT = 64;
     public static final int X_OFF = 4;
     public static final int Y_OFF = 4;
     public static final int ROOM_NUM = 10;

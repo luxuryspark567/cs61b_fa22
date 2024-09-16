@@ -444,13 +444,20 @@ public class TERenderer implements Serializable {
         Position pos; // position in a tile
         Direction dir; // which side is sawed by the viewer
         Coordinate coord; // the coordinate of the viewer's eyesight terminates
+        double distance;
 
         public ViewEnd (Position pos, Direction dir, Coordinate coord) {
             this.pos = pos;
             this.dir = dir;
             this.coord = coord;
+            this.distance = 0;
         }
+        public void setDistance (double dis) {
+            this.distance = dis;
+        }
+
     }
+
 
     double[] getKSeral(Coordinate c1, List<Coordinate> c2List) {
         double[] retDouble = new double[c2List.size()];
@@ -515,7 +522,7 @@ public class TERenderer implements Serializable {
     }
 
     // get view, and paint first person vision in 2D
-    public void renderVisionView (GameState gameState){
+    public void renderVisionView (GameState gameState, TETile[][] visionWorld, int resolution){
 
         Direction viewDir = gameState.hero.getViewDir();
         Coordinate coord = getCanvasCoordFromTilePos(gameState.hero.getPosition());
@@ -548,7 +555,7 @@ public class TERenderer implements Serializable {
         // TODO: Second part: draw vision lines in 2d;
 
         // get the window and cut it in resolution pieces of slices
-        int resolution = 80;
+        //int resolution = 80;
         List<Coordinate> windowPixelCoords = getWindowPixelCoords(gameState.hero, resolution);
         double[] kSeral = getKSeral(centerCoord, windowPixelCoords);
         double[] bSeral = getBSeral(centerCoord, windowPixelCoords);
@@ -633,6 +640,9 @@ public class TERenderer implements Serializable {
             if (ve.coord != null) {
                 StdDraw.setPenColor(Color.RED);
                 drawLine(centerCoord, ve.coord);
+
+                ve.setDistance(Coordinate.getDistance(centerCoord, ve.coord));
+
             }
         }
         StdDraw.show();
@@ -642,10 +652,15 @@ public class TERenderer implements Serializable {
 
         Coordinate baseCoord = new Coordinate(0.5, 0.5);// text
         // 1, looper over each line
-        for (ViewEnd ve: windowPixelEnds) {
+        for (int looper = 0; looper < windowPixelEnds.size(); looper++) {
+
+            ViewEnd ve = windowPixelEnds.get(looper);
+            List<ViewEnd> windowPixelEndsHorizontal = new ArrayList<>();
 
             if (ve != null && ve.coord != null) {
 
+                System.out.println("new row: ");
+                System.out.println(ve.distance);
                 // 1.1 expand the line end abased on the line distance
                 // get window pixels
                 List<Coordinate> windowPixelCoordsHorizontal = getWindowPixelCoordsHorizontal(new Coordinate(0, 0), resolution);
@@ -665,7 +680,7 @@ public class TERenderer implements Serializable {
                 kSeral = getKSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
                 bSeral = getBSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
 
-                List<ViewEnd> windowPixelEndsHorizontal = new ArrayList<>();
+                //windowPixelEndsHorizontal = new ArrayList<>();
 
 
                 double distance = Math.sqrt(Math.pow(ve.coord.getX() - centerCoord.getX(), 2) + Math.pow(ve.coord.getY() - centerCoord.getY(), 2));
@@ -674,11 +689,14 @@ public class TERenderer implements Serializable {
                 for (int i = 0; i < windowPixelCoordsHorizontal.size(); i++) {
                     Coordinate coordTmp = null;
 
+                    if (i == resolution / 2) {
+                        System.out.println("get to Middle: ");
+                    }
                     // 1, find the other side which intersects view line;
                     double x; // target
                     double y1, y2; // ceil and floor
 
-                    x = getXByKB(kSeral[i], bSeral[i], centerCoord.getY() + distance); // north, calc target
+                    x = getXByKB(kSeral[i], bSeral[i], centerCoordHorizontal.getY() + distance); // north, calc target
                     y1 = getYByKB(kSeral[i], bSeral[i], 0); // west, calc ceil
                     y2 = getYByKB(kSeral[i], bSeral[i], 1); //east, calc floor
 
@@ -691,20 +709,34 @@ public class TERenderer implements Serializable {
                     else if (y2 >= 1 && y2 <= centerCoord.getY() + distance) {
                         coordTmp = new Coordinate(1, y2);
                     }
+                    else {
+                        System.out.println("can not find the coord");
+                    }
 
                     windowPixelEndsHorizontal.add(new ViewEnd(null, null, coordTmp));
                 }
 
                 // test
                 Coordinate shiftInc = new Coordinate(1, 0);
+                int looperTest = 0;
                 for (ViewEnd ve1: windowPixelEndsHorizontal) {
                     if (ve1.coord != null) {
-                        StdDraw.setPenColor(Color.RED);
+
                         double targetX = ve1.coord.getX() + baseCoord.getX() - 0.5;
                         double targetY = ve1.coord.getY();
+
+                        StdDraw.setPenColor(Color.RED);
                         drawLine(baseCoord, new Coordinate(targetX, targetY));
-                        System.out.println(baseCoord);
-                        System.out.println(new Coordinate(targetX, targetY));
+                        ve1.setDistance(Coordinate.getDistance(new Coordinate(0.5, 0.5), ve1.coord));
+                        //System.out.println(baseCoord);
+                        //System.out.println(new Coordinate(targetX, targetY));
+
+                        looperTest++;
+                        if (looperTest == resolution / 2) {
+                            System.out.println("Middle: ");
+                            System.out.println(ve1.distance);
+                        }
+
                     }
 
                 }
@@ -712,10 +744,22 @@ public class TERenderer implements Serializable {
                 baseCoord.setY(baseCoord.getCoordinateFromShiftedBase(shiftInc).getY());
                 StdDraw.show();
             }
+
+            // TODO: fourth part, render the 2D vision
+            if (windowPixelEndsHorizontal.size() > 0) {
+                for (int i = 0; i < windowPixelEndsHorizontal.size(); i++) {
+                    int decrease = getDecreaseByDistance(windowPixelEndsHorizontal.get(i).distance);
+                    visionWorld[looper][i] = new TETile(Tileset.NOTHING, TileUtils.getNewColor(Color.WHITE, decrease),
+                            TileUtils.getNewColor(Color.WHITE, decrease));
+                }
+            }
         }
 
     }
 
+    public int getDecreaseByDistance(double distance) {
+        return (int)distance * 10;
+    }
     public List<Coordinate> getWindowPixelCoordsHorizontal(Coordinate baseCoord, int resolution) {
         List<Coordinate> retList = new ArrayList<>();
         for (int i = 0; i < resolution; i++) {
@@ -761,7 +805,24 @@ public class TERenderer implements Serializable {
                 engine.ter.renderTileInfo(gameState.getWid().getTileMouse().description());
             }
 
-            renderVisionView(gameState);
+            //test
+            int resolution = 64;
+            TETile[][] testWorld = new TETile[resolution][resolution];
+            renderVisionView(gameState, testWorld, resolution);
+
+            engine.ter.renderPause(1000);
+
+            //test
+            //initialize(resolution, resolution, 0, 0);
+            for (int i = 0; i < resolution; i++) {
+                for (int j = 0; j < resolution; j++) {
+                    if (testWorld[i][j] == null) {
+                        testWorld[i][j] = Tileset.NOTHING;
+                        //testWorld[i][j] = new TETile(Tileset.NOTHING, Color.WHITE, Color.WHITE);
+                    }
+                }
+            }
+            engine.ter.renderFrame(testWorld);
         }
     }
 }

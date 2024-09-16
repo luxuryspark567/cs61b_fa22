@@ -122,6 +122,12 @@ public class Coordinate implements Serializable {
         }
     }
 
+    public static double getDistance(Coordinate coord1, Coordinate coord2) {
+        if (coord1 == null || coord2 == null) {
+            return 0;
+        }
+        return Math.sqrt(Math.pow(coord1.getX() - coord2.getX(), 2) + Math.pow(coord1.getY() - coord2.getY(), 2));
+    }
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder("Coordinate(");
