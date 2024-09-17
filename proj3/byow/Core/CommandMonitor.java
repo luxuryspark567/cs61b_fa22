@@ -193,7 +193,15 @@ public class CommandMonitor {
 
                     switch (parseState) {
                         case 0: // idle state
-                            if (c == 'k' || c == 'K') {
+                            if (c == 'z' || c == 'Z') {
+                                cn = new CommandNode(ByowCommandSet.TURN_LEFT);
+                                looperFlag = false;
+                            }
+                            else if (c == 'c' || c == 'C') {
+                                cn = new CommandNode(ByowCommandSet.TURN_RIGHT);
+                                looperFlag = false;
+                            }
+                            else if (c == 'k' || c == 'K') {
                                 cn = new CommandNode(ByowCommandSet.MIST_SWITCH);
                                 looperFlag = false;
                             }
@@ -280,8 +288,20 @@ public class CommandMonitor {
         if (cn == null) {
             return false;
         }
+        if (cn.getByowCommand() == ByowCommandSet.TURN_LEFT) {
+            if (gameState.hero != null) {
+                gameState.hero.setViewAngle(gameState.hero.getViewAngle() + Engine.VIEW_ANGLE_RESOLUTION);
+                gameState.increaseRefreshWorldFlag();
+            }
 
-        if (cn.getByowCommand() == ByowCommandSet.MIST_SWITCH) {
+        }
+        else if (cn.getByowCommand() == ByowCommandSet.TURN_RIGHT) {
+            if (gameState.hero != null) {
+                gameState.hero.setViewAngle(gameState.hero.getViewAngle() - Engine.VIEW_ANGLE_RESOLUTION);
+                gameState.increaseRefreshWorldFlag();
+            }
+        }
+        else if (cn.getByowCommand() == ByowCommandSet.MIST_SWITCH) {
             gameState.toggleMistSwitch();
             gameState.increaseRefreshWorldFlag();
         }
@@ -394,6 +414,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.NORTH);
                 gameState.hero.MoveOneStep(Directionset.NORTH, gameState.world);
+                gameState.hero.setViewAngle(Math.PI / 2);
                 gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
@@ -403,6 +424,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.WEST);
                 gameState.hero.MoveOneStep(Directionset.WEST, gameState.world);
+                gameState.hero.setViewAngle(-Math.PI);
                 gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
@@ -412,6 +434,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.SOUTH);
                 gameState.hero.MoveOneStep(Directionset.SOUTH, gameState.world);
+                gameState.hero.setViewAngle(-Math.PI / 2);
                 gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }
@@ -421,6 +444,7 @@ public class CommandMonitor {
                 //ter.initialize(WIDTH, HEIGHT, 0, 0);
                 //updateWorldAndRender(engine, gameState, Directionset.EAST);
                 gameState.hero.MoveOneStep(Directionset.EAST, gameState.world);
+                gameState.hero.setViewAngle(0);
                 gameState.bear.hunt(gameState.hero.getPosition());
                 gameState.increaseRefreshWorldFlag();
             }

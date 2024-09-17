@@ -24,7 +24,6 @@ public class Avatar extends Creature{
     private static final int WEIGHT_DFT = 90;
     private static final Size SIZE = new Size(1, 1);
     private static final int AFFECTION_DFT = 100;
-
     // arms at hand
     private Arm helmet;
     private Arm chestPlate;
@@ -46,11 +45,35 @@ public class Avatar extends Creature{
     private List<Position> huntRouteBak = null;
     private Direction viewDir;
 
+    private double viewAngle;
+
 
     public Direction getViewDir() {
         return this.viewDir;
     }
 
+    public double getViewAngle() {
+        return this.viewAngle;
+    }
+
+    public void setViewAngle(double viewAngle) {
+        // adjust angle to (-PI, PI]
+        this.viewAngle = toViewAngle(viewAngle);
+    }
+
+    public static double toViewAngle(double viewAngle) {
+
+        // adjust angle to (-PI, PI]
+        while (viewAngle >= Math.PI) {
+            viewAngle = viewAngle - Math.PI * 2;
+        }
+
+        while (viewAngle < -Math.PI) {
+            viewAngle = viewAngle + Math.PI * 2;
+        }
+
+        return viewAngle;
+    }
 
     public List<Position> getBakedHuntRoute() {
         return huntRouteBak;
@@ -85,6 +108,7 @@ public class Avatar extends Creature{
         this.keyInventory = new LinkedList<>();
 
         this.viewDir = null;
+        this.viewAngle = 0;
         //this.mgs = gameState;
     }
 
@@ -106,6 +130,7 @@ public class Avatar extends Creature{
         this.keyInventory = new LinkedList<>();
 
         this.viewDir = null;
+        this.viewAngle = 0;
         //this.mgs = gameState;
     }
 

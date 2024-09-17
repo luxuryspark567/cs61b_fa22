@@ -26,4 +26,8 @@ public class ByowCommandSet {
     public static final ByowCommand OPTION_TWO = new ByowCommand("option 2");
     public static final ByowCommand OPTION_THREE = new ByowCommand("option 3");
     public static final ByowCommand OPTION_FOUR = new ByowCommand("option 4");
+
+    // adjust view angle
+    public static final ByowCommand TURN_LEFT = new ByowCommand("Adjust to left by angle resolution");
+    public static final ByowCommand TURN_RIGHT = new ByowCommand("Adjust to right by angle resolution");
 }

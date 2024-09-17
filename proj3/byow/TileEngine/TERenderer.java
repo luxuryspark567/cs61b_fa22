@@ -458,6 +458,23 @@ public class TERenderer implements Serializable {
 
     }
 
+    double[] getThetaSeral(double initialViewAngle) {
+
+        int numOnEachSide = (int)(VIEW_ANGLE_SCOPE / 4 / VIEW_ANGLE_RESOLUTION);
+
+        double[] retDouble = new double[numOnEachSide * 2 + 1]; // initial view + each_side * 2
+
+        retDouble[numOnEachSide] = initialViewAngle;
+
+        for (int index = 1; index <= numOnEachSide; index++) {
+            //left
+            retDouble[numOnEachSide - index] = Avatar.toViewAngle(initialViewAngle - VIEW_ANGLE_RESOLUTION * index);
+            //right
+            retDouble[numOnEachSide + index] = Avatar.toViewAngle(initialViewAngle + VIEW_ANGLE_RESOLUTION * index);
+        }
+
+        return retDouble;
+    }
 
     double[] getKSeral(Coordinate c1, List<Coordinate> c2List) {
         double[] retDouble = new double[c2List.size()];
@@ -479,12 +496,39 @@ public class TERenderer implements Serializable {
         return retDouble;
     }
 
+    double[] getBSeral(Coordinate c, double[] thetaSeral) {
+        double[] retDouble = new double[thetaSeral.length];
+        int index = 0;
+        for (double theta: thetaSeral) {
+            if (theta == -Math.PI/2 || theta == Math.PI/2) {
+                retDouble[index] = c.getX();
+            }
+            else {
+                retDouble[index] = c.getY() - c.getX() * Math.tan(theta);
+            }
+            index++;
+        }
+        return retDouble;
+    }
 
     double getXByKB(double k, double b, double y) {
         return (y - b) / k;
     }
     double getYByKB(double k, double b, double x) {
         return k * x + b;
+    }
+
+    double getXByThetaB(double theta, double b, double y, Coordinate coord) {
+        if (theta == -Math.PI/2 || theta == Math.PI/2) {
+            return coord.getX() + 0.5;
+        }
+        return (y - b) / Math.tan(theta);
+    }
+    double getYByThetaB(double theta, double b, double x) {
+        if (theta == -Math.PI/2 || theta == Math.PI/2) {
+            return Engine.DOUBLE_MAX; // should never cross, because it is parallel to Y axis
+        }
+        return Math.tan(theta) * x + b;
     }
     public List<Coordinate> getWindowPixelCoords(Avatar hero, int resolution) {
         if (hero == null) {
@@ -521,6 +565,24 @@ public class TERenderer implements Serializable {
         return retList;
     }
 
+    public Direction getDirByAngle(double viewAngle) {
+
+        double angle = Avatar.toViewAngle(viewAngle);
+
+        if (angle > Math.PI / 4 && angle <= Math.PI * 3 / 4) {
+            return Directionset.NORTH;
+        }
+        else if (angle > Math.PI * 3 / 4 || angle <= -Math.PI * 3 / 4) {
+            return Directionset.WEST;
+        }
+        else if (angle > -Math.PI * 3 / 4 && angle <= -Math.PI / 4) {
+            return Directionset.SOUTH;
+        }
+        else if (angle > -Math.PI / 4 && angle <= Math.PI / 4) {
+            return Directionset.EAST;
+        }
+        return null;
+    }
     // get view, and paint first person vision in 2D
     public void renderVisionView (GameState gameState, TETile[][] visionWorld, int resolution){
 
@@ -556,16 +618,19 @@ public class TERenderer implements Serializable {
 
         // get the window and cut it in resolution pieces of slices
         //int resolution = 80;
-        List<Coordinate> windowPixelCoords = getWindowPixelCoords(gameState.hero, resolution);
-        double[] kSeral = getKSeral(centerCoord, windowPixelCoords);
-        double[] bSeral = getBSeral(centerCoord, windowPixelCoords);
+
+        //List<Coordinate> windowPixelCoords = getWindowPixelCoords(gameState.hero, resolution);
+        double[] thetaSeral = getThetaSeral(gameState.hero.getViewAngle());
+        double[] bSeral = getBSeral(centerCoord, thetaSeral);
         List<ViewEnd> windowPixelEnds = new ArrayList<>();
 
 
-        for (int i = 0; i < windowPixelCoords.size(); i++) {
+        for (int i = 0; i < thetaSeral.length; i++) {
 
+            System.out.println("------------------------------------------");
+            System.out.println(i);
             Position nextPos = null;
-            Direction curDir = viewDir;
+            Direction curDir = getDirByAngle(thetaSeral[i]);
 
             if (Directionset.NORTH.equals(curDir)) {
                 nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.NORTH);
@@ -583,9 +648,11 @@ public class TERenderer implements Serializable {
             Coordinate coordTmp = null;
 
             while (isInTileWorld(nextPos)
-                && isTileType(nextPos, Tileset.FLOOR, gameState.world)) { // nextPos is not out of canvas or nextPos is a FLOOR
+                && (isTileType(nextPos, Tileset.FLOOR, gameState.world)
+                    || isTileType(nextPos, Tileset.UNLOCKED_DOOR, gameState.world))) { // nextPos is not out of canvas or nextPos is a FLOOR
 
                 System.out.println(nextPos);
+                System.out.println(curDir);
                 System.out.println(gameState.world[nextPos.getX()][nextPos.getY()].description());
 
                 Coordinate coordToCalc = getCanvasCoordFromTilePos(nextPos);
@@ -593,10 +660,10 @@ public class TERenderer implements Serializable {
                 double x1, x2;
                 double y1, y2;
 
-                x1 = getXByKB(kSeral[i], bSeral[i], coordToCalc.getY() + 1); // north
-                y1 = getYByKB(kSeral[i], bSeral[i], coordToCalc.getX()); // west
-                x2 = getXByKB(kSeral[i], bSeral[i], coordToCalc.getY()); // south
-                y2 = getYByKB(kSeral[i], bSeral[i], coordToCalc.getX() + 1); //east
+                x1 = getXByThetaB(thetaSeral[i], bSeral[i], coordToCalc.getY() + 1, coordToCalc); // north
+                y1 = getYByThetaB(thetaSeral[i], bSeral[i], coordToCalc.getX()); // west
+                x2 = getXByThetaB(thetaSeral[i], bSeral[i], coordToCalc.getY(), coordToCalc); // south
+                y2 = getYByThetaB(thetaSeral[i], bSeral[i], coordToCalc.getX() + 1); //east
 
                 if (x1 >= coordToCalc.getX() && x1 <= coordToCalc.getX() + 1
                     && !Directionset.SOUTH.equals(curDir)) { // pre south out put, means north input, then the first line is surely met
@@ -663,7 +730,9 @@ public class TERenderer implements Serializable {
                 System.out.println(ve.distance);
                 // 1.1 expand the line end abased on the line distance
                 // get window pixels
-                List<Coordinate> windowPixelCoordsHorizontal = getWindowPixelCoordsHorizontal(new Coordinate(0, 0), resolution);
+
+
+                //List<Coordinate> windowPixelCoordsHorizontal = getWindowPixelCoordsHorizontal(new Coordinate(0, 0), resolution);
 
                 // get target
                 /*
@@ -677,8 +746,12 @@ public class TERenderer implements Serializable {
                 // get K B
                 Coordinate centerCoordHorizontal = new Coordinate(0.5, 0.5);
 
-                kSeral = getKSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
-                bSeral = getBSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
+                double[] thetaSeral1 = getThetaSeral(Math.PI / 2);
+                double[] bSeral1 = getBSeral(centerCoord, thetaSeral);
+                //List<ViewEnd> windowPixelEnds = new ArrayList<>();
+
+                //kSeral = getKSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
+                //bSeral = getBSeral(centerCoordHorizontal, windowPixelCoordsHorizontal);
 
                 //windowPixelEndsHorizontal = new ArrayList<>();
 
@@ -686,19 +759,18 @@ public class TERenderer implements Serializable {
                 double distance = Math.sqrt(Math.pow(ve.coord.getX() - centerCoord.getX(), 2) + Math.pow(ve.coord.getY() - centerCoord.getY(), 2));
 
                 // get line view;
-                for (int i = 0; i < windowPixelCoordsHorizontal.size(); i++) {
+                for (int i = 0; i < thetaSeral1.length; i++) {
                     Coordinate coordTmp = null;
 
-                    if (i == resolution / 2) {
-                        System.out.println("get to Middle: ");
-                    }
+                    //if (i == resolution / 2) {
+                    //    System.out.println("get to Middle: ");
+                    //}
                     // 1, find the other side which intersects view line;
                     double x; // target
                     double y1, y2; // ceil and floor
-
-                    x = getXByKB(kSeral[i], bSeral[i], centerCoordHorizontal.getY() + distance); // north, calc target
-                    y1 = getYByKB(kSeral[i], bSeral[i], 0); // west, calc ceil
-                    y2 = getYByKB(kSeral[i], bSeral[i], 1); //east, calc floor
+                    x = getXByThetaB(thetaSeral[i], bSeral[i], centerCoordHorizontal.getY() + distance, centerCoordHorizontal); // north, calc target
+                    y1 = getYByThetaB(thetaSeral[i], bSeral[i], 0); // west, calc ceil
+                    y2 = getYByThetaB(thetaSeral[i], bSeral[i], 1); //east, calc floor
 
                     if (x >= 0 && x <= 1) { // line is surely met at the target
                         coordTmp = new Coordinate(x, 0.5 + distance);
@@ -725,8 +797,8 @@ public class TERenderer implements Serializable {
                         double targetX = ve1.coord.getX() + baseCoord.getX() - 0.5;
                         double targetY = ve1.coord.getY();
 
-                        StdDraw.setPenColor(Color.RED);
-                        drawLine(baseCoord, new Coordinate(targetX, targetY));
+                        //StdDraw.setPenColor(Color.RED);
+                        //drawLine(baseCoord, new Coordinate(targetX, targetY));
                         ve1.setDistance(Coordinate.getDistance(new Coordinate(0.5, 0.5), ve1.coord));
                         //System.out.println(baseCoord);
                         //System.out.println(new Coordinate(targetX, targetY));
@@ -740,10 +812,11 @@ public class TERenderer implements Serializable {
                     }
 
                 }
-                baseCoord.setX(baseCoord.getCoordinateFromShiftedBase(shiftInc).getX());
-                baseCoord.setY(baseCoord.getCoordinateFromShiftedBase(shiftInc).getY());
-                StdDraw.show();
+                //baseCoord.setX(baseCoord.getCoordinateFromShiftedBase(shiftInc).getX());
+                //baseCoord.setY(baseCoord.getCoordinateFromShiftedBase(shiftInc).getY());
+                //StdDraw.show();
             }
+
 
             // TODO: fourth part, render the 2D vision
             if (windowPixelEndsHorizontal.size() > 0) {
@@ -806,10 +879,11 @@ public class TERenderer implements Serializable {
             }
 
             //test
-            int resolution = 64;
+
+            int resolution = 128;
             TETile[][] testWorld = new TETile[resolution][resolution];
             renderVisionView(gameState, testWorld, resolution);
-
+            /*
             engine.ter.renderPause(1000);
 
             //test
@@ -823,6 +897,7 @@ public class TERenderer implements Serializable {
                 }
             }
             engine.ter.renderFrame(testWorld);
+ */
         }
     }
 }

@@ -16,17 +16,20 @@ import static byow.Core.Main.gameState;
 
 public class Engine {
 
-    public static final int WIDTH = 80;
-    public static final int HEIGHT = 64;
-    public static final int CANVAS_WIDTH = 84;
-    public static final int CANVAS_HEIGHT = 64;
+    public static final int WIDTH = 40;
+    public static final int HEIGHT = 40;
+    public static final int CANVAS_WIDTH = 44;
+    public static final int CANVAS_HEIGHT = 44;
     public static final int X_OFF = 4;
     public static final int Y_OFF = 4;
-    public static final int ROOM_NUM = 10;
+    public static final int ROOM_NUM = 2;
     public static final int ROOM_WIDTH_MAX = 30;
     public static final int ROOM_HEIGHT_MAX = 10;
     public static final int ROOM_WIDTH_MIN = 5;
     public static final int ROOM_HEIGHT_MIN = 5;
+    public static final double VIEW_ANGLE_RESOLUTION = Math.PI / 128;
+    public static final double VIEW_ANGLE_SCOPE = Math.PI / 64;
+    public static final double DOUBLE_MAX = Math.pow(2, 16);
     private static long SEED = 19900219;
     // limit the length of the tunnel, this is very important to find the best route,
     // because if the current road is too much, should try another way.
