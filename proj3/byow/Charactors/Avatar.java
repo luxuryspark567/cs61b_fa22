@@ -61,14 +61,15 @@ public class Avatar extends Creature{
         this.viewAngle = toViewAngle(viewAngle);
     }
 
+    //[-PI ~ PI)
     public static double toViewAngle(double viewAngle) {
 
         // adjust angle to (-PI, PI]
-        while (viewAngle >= Math.PI) {
+        while (viewAngle > Math.PI) {
             viewAngle = viewAngle - Math.PI * 2;
         }
 
-        while (viewAngle < -Math.PI) {
+        while (viewAngle <= -Math.PI) {
             viewAngle = viewAngle + Math.PI * 2;
         }
 

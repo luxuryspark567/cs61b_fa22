@@ -212,6 +212,26 @@ public class Direction implements Serializable {
         }
     }
 
+    public static Direction getFirstTrueDirFromPosition (boolean[] dirBool) {
+
+        // if the destination is at reach, go that direction
+        if (dirBool[0]) {
+            return Directionset.NORTH;
+        }
+        else if (dirBool[1]) {
+            return Directionset.WEST;
+        }
+        else if (dirBool[2]) {
+            return Directionset.SOUTH;
+        }
+        else if (dirBool[3]) {
+            return Directionset.EAST;
+        }
+        else {
+            return null;
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Direction dir){

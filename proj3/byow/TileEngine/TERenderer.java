@@ -460,7 +460,7 @@ public class TERenderer implements Serializable {
 
     double[] getThetaSeral(double initialViewAngle) {
 
-        int numOnEachSide = (int)(VIEW_ANGLE_SCOPE / 4 / VIEW_ANGLE_RESOLUTION);
+        int numOnEachSide = (int)(VIEW_ANGLE_SCOPE / 2 / VIEW_ANGLE_RESOLUTION);
 
         double[] retDouble = new double[numOnEachSide * 2 + 1]; // initial view + each_side * 2
 
@@ -583,6 +583,93 @@ public class TERenderer implements Serializable {
         }
         return null;
     }
+
+    public boolean[] getDirBoolByAngle(double viewAngle) {
+
+        double angle = Avatar.toViewAngle(viewAngle);
+
+        boolean[] dirBool = new boolean[]{false, false, false, false}; // north, west, south, east
+
+        if (angle > 0 && angle < Math.PI/2) { //north & east
+            dirBool[0] = true;
+            dirBool[3] = true;
+        }
+        else if(angle == Math.PI/2) { // north
+            dirBool[0] = true;
+        }
+        else if(angle > Math.PI/2 && angle < Math.PI) { // north & west
+            dirBool[0] = true;
+            dirBool[1] = true;
+        }
+        else if (angle == Math.PI) { // west
+            dirBool[1] = true;
+        }
+        else if (angle > -Math.PI && angle < -Math.PI/2) { // west * south
+            dirBool[1] = true;
+            dirBool[2] = true;
+        }
+        else if(angle == -Math.PI/2) { // south
+            dirBool[2] = true;
+        }
+        else if(angle > -Math.PI/2 && angle < 0) { // south && east
+            dirBool[2] = true;
+            dirBool[3] = true;
+        }
+        else if (angle == 0) { // east
+            dirBool[3] = true;
+        }
+/*
+        if (angle > Math.PI / 4 && angle < Math.PI * 3 / 4) { //north
+            dirBool[0] = true;
+            dirBool[1] = true;
+
+            dirBool[3] = true;
+            //return Directionset.NORTH;
+        }
+        else if (angle == Math.PI * 3 / 4) { // north & west
+            dirBool[0] = true;
+            dirBool[1] = true;
+        }
+        else if (angle > Math.PI * 3 / 4 || angle < -Math.PI * 3 / 4) { // west
+            dirBool[0] = true;
+            dirBool[1] = true;
+            dirBool[2] = true;
+
+            //return Directionset.WEST;
+        }
+        else if(angle == -Math.PI * 3 / 4) { // west, south
+            dirBool[1] = true;
+            dirBool[2] = true;
+        }
+        else if (angle > -Math.PI * 3 / 4 && angle < -Math.PI / 4) { // south
+
+            dirBool[1] = true;
+            dirBool[2] = true;
+            dirBool[3] = true;
+            //return Directionset.SOUTH;
+        }
+        else if (angle == -Math.PI / 4) { //south & east
+            dirBool[2] = true;
+            dirBool[3] = true;
+        }
+        else if (angle > -Math.PI / 4 && angle < Math.PI / 4) { //east
+            dirBool[0] = true;
+
+            dirBool[2] = true;
+            dirBool[3] = true;
+            //return Directionset.EAST;
+        }
+        else {//if (angle == Math.PI / 4) { //north & east
+            dirBool[0] = true;
+            dirBool[3] = true;
+        }
+
+
+ */
+        return dirBool;
+
+    }
+
     // get view, and paint first person vision in 2D
     public void renderVisionView (GameState gameState, TETile[][] visionWorld, int resolution){
 
@@ -629,9 +716,11 @@ public class TERenderer implements Serializable {
 
             System.out.println("------------------------------------------");
             System.out.println(i);
-            Position nextPos = null;
+            Position nextPos = gameState.hero.getPosition();
             Direction curDir = getDirByAngle(thetaSeral[i]);
-
+            boolean[] dirBool = getDirBoolByAngle(thetaSeral[i]);
+/*
+            Direction curDir = Direction.getFirstTrueDirFromPosition(dirBool);
             if (Directionset.NORTH.equals(curDir)) {
                 nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.NORTH);
             }
@@ -641,10 +730,13 @@ public class TERenderer implements Serializable {
             else if (Directionset.SOUTH.equals(curDir)) {
                 nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.SOUTH);
             }
-            else {//if (Directionset.EAST.equals(curDir)) {
+            else if (Directionset.EAST.equals(curDir)) {
                 nextPos = Direction.getShiftPosition(gameState.hero.getPosition(), Directionset.EAST);
             }
-
+            else {
+                continue;
+            }
+*/
             Coordinate coordTmp = null;
 
             while (isInTileWorld(nextPos)
@@ -652,7 +744,7 @@ public class TERenderer implements Serializable {
                     || isTileType(nextPos, Tileset.UNLOCKED_DOOR, gameState.world))) { // nextPos is not out of canvas or nextPos is a FLOOR
 
                 System.out.println(nextPos);
-                System.out.println(curDir);
+                System.out.println(Direction.getFirstTrueDirFromPosition(dirBool));
                 System.out.println(gameState.world[nextPos.getX()][nextPos.getY()].description());
 
                 Coordinate coordToCalc = getCanvasCoordFromTilePos(nextPos);
@@ -666,22 +758,25 @@ public class TERenderer implements Serializable {
                 y2 = getYByThetaB(thetaSeral[i], bSeral[i], coordToCalc.getX() + 1); //east
 
                 if (x1 >= coordToCalc.getX() && x1 <= coordToCalc.getX() + 1
-                    && !Directionset.SOUTH.equals(curDir)) { // pre south out put, means north input, then the first line is surely met
+                    && dirBool[Direction.getIndexFromDir(Directionset.NORTH)]) { // pre south out put, means north input, then the first line is surely met
                     curDir = Directionset.NORTH;
                     coordTmp = new Coordinate(x1, coordToCalc.getY() + 1);
                 }
+
                 else if (y1 >= coordToCalc.getY() && y1 <= coordToCalc.getY() + 1
-                        && !Directionset.EAST.equals(curDir)) {
+                        && dirBool[Direction.getIndexFromDir(Directionset.WEST)]) {
                     curDir = Directionset.WEST;
                     coordTmp = new Coordinate(coordToCalc.getX(), y1);
                 }
+
                 else if (x2 >= coordToCalc.getX() && x2 <= coordToCalc.getX() + 1
-                        && !Directionset.NORTH.equals(curDir)) {
+                        && dirBool[Direction.getIndexFromDir(Directionset.SOUTH)]) {
                     curDir = Directionset.SOUTH;
                     coordTmp = new Coordinate(x2, coordToCalc.getY());
                 }
+
                 else if (y2 >= coordToCalc.getY() && y2 <= coordToCalc.getY() + 1
-                        && !Directionset.WEST.equals(curDir)) {
+                        && dirBool[Direction.getIndexFromDir(Directionset.EAST)]) {
                     curDir = Directionset.EAST;
                     coordTmp = new Coordinate(coordToCalc.getX() + 1, y2);
                 }
@@ -716,7 +811,7 @@ public class TERenderer implements Serializable {
 
         // TODO: ThirdPart: get a full vision view of the world
         // resolution
-
+/*
         Coordinate baseCoord = new Coordinate(0.5, 0.5);// text
         // 1, looper over each line
         for (int looper = 0; looper < windowPixelEnds.size(); looper++) {
@@ -735,14 +830,12 @@ public class TERenderer implements Serializable {
                 //List<Coordinate> windowPixelCoordsHorizontal = getWindowPixelCoordsHorizontal(new Coordinate(0, 0), resolution);
 
                 // get target
-                /*
-                List<Coordinate> windowPixelCoordsTarget = new ArrayList<>();
-                for (int i = 0; i < resolution; i++) {
-                    double distance = Math.sqrt(Math.pow(ve.coord.getX() - centerCoord.getX(), 2) + Math.pow(ve.coord.getY() - centerCoord.getY(), 2))
-                    Coordinate coordTmp = new Coordinate(windowPixelCoordsBase.get(i).getX(), centerCoord.getY() + distance);
-                    windowPixelCoordsTarget.add(coordTmp);
-                }
-                */
+                //List<Coordinate> windowPixelCoordsTarget = new ArrayList<>();
+                //for (int i = 0; i < resolution; i++) {
+                //    double distance = Math.sqrt(Math.pow(ve.coord.getX() - centerCoord.getX(), 2) + Math.pow(ve.coord.getY() - centerCoord.getY(), 2))
+                //    Coordinate coordTmp = new Coordinate(windowPixelCoordsBase.get(i).getX(), centerCoord.getY() + distance);
+                //    windowPixelCoordsTarget.add(coordTmp);
+                //}
                 // get K B
                 Coordinate centerCoordHorizontal = new Coordinate(0.5, 0.5);
 
@@ -826,8 +919,10 @@ public class TERenderer implements Serializable {
                             TileUtils.getNewColor(Color.WHITE, decrease));
                 }
             }
-        }
 
+
+        }
+ */
     }
 
     public int getDecreaseByDistance(double distance) {
